@@ -1188,11 +1188,12 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.8.2';
+  const APP_VERSION = '1.8.3';
   const BUILD_DATE = '2026-09-04';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.8.3', d: '2026-09-04', items: ['윈도우 앱·시작 파일에서는 브라우저 전체 화면을 따로 요청하지 않음 — \'종료하려면 Esc\' 말풍선이 안 뜸', '교사 메뉴에서 업데이트 주소 입력칸 제거 (주소는 앱이 알아서)'] },
     { v: '1.8.2', d: '2026-09-04', items: ['업데이트 주소가 비어 있으면 GitHub 저장소 주소를 자동으로 채워 저장 (+ [기본 주소로] 단추)', '교사 메뉴에서는 오른쪽 아래 약속네컷 로고 단추를 숨김 (설정창과 겹침)'] },
     { v: '1.8.1', d: '2026-09-04', items: ['윈도우 앱: 교사 메뉴 › 화면·테마에 업데이트 — 인터넷 주소에 올려 둔 새 약속네컷.html로 한 번에 바꾸기 (켤 때 자동 확인 선택, 이전 버전 되돌리기)', '윈도우 앱: 둥근 글꼴(Jua·Sunflower) 내장 — 인터넷 없이도 같은 모양'] },
     { v: '1.8.0', d: '2026-09-04', items: ['완성 사진을 칠판(화면 전체)에 크게 보여 주는 모드 — 교사 메뉴 › 프린터 › 완성 사진은 (기본은 그대로 인쇄)', '추석·명절 세트와 독서의 달 세트 추가 (액자 4종씩, 전용 스티커, 문장·첫 화면 문구)', '교사 메뉴 › 프린터에 날짜별 기록 (완성·인쇄·칠판 횟수, 세트·컷·많이 고른 약속) + 복사'] },
@@ -2071,10 +2072,10 @@
     if (document.fullscreenElement || document.webkitFullscreenElement || !fn) return Promise.resolve();
     try { return Promise.resolve(fn.call(d)).catch(() => {}); } catch (err) { return Promise.resolve(); }
   }
-  function wantFull(on) { if (BRIDGE) return;   // 앱 안에서는 이미 전체 화면
+  function wantFull(on) { if (BRIDGE || KIOSK) return;   // 앱(exe·bat)·안드로이드 앱 안에서는 이미 전체 화면이라 요청하지 않음 (요청하면 '종료하려면 Esc' 말풍선이 뜸)
     fullWanted = !!on; if (on) enterFull(); else if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); }
   // 전체 화면이 풀린 상태에서 화면을 누르면(사용자 동작이 있어야 켤 수 있음) 조용히 다시 켬
-  document.addEventListener('click', () => { if (fullWanted && settings.autoFull && !document.fullscreenElement && !document.webkitFullscreenElement && current !== 's10') enterFull(); }, true);
+  document.addEventListener('click', () => { if (!KIOSK && fullWanted && settings.autoFull && !document.fullscreenElement && !document.webkitFullscreenElement && current !== 's10') enterFull(); }, true);
   window.addEventListener('afterprint', () => { if (fullWanted && settings.autoFull) setTimeout(enterFull, 50); });
 
   /* ---------- 종료 단추 (윈도우 앱) ---------- */
@@ -2761,16 +2762,15 @@
         <div class="trow">${seg('season', [['auto', '계절 자동'], ['none', '없음'], ['spring', '봄 벚꽃'], ['summer', '여름 비눗방울'], ['autumn', '가을 낙엽'], ['winter', '겨울 눈']])}</div>
         <p class="muted" style="font-size:16px">첫 화면 배경에 아주 옅게 흩날립니다(인쇄물에는 안 들어가요). '계절 자동'은 태블릿 날짜에 따라 봄(3~5월)·여름(6~8월)·가을(9~11월)·겨울(12~2월)로 바뀝니다 — 지금은 <b>${SEASON_NAMES[seasonKind()] || '없음'}</b>.</p>
         <h3>화면</h3>
-        <div class="trow"><label><input type="checkbox" data-set="autoFull" ${settings.autoFull ? 'checked' : ''}> 시작할 때 전체 화면으로 (브라우저 주소창 숨김)</label></div>
+        ${KIOSK ? '' : `<div class="trow"><label><input type="checkbox" data-set="autoFull" ${settings.autoFull ? 'checked' : ''}> 시작할 때 전체 화면으로 (브라우저 주소창 숨김)</label></div>`}
         <div class="trow"><label><input type="checkbox" data-set="anim" ${settings.anim !== false ? 'checked' : ''}> 화면이 넘어갈 때 부드럽게 움직임</label><span class="muted" style="font-size:16px">느린 태블릿에서 버벅이면 끄세요</span></div>
         ${QUIT_PORT && MONITORS > 1 ? `<div class="trow"><span>앱을 보여줄 모니터</span><span class="seg">${Array.from({ length: MONITORS }, (_, i) => `<button data-mon="${i + 1}" class="${MONITOR === i + 1 ? 'on' : ''}">${i + 1}번${i === 0 ? ' (주 모니터)' : ''}</button>`).join('')}</span><span class="muted" style="font-size:16px">고르면 그 모니터에서 다시 열려요 · 다음 실행부터도 그 모니터로</span></div>` : ''}
         ${QUIT_PORT ? `<h3>업데이트 (윈도우 앱)</h3>
         <div class="trow"><span>지금 버전 <b>${APP_VERSION}</b></span><button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="muted" id="upd-result" style="font-size:16px"></span></div>
-        <div class="trow"><span>업데이트 주소</span><input type="text" id="upd-url" class="tinput" style="min-width:520px" placeholder="${DEFAULT_UPDATE_URL}"><button class="btn sec tiny" data-act="updsave">주소 저장</button><button class="btn sec tiny" data-act="upddefault">기본 주소로</button></div>
         <div class="trow"><label><input type="checkbox" id="upd-auto"> 앱을 켤 때 새 버전이 있으면 자동으로 바꾸기</label><button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button></div>
-        <p class="muted" style="font-size:16px">새 약속네컷.html 파일을 같은 주소에 올려 두면, 이 컴퓨터는 [업데이트 확인]→[지금 업데이트] 한 번(또는 켤 때 자동)으로 바뀝니다. exe는 그대로 두고 앱 파일만 바꿔서 몇백 KB만 받아요.</p>` : ''}
+        <p class="muted" style="font-size:16px">[업데이트 확인]→[지금 업데이트] 한 번(또는 켤 때 자동)으로 새 버전이 됩니다. exe는 그대로 두고 앱 파일만 몇백 KB 받아요.</p>` : ''}
         <div class="trow">
-          <button class="btn sec tiny" data-act="full">전체 화면 켜기/끄기</button>
+          ${KIOSK ? '' : '<button class="btn sec tiny" data-act="full">전체 화면 켜기/끄기</button>'}
           <button class="btn sec tiny" data-act="close">앱 종료</button>
         </div>
         <h3>초기화</h3>
@@ -2788,9 +2788,8 @@
     const vs = el.querySelector('#voice-sel'); if (vs) vs.addEventListener('change', () => { settings.voiceName = vs.value; saveSettings(); speak('안녕? 나는 약속네컷이야!'); });
     el.querySelectorAll('[data-mon]').forEach(b => b.addEventListener('click', () => { pop(); if (+b.dataset.mon !== MONITOR) moveToMonitor(+b.dataset.mon); }));
     if (QUIT_PORT) localJson('/update/status').then(j => {
-      const u = el.querySelector('#upd-url'), au = el.querySelector('#upd-auto'), bk = el.querySelector('#upd-back');
-      if (u) u.value = j.url || '';
-      if (u && !j.url) { u.value = DEFAULT_UPDATE_URL; localJson('/update/seturl?u=' + encodeURIComponent(DEFAULT_UPDATE_URL)).catch(() => {}); }   // 주소가 비어 있으면 기본 주소를 채워 저장
+      const au = el.querySelector('#upd-auto'), bk = el.querySelector('#upd-back');
+      if (!j.url) localJson('/update/seturl?u=' + encodeURIComponent(DEFAULT_UPDATE_URL)).catch(() => {});   // 실행기에 주소가 없으면 기본 주소(GitHub 저장소)를 저장
       if (au) { au.checked = !!j.auto; au.addEventListener('change', () => localJson('/update/auto?on=' + (au.checked ? 1 : 0)).catch(() => {})); }
       if (bk && j.canRollback) bk.style.display = '';
     }).catch(() => {});
@@ -2815,8 +2814,6 @@
       if (a === 'bri+' || a === 'bri-') { settings.brightness = clamp(settings.brightness + (a === 'bri+' ? 1 : -1), -2, 2); saveSettings(); $('#bri').textContent = (settings.brightness > 0 ? '+' : '') + settings.brightness; }
       else if (a === 'resetcount') { settings.printCount = 0; saveSettings(); $('#pc').textContent = '0'; }
       else if (a === 'updcheck') { const out = el.querySelector('#upd-result'); out.textContent = '확인 중…'; localJson('/update/check').then(j => { if (j.error) { out.textContent = '확인 실패: ' + j.error; return; } if (j.newer) { out.innerHTML = `새 버전 <b>${j.latest}</b>이 있어요 `; const go = document.createElement('button'); go.className = 'btn tiny'; go.textContent = '지금 업데이트'; go.addEventListener('click', () => { pop(); toast('업데이트 중… 잠시 뒤 다시 열려요'); setTimeout(() => { location.href = LOCAL + '/update/apply'; }, 400); }); out.appendChild(go); } else out.textContent = `최신 버전이에요 (${j.latest})`; }).catch(() => { out.textContent = '실행기와 연결되지 않아요'; }); }
-      else if (a === 'upddefault') { const u = el.querySelector('#upd-url'); u.value = DEFAULT_UPDATE_URL; localJson('/update/seturl?u=' + encodeURIComponent(DEFAULT_UPDATE_URL)).then(() => toast('기본 주소(GitHub 저장소)로 저장했어요')).catch(() => toast('저장하지 못했어요')); }
-      else if (a === 'updsave') { const u = el.querySelector('#upd-url').value.trim(); localJson('/update/seturl?u=' + encodeURIComponent(u)).then(() => toast(u ? '업데이트 주소를 저장했어요' : '업데이트 주소를 지웠어요')).catch(() => toast('저장하지 못했어요')); }
       else if (a === 'updback') { if (b.dataset.armed) { toast('이전 버전으로 되돌리는 중…'); setTimeout(() => { location.href = LOCAL + '/update/rollback'; }, 400); } else { b.dataset.armed = '1'; b.textContent = '정말 되돌릴까요? 한 번 더'; setTimeout(() => { delete b.dataset.armed; b.textContent = '이전 버전으로 되돌리기'; }, 4000); } }
       else if (a === 'statscopy') { const t = statsText(); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('기록을 복사했어요 — 보고서에 붙여 넣으세요'), () => { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('기록을 복사했어요'); } catch (e) { toast('복사가 안 돼요 — 화면의 기록을 보고 적어 주세요'); } ta.remove(); }); }
       else if (a === 'statsclear') { if (b.dataset.armed) { localStorage.removeItem(STATS_KEY); delete b.dataset.armed; b.textContent = '기록 지우기'; $('#stats-box').textContent = statsText(); toast('기록을 지웠어요'); } else { b.dataset.armed = '1'; b.textContent = '정말 지울까요? 한 번 더'; setTimeout(() => { delete b.dataset.armed; b.textContent = '기록 지우기'; }, 4000); } }
