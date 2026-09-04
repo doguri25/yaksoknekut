@@ -136,8 +136,8 @@
   /* 단계 표시 칩이 내용을 가리지 않도록 위 여백 확보 */
   #s1, #s2, #s5, #s6, #s8 { padding-top: 88px; }
   #s1, #s2 { justify-content: flex-start; }   /* 타일이 왼쪽 아래 홈 버튼과 겹치지 않게 위에서부터 배치 */
-  #s6 { gap: 14px; }
-  #s6 .preview { height: 320px; }
+  #s6 { gap: 12px; }
+  #s6 .preview { height: 300px; }
   #s8 .preview { height: 336px; }
 
   /* ---------- tiles ---------- */
@@ -283,10 +283,10 @@
     border-radius: 22px; box-shadow: var(--shadow); background: #fff;
   }
   .pwrap { position: relative; }
-  .fname {
-    position: absolute; top: 14px; left: 14px;
+  .fname {   /* 사진 아래에 따로 놓아 사진을 가리지 않음 */
+    margin-top: -2px;
     background: var(--coral); color: #fff; border-radius: 999px;
-    padding: 6px 20px; font: 26px "Jua", "Gowun Dodum", sans-serif;
+    padding: 5px 22px; font: 24px "Jua", "Gowun Dodum", sans-serif;
     box-shadow: 0 3px 0 var(--coral-dark);
   }
   .preview.blink { animation: blink-in .35s ease-out; }
@@ -807,8 +807,8 @@
   <section class="screen" id="s6">
     <div class="pwrap">
       <canvas class="preview" id="filter-preview"></canvas>
-      <div class="fname" id="fname">필터 없음</div>
     </div>
+    <div class="fname" id="fname">필터 없음</div>
     <div class="filters" id="filters"></div>
     <button class="btn" id="btn-filter-ok">이걸로 할래요</button>
     <button class="btn corner" data-go="s5" aria-label="뒤로">
@@ -1188,11 +1188,12 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.8.3';
+  const APP_VERSION = '1.8.4';
   const BUILD_DATE = '2026-09-04';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.8.4', d: '2026-09-04', items: ['필터 고르기 화면: 필터 이름표를 사진 아래로 옮겨 사진을 가리지 않게'] },
     { v: '1.8.3', d: '2026-09-04', items: ['윈도우 앱·시작 파일에서는 브라우저 전체 화면을 따로 요청하지 않음 — \'종료하려면 Esc\' 말풍선이 안 뜸', '교사 메뉴에서 업데이트 주소 입력칸 제거 (주소는 앱이 알아서)'] },
     { v: '1.8.2', d: '2026-09-04', items: ['업데이트 주소가 비어 있으면 GitHub 저장소 주소를 자동으로 채워 저장 (+ [기본 주소로] 단추)', '교사 메뉴에서는 오른쪽 아래 약속네컷 로고 단추를 숨김 (설정창과 겹침)'] },
     { v: '1.8.1', d: '2026-09-04', items: ['윈도우 앱: 교사 메뉴 › 화면·테마에 업데이트 — 인터넷 주소에 올려 둔 새 약속네컷.html로 한 번에 바꾸기 (켤 때 자동 확인 선택, 이전 버전 되돌리기)', '윈도우 앱: 둥근 글꼴(Jua·Sunflower) 내장 — 인터넷 없이도 같은 모양'] },
