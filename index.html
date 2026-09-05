@@ -495,6 +495,10 @@
   #topbtns .ic { width: 18px; height: 18px; }
   #topbtns .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(39,64,58,.10); }
   #app.hasquit #btn-quit { display: inline-flex; }
+  #app.exeready[data-screen="s0"] #btn-restart { display: inline-flex; background: var(--coral); color: #fff; border-color: transparent; box-shadow: 0 3px 0 var(--coral-dark); }   /* 새 실행기를 받아 둔 뒤: [실행기 새 버전 · 다시 시작] */
+  #restart-ask { z-index: 67; }   /* 잠금 화면(66) 위에도 */
+  #restart-ask .panel { max-width: 640px; }
+  #restart-ask .small b { color: var(--coral); font-size: 30px; }
   #app.haslock[data-screen="s0"] #btn-lock { display: inline-flex; }   /* 잠금 비밀번호를 설정하면 첫 화면에 [잠금] */
   #app.haslock #hot { top: 56px; }
   #app.hasquit.hasmon[data-screen="s0"] #btn-mon { display: inline-flex; }   /* 모니터 옮기기는 첫 화면에서만 */
@@ -736,7 +740,7 @@
   .ttoday { display: flex; gap: 22px; align-items: center; margin-top: 12px; padding: 10px 18px; border-radius: 14px; background: #fff; border: 1px solid var(--line); }
   .ttoday b { font: 26px "Jua", sans-serif; color: var(--coral); margin-right: 6px; }
   .tlink { margin-left: auto; border: 0; background: transparent; color: var(--coral); font: 18px "Jua", sans-serif; cursor: pointer; }
-  .tlog { margin: 0; background: #F6FBF8; border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; font: 400 15px/1.6 var(--body-font), sans-serif; color: var(--muted); white-space: pre-wrap; max-height: 104px; overflow-y: auto; }
+  .tlog { margin: 0; background: #F6FBF8; border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; font: 400 15px/1.6 var(--body-font), sans-serif; color: var(--muted); white-space: pre-wrap; max-height: 92px; overflow-y: auto; }
   .tbar { grid-column: 2; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 12px; padding: 0 30px; background: #fff; }
   .tbar-left { margin-right: auto; font-size: 16px; color: var(--muted); }
   .tbar-left b { color: var(--coral); }
@@ -1173,6 +1177,7 @@
   <div id="topbtns">
     <button class="btn" id="btn-mon" aria-label="다른 모니터로 옮기기"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="40" height="26" rx="4"/><path d="M18 42h12M24 34v8"/></svg><span id="btn-mon-text">2번 모니터로 옮기기</span></button>
     <button class="btn" id="btn-lock" aria-label="잠금 화면으로"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="21" width="30" height="21" rx="5"/><path d="M15 21v-6a9 9 0 0 1 18 0v6"/><circle cx="24" cy="31" r="2.6" fill="currentColor"/></svg>잠금</button>
+    <button class="btn" id="btn-restart" aria-label="새 실행기로 다시 시작"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M40 24a16 16 0 1 1-4.7-11.3"/><path d="M40 6v10H30"/></svg><span id="btn-restart-text">실행기 새 버전 · 다시 시작</span></button>
     <button class="btn" id="btn-quit" aria-label="약속네컷 종료"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" aria-hidden="true"><path d="M12 12l24 24M36 12L12 36"/></svg>종료</button>
   </div>
   <!-- 라이선스 자세히 (앱 정보 창 위) -->
@@ -1188,6 +1193,17 @@
       </ul></div>
       <p class="lic-foot">전문: creativecommons.org/licenses/by-nc-nd/4.0/deed.ko</p>
       <button class="btn small" id="btn-lic-close">닫기</button>
+    </div>
+  </div>
+  <!-- 새 실행기로 다시 시작 (윈도우 앱) — 첫 화면에서 3분 쉬면 자동, 10초 카운트다운 -->
+  <div class="overlay" id="restart-ask">
+    <div class="panel">
+      <h2>새 실행기로 다시 시작해요</h2>
+      <p class="small"><b id="restart-n">10</b>초 뒤에 잠깐 닫히고 새 실행기(<span id="restart-v"></span>)로 다시 열려요 · 설정과 기록은 그대로예요</p>
+      <div class="row">
+        <button class="btn small" id="btn-restart-now">지금 다시 시작</button>
+        <button class="btn sec small" id="btn-restart-later">나중에 (다음에 켤 때 적용)</button>
+      </div>
     </div>
   </div>
   <!-- 종료 확인 (윈도우 앱) -->
@@ -1513,12 +1529,13 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.10.2';
-  const LAUNCHER_LATEST = '1.9.9';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
+  const APP_VERSION = '1.10.3';
+  const LAUNCHER_LATEST = '1.9.10';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
   const BUILD_DATE = '2026-09-05';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.10.3', d: '2026-09-05', items: ['윈도우 앱: 실행기 새 버전을 받아 두면 첫 화면 오른쪽 위에 [실행기 새 버전 · 다시 시작] 단추가 뜨고, 누르면 3초쯤 뒤 새 실행기로 켜져요 (안 눌러도 다음에 켤 때 적용). 교사 메뉴 준비 점검·업데이트 줄에도 안내', '첫 화면에서 3분 동안 아무도 안 만지면 10초 카운트다운 뒤 알아서 새 실행기로 다시 시작 (만지면 취소 · 학교·기록·앱 › 업데이트에서 끌 수 있음, 실행기 1.9.10)'] },
     { v: '1.10.2', d: '2026-09-05', items: ['윈도우 앱: exe에 앱 이름·제작자·버전 정보를 넣어 스마트스크린 경고창과 파일 속성에 "약속네컷 · 도구리(홍북초등학교)"가 보이게 (실행기 1.9.9)', 'zip에 "처음 실행할 때" 그림 안내(스마트스크린 → 추가 정보 → 실행) 추가, 안내서 첫 장에도'] },
     { v: '1.10.1', d: '2026-09-05', items: ['윈도우 앱: 윈도우 기본 프린터가 아닌 다른 프린터(알PDF 등)로 출력되던 문제 — 크롬은 마지막에 쓴 프린터를 기억하는데, 켤 때마다 그 기억을 윈도우 기본 프린터와 맞춰요 (실행기 1.9.8, 자동 업데이트)', '준비 점검 › 프린터에 실행기 1.9.8 안내 (옛 실행기면 인쇄 방식을 선택창으로 바꿔 한 번 고르면 해결)'] },
     { v: '1.10.0', d: '2026-09-05', items: ['본문 글꼴 9종 내장 (교사 메뉴 › 화면 › 본문 글꼴) — 메이플스토리체(기본)·넥슨 Lv.2 고딕·나눔스퀘어라운드·LINE Seed KR·학교안심 바른돋움·몽글몽글·쿠키런·강원교육모두체·티머니 둥근바람. 제목·단추는 주아체 그대로', '본문 글꼴이 Sunflower에서 메이플스토리체로 바뀌고, 긴 안내 글은 보통 굵기로 — 인터넷 없이도 글꼴이 나와요(앱 파일 안에 내장)'] },
@@ -1655,7 +1672,7 @@
   const MAX_STICKERS = 12;
 
   /* ===================== 설정 (사진은 저장하지 않음) ===================== */
-  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, hero: {}, promises: {}, promiseLabels: {} };
+  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', autoRestart: true, showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, hero: {}, promises: {}, promiseLabels: {} };
   /* 저장 위치 — 브라우저 저장소(localStorage) + 윈도우 앱이면 실행기 파일(settings.json).
      학교 컴퓨터는 크롬이 닫힐 때 사이트 데이터를 지우는 정책이 걸려 있거나 저장소 쓰기가 막힌 경우가 있어,
      윈도우 앱에서는 실행기에 둔 사본을 먼저 믿고 켤 때 되살린다. */
@@ -2742,12 +2759,34 @@
     showLock('unlock');
   }
   $('#btn-lock').addEventListener('click', e => { e.stopPropagation(); pop(); lockNow(); });
+  // 새 실행기 준비 알림 — 실행기가 배경에서 새 exe를 받아 바꿔 두면 /update/status 에 exeReady 가 생김 (실행기 1.9.10부터)
+  let exeReady = '', restartT = null, restartCancelAt = 0;
+  const RESTART_IDLE_MS = 3 * 60000, RESTART_COUNT = 10;
+  function restartNow() { flushSettings(true); toast('새 실행기로 다시 시작해요… 잠시 뒤 다시 열려요', 5000); setTimeout(() => { location.href = LOCAL + '/update/restart'; }, 400); }
+  function setExeReady(v) {
+    if (!v || exeReady === v) return; exeReady = v;
+    $('#app').classList.add('exeready'); $('#restart-v').textContent = v;
+    toast(`실행기 ${v} 준비됐어요 — 오른쪽 위 [다시 시작]을 누르면 적용돼요 (안 눌러도 다음에 켤 때 적용)`, 7000);
+    if (current === 's10') { const el = $('#teacher'); const y = el.querySelector('#tmain') ? el.querySelector('#tmain').scrollTop : 0; ENTER.s10(); if (el.querySelector('#tmain')) el.querySelector('#tmain').scrollTop = y; }
+  }
+  function restartCountdown() {
+    if (restartT) return; let n = RESTART_COUNT; $('#restart-n').textContent = n; $('#restart-ask').classList.add('on');
+    restartT = setInterval(() => { n--; $('#restart-n').textContent = Math.max(0, n); if (n <= 0) { clearInterval(restartT); restartT = null; $('#restart-ask').classList.remove('on'); restartNow(); } }, 1000);
+  }
+  function restartCancel() { if (restartT) { clearInterval(restartT); restartT = null; } $('#restart-ask').classList.remove('on'); restartCancelAt = Date.now(); lastActive = Date.now(); }
+  $('#btn-restart').addEventListener('click', e => { e.stopPropagation(); pop(); restartNow(); });
+  $('#btn-restart-now').addEventListener('click', e => { e.stopPropagation(); pop(); if (restartT) { clearInterval(restartT); restartT = null; } $('#restart-ask').classList.remove('on'); restartNow(); });
+  $('#btn-restart-later').addEventListener('click', e => { e.stopPropagation(); pop(); restartCancel(); toast('다음에 켤 때 새 실행기로 켜져요'); });
+  $('#restart-ask').addEventListener('click', e => { if (e.target === e.currentTarget) restartCancel(); });   // 바깥을 만져도 취소
+  if (KIOSK && QUIT_PORT && LV) { const poll = () => localJson('/update/status').then(j => { if (j && j.exeReady) setExeReady(j.exeReady); }).catch(() => {}); setTimeout(poll, 25000); setInterval(poll, 60000); }
   // 가만히 두면 자동 잠금 (교사 메뉴 › 학교·기록·앱 › '가만히 두면 잠금', 기본 안 함)
   let lastActive = Date.now();
   ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { lastActive = Date.now(); }, true));
   setInterval(() => {
     const min = +settings.lockAfter || 0;
     if (settings.lockPin && min && !lock.mode && !document.hidden && Date.now() - lastActive >= min * 60000) lockNow();
+    // 새 실행기가 준비됐고 첫 화면에서 3분 동안 아무도 안 만졌으면 10초 카운트다운 뒤 알아서 다시 시작 (만지면 취소, 취소하면 10분 뒤 다시)
+    if (exeReady && settings.autoRestart !== false && current === 's0' && !document.hidden && !restartT && Date.now() - lastActive >= RESTART_IDLE_MS && Date.now() - restartCancelAt >= 10 * 60000) restartCountdown();
     const sec = +settings.attract || 0;
     if (attractOn && (current !== 's0' || lock.mode)) attractHide();
     else if (sec && current === 's0' && !lock.mode && !attractOn && !document.hidden && Date.now() - lastActive >= sec * 1000) attractShow();
@@ -3494,6 +3533,7 @@
             <span class="tchk ${settings.volume ? 'ok' : 'warn'}"><i></i><b>소리</b><span>${['꺼짐', '작게', '보통', '크게'][settings.volume] || '보통'}${settings.volume && settings.voice ? ' · 음성' : ''}</span></span>
             <span class="tchk ok"><i></i><b>완성</b><span>${settings.output === 'board' ? '칠판에 크게' : settings.output === 'both' ? '인쇄 + 칠판' : '인쇄'}</span></span>
             <span class="tchk ${settings.lockPin ? 'ok' : 'info'}"><i></i><b>잠금</b><span>${settings.lockPin ? '설정됨' : '없음'}</span></span>
+            ${exeReady ? `<span class="tchk warn"><i></i><b>실행기</b><span>새 버전 ${exeReady} 준비됨</span><button class="tlink2" data-act="exerestart">지금 다시 시작</button></span>` : ''}
           </div>
           <div class="tquick">
             <div class="tq wide"><h4>행사 세트 <span class="thint">세트를 고르면 그 행사의 액자·문장만 학생에게 보여요</span></h4>${setsGrid}</div>
@@ -3592,14 +3632,14 @@
           ${row('캠페인 문구', `<input type="text" data-text="campaignLine" value="${esc(settings.campaignLine)}" maxlength="24" class="tinput" style="width:420px"><span class="thint">'네컷 액자'의 제목에 바로 반영</span>`)}
           <div class="trow"><div class="tlbl">${sub('기록', '완성·인쇄·세트·약속 문장을 날짜별로 (사진은 저장 안 함)')}</div>
             <div class="tctl" style="align-items:stretch;flex-wrap:nowrap"><pre id="stats-box" class="tlog" style="flex:1;min-width:0">${esc(statsText())}</pre>
-            <div style="display:flex;flex-direction:column;gap:6px;flex:none"><button class="btn sec tiny" data-act="statscopy">기록 복사</button><button class="btn sec tiny" data-act="statsclear">기록 지우기</button></div></div></div>
+            <div style="display:flex;gap:8px;flex:none;align-items:flex-start"><button class="btn sec tiny" data-act="statscopy">기록 복사</button><button class="btn sec tiny" data-act="statsclear">기록 지우기</button></div></div></div>
           <div class="trow"><div class="tlbl">${sub('설정 보관·백업', `<span id="store-state">${esc(storeText())}</span>`)}</div>
             <div class="tctl" style="flex-direction:column;align-items:stretch;gap:4px">
               <div class="tctl">${QUIT_PORT && LV ? '<button class="btn sec tiny" data-act="storetest">지금 저장해 보기</button>' : ''}<button class="btn sec tiny" data-act="bkcopy">설정 코드 복사</button><button class="btn sec tiny" data-act="bkpaste">코드로 복구</button></div>
               <span class="thint">설정 코드 한 줄로 다른 컴퓨터나 초기화 뒤에 복구할 수 있어요 (비밀번호·카메라는 빼고)</span>
               <div id="bk-box" style="display:none"><textarea id="bk-text" class="tinput" style="width:100%;max-width:none;height:84px;font:400 14px/1.4 var(--body-font),sans-serif;resize:none" spellcheck="false" placeholder="여기에 설정 코드를 붙여 넣으세요 (YK2.… 로 시작)"></textarea><div class="tctl" style="margin-top:6px"><button class="btn tiny" data-act="bkapply" id="bk-apply" style="display:none">이 코드로 복구</button><button class="btn sec tiny" data-act="bkclose">닫기</button><span class="thint" id="bk-msg"></span></div></div>
             </div></div>
-          ${QUIT_PORT ? row(sub('업데이트', `앱 v${APP_VERSION} · 실행기 ${LV || '옛 버전'}`), `<button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 새 버전이 있으면 자동으로 바꾸기</span><button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button>`) : ''}
+          ${QUIT_PORT ? row(sub('업데이트', `앱 v${APP_VERSION} · 실행기 ${LV || '옛 버전'}`), `<div class="tctl" style="flex-direction:column;align-items:stretch;gap:4px"><div class="tctl"><button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span>${exeReady ? `<button class="btn tiny" data-act="exerestart">실행기 ${exeReady} 준비됨 · 지금 다시 시작</button>` : ''}<button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button></div><div class="tctl"><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 자동 업데이트</span>${sw('autoRestart', settings.autoRestart !== false)}<span class="thint">새 실행기가 준비되면 첫 화면에서 3분 쉬는 동안 알아서 다시 시작 (만지면 취소)</span></div></div>`) : ''}
           ${row('초기화', `<button class="btn sec tiny" data-act="reset" id="btn-reset">${ic('undo')} 기본 설정으로 되돌리기</button><span class="thint">문구·세트·소리·테마 등 모든 설정이 처음 값으로 · 두 번 눌러요 · 인쇄 매수는 유지</span>`)}
         </div>
       </div>
@@ -3701,6 +3741,7 @@
       else if (a === 'full') { if (!document.fullscreenElement) { wantFull(true); if (!document.documentElement.requestFullscreen) toast('전체 화면을 켤 수 없어요'); } else wantFull(false); }
       else if (a === 'save') { saveSettings(); applyTexts(); applyTheme(); settingsBackup = null; toast('설정을 저장했어요'); go('s0'); }
       else if (a === 'cancel') { if (settingsBackup) { settings = settingsBackup; settingsBackup = null; saveSettings(); applyTexts(); applyTheme(); } toast('바꾼 설정을 되돌렸어요'); go('s0'); }
+      else if (a === 'exerestart') { restartNow(); }
       else if (a === 'close') { quitApp(); if (!QUIT_PORT) setTimeout(() => toast('창이 닫히지 않으면 태블릿 홈 버튼으로 나가세요'), 300); }
       else if (a === 'reset') {
         if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '정말 초기화할까요? 한 번 더 누르면 초기화'; b.classList.remove('sec'); setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.innerHTML = ic('undo') + ' 기본 설정으로 되돌리기'; b.classList.add('sec'); } }, 4000); return; }
@@ -3709,7 +3750,8 @@
       }
     }));
   };
-  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2600); }
+  let toastT = null;
+  function toast(msg, ms) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms || 2600); }
 
   /* ===================== 시작 ===================== */
   if (document.fonts && document.fonts.load) {
@@ -3724,7 +3766,7 @@
   // 키오스크용: 마우스 오른쪽 클릭 메뉴와 길게 눌러 나오는 시스템 메뉴, 드래그로 이미지 끌기 막기
   document.addEventListener('contextmenu', e => e.preventDefault());
   document.addEventListener('dragstart', e => e.preventDefault());
-  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
+  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
   go('s0');
   $('#app').classList.toggle('haslock', !!settings.lockPin);
   if (settings.lockPin) showLock('unlock');   // 잠금 비밀번호가 있으면 켤 때 번호판부터

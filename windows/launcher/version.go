@@ -1,6 +1,7 @@
 package main
 
 // 실행기 버전 (앱이 lv= 로 받아 실행기에 있는 기능을 판단). 앱의 LAUNCHER_LATEST 와 함께 올림.
+// 1.9.10: 배경에서 바꿔 둔 새 실행기를 앱이 알 수 있게(/update/status exeReady) + [다시 시작] 요청(/update/restart)
 // 1.9.9: exe에 버전 정보(앱 이름·제작자·버전) 리소스 — 스마트스크린 창·파일 속성에 표시
 // 1.9.8: 크롬이 기억한 마지막 프린터가 윈도우 기본 프린터와 다르면 지워서 기본 프린터로 출력되게
-const launcherVer = "1.9.9"
+const launcherVer = "1.9.10"

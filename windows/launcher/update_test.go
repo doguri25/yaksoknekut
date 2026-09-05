@@ -158,10 +158,10 @@ func TestEmbeddedAppVersions(t *testing.T) {
 	if err != nil {
 		t.Skip("no embedded html")
 	}
-	if v := htmlVersion(b); v != "1.10.2" {
+	if v := htmlVersion(b); v != "1.10.3" {
 		t.Fatalf("app version %q", v)
 	}
-	if v := htmlLauncherVer(b); v != "1.9.9" {
+	if v := htmlLauncherVer(b); v != "1.9.10" {
 		t.Fatalf("launcher latest %q", v)
 	}
 	if cmpVer(htmlLauncherVer(b), launcherVer) != 0 {

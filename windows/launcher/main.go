@@ -204,6 +204,8 @@ func main() {
 		startMsg = strings.TrimSpace(string(b))
 		os.Remove(pendingPath)
 	}
+	var readyMu sync.Mutex
+	exeReady := "" // 배경에서 받아 바꿔 둔 새 실행기 버전 — 앱이 /update/status 로 보고 [다시 시작]을 안내
 	// 켤 때 자동 업데이트 (주소가 설정되어 있고 끄지 않았을 때, 4초 안에 안 되면 그냥 진행)
 	if u := updateURL(); u != "" && cfg["auto_update"] != "0" {
 		if body, v, err := fetchLatest(u, 3*time.Second); err == nil {
@@ -220,6 +222,9 @@ func main() {
 						if nb, err := fetchExe(xu, lv, 90*time.Second); err == nil {
 							if swapExe(exePath, nb) == nil {
 								os.WriteFile(pendingPath, []byte("upd=exe:"+lv), 0o644)
+								readyMu.Lock()
+								exeReady = lv
+								readyMu.Unlock()
 							}
 						}
 					}()
@@ -408,7 +413,25 @@ func main() {
 				}
 			case "/update/status":
 				_, hasPrev := os.Stat(filepath.Join(appDir, "yaksok-necut.prev.html"))
-				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar})
+				readyMu.Lock()
+				er := exeReady
+				readyMu.Unlock()
+				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar, "exeReady": er})
+			case "/update/restart":
+				// 배경에서 바꿔 둔 새 실행기로 지금 다시 시작 (앱의 [다시 시작] 단추 / 첫 화면에서 3분 쉬면 자동)
+				readyMu.Lock()
+				er := exeReady
+				readyMu.Unlock()
+				if er == "" {
+					jsonOut(map[string]interface{}{"ok": false, "error": "준비된 새 실행기가 없어요"})
+					return
+				}
+				page("새 실행기(" + er + ")로 다시 시작해요… 잠시 뒤 다시 열립니다.")
+				mu.Lock()
+				runNewExe = true
+				mu.Unlock()
+				os.Remove(pendingPath)
+				restart("upd=exe:" + er)
 			case "/update/seturl":
 				u := strings.TrimSpace(r.URL.Query().Get("u"))
 				mu.Lock()
