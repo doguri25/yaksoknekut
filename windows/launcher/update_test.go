@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -112,5 +113,58 @@ func TestSwapExe(t *testing.T) {
 	cleanOldExe(exe)
 	if _, err := os.Stat(filepath.Join(dir, "약속네컷.old.exe")); err == nil {
 		t.Fatal("old exe should be cleaned")
+	}
+}
+
+func TestSyncPrinterPref(t *testing.T) {
+	dir := t.TempDir()
+	p := dir + "/Preferences"
+	app := `{"version":2,"recentDestinations":[{"id":"ALPDF","origin":"local","account":""},{"id":"Canon SELPHY CP1500","origin":"local","account":""}]}`
+	raw := `{"browser":{"last_engagement_time":"13345678901234567"},"big":13345678901234567,"printing":{"print_preview_sticky_settings":{"appState":` + strconvQuote(app) + `},"other":1}}`
+	os.WriteFile(p, []byte(raw), 0o644)
+	// 다른 프린터가 기억돼 있으면 지움
+	ch, err := syncPrinterPref(p, "Canon SELPHY CP1500")
+	if err != nil || !ch {
+		t.Fatalf("expected change, got %v %v", ch, err)
+	}
+	b, _ := os.ReadFile(p)
+	if strings.Contains(string(b), "sticky") || !strings.Contains(string(b), `"other":1`) || !strings.Contains(string(b), "13345678901234567") {
+		t.Fatalf("bad result: %s", b)
+	}
+	// 없으면 그대로
+	if ch, _ := syncPrinterPref(p, "Canon SELPHY CP1500"); ch {
+		t.Fatal("second run should not change")
+	}
+	// 기본 프린터와 같으면 그대로
+	app2 := `{"version":2,"recentDestinations":[{"id":"Canon SELPHY CP1500","origin":"local"}]}`
+	os.WriteFile(p, []byte(`{"printing":{"print_preview_sticky_settings":{"appState":`+strconvQuote(app2)+`}}}`), 0o644)
+	if ch, _ := syncPrinterPref(p, "canon selphy cp1500"); ch {
+		t.Fatal("same printer should be kept")
+	}
+	// 기본 프린터를 모르면(빈 문자열) 기억을 지워 시스템 기본으로
+	if ch, _ := syncPrinterPref(p, ""); !ch {
+		t.Fatal("unknown default should clear")
+	}
+	// 파일 없음 → 오류 없이 false
+	if ch, err := syncPrinterPref(dir+"/none", "x"); ch || err != nil {
+		t.Fatal("missing file")
+	}
+}
+
+func strconvQuote(s string) string { b, _ := json.Marshal(s); return string(b) }
+
+func TestEmbeddedAppVersions(t *testing.T) {
+	b, err := os.ReadFile("yaksok-necut.html")
+	if err != nil {
+		t.Skip("no embedded html")
+	}
+	if v := htmlVersion(b); v != "1.10.2" {
+		t.Fatalf("app version %q", v)
+	}
+	if v := htmlLauncherVer(b); v != "1.9.9" {
+		t.Fatalf("launcher latest %q", v)
+	}
+	if cmpVer(htmlLauncherVer(b), launcherVer) != 0 {
+		t.Fatalf("LAUNCHER_LATEST %s != launcherVer %s", htmlLauncherVer(b), launcherVer)
 	}
 }

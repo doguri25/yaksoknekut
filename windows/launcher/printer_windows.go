@@ -10,7 +10,25 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"unsafe"
 )
+
+// 윈도우 기본 프린터 이름 (winspool GetDefaultPrinterW — PowerShell보다 훨씬 빨라 켤 때마다 불러도 됨). 없으면 ""
+var procGetDefaultPrinter = syscall.NewLazyDLL("winspool.drv").NewProc("GetDefaultPrinterW")
+
+func defaultPrinterName() string {
+	var n uint32
+	procGetDefaultPrinter.Call(0, uintptr(unsafe.Pointer(&n)))
+	if n == 0 || n > 1024 {
+		return ""
+	}
+	buf := make([]uint16, n)
+	r, _, _ := procGetDefaultPrinter.Call(uintptr(unsafe.Pointer(&buf[0])), uintptr(unsafe.Pointer(&n)))
+	if r == 0 {
+		return ""
+	}
+	return syscall.UTF16ToString(buf)
+}
 
 // ---------- 기본 프린터 상태 (교사 메뉴 › 자주 쓰는 설정 › 행사 준비 점검) ----------
 // PowerShell로 윈도우에 물어본다. 1~2초 걸리므로 20초 동안은 같은 답을 돌려준다.
@@ -20,6 +38,7 @@ type printerInfo struct {
 	Status  string `json:"status"` // ready | printing | offline | paper | jam | error | unknown
 	Detail  string `json:"detail"`
 	Default bool   `json:"default"`
+	Fixed   bool   `json:"fixed,omitempty"` // 이번 실행에서 크롬이 기억한 다른 프린터를 지우고 기본 프린터로 맞췄음
 	Error   string `json:"error,omitempty"`
 }
 

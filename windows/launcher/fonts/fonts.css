@@ -1,4 +1,4 @@
-/* 약속네컷 내장 글꼴 — Jua, Sunflower (SIL Open Font License) */
+/* 약속네컷 내장 글꼴 — Jua (SIL Open Font License). 본문 글꼴 9종은 앱 파일(HTML) 안에 내장 */
 @font-face {
   font-family: 'Jua';
   font-style: normal;
@@ -12,32 +12,4 @@
   font-display: block;
   font-weight: 400;
   src: url(jua-latin-400-normal.woff2) format('woff2');
-}
-@font-face {
-  font-family: 'Sunflower';
-  font-style: normal;
-  font-display: block;
-  font-weight: 500;
-  src: url(sunflower-korean-500-normal.woff2) format('woff2');
-}
-@font-face {
-  font-family: 'Sunflower';
-  font-style: normal;
-  font-display: block;
-  font-weight: 500;
-  src: url(sunflower-latin-500-normal.woff2) format('woff2');
-}
-@font-face {
-  font-family: 'Sunflower';
-  font-style: normal;
-  font-display: block;
-  font-weight: 700;
-  src: url(sunflower-korean-700-normal.woff2) format('woff2');
-}
-@font-face {
-  font-family: 'Sunflower';
-  font-style: normal;
-  font-display: block;
-  font-weight: 700;
-  src: url(sunflower-latin-700-normal.woff2) format('woff2');
 }

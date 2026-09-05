@@ -31,8 +31,6 @@ var appHTML []byte
 var fontFS embed.FS
 
 // 기본 업데이트 주소 — 이 저장소의 index.html 이 항상 최신 앱 파일 (교사 메뉴에서 다른 주소로 바꿀 수 있음)
-const launcherVer = "1.9.7" // 실행기 버전 (앱이 lv= 로 받아 실행기에 있는 기능을 판단)
-
 // 실행기 파일 안에 남는 버전 표시 — 새 exe를 받았을 때 진짜 약속네컷 실행기인지·어느 버전인지 확인하는 데 씀
 const launcherMarker = "YAKSOK-LAUNCHER-VER:" + launcherVer
 
@@ -194,6 +192,7 @@ func main() {
 	cleanOldExe(exePath)
 	pendingPath := filepath.Join(dir, "pending-msg.txt") // 조용히 바꾼 실행기가 다음 실행 때 앱에 알려 줄 말
 	cfg := readConfig(cfgPath)
+	printerFixed := false // 이번 실행에서 크롬의 프린터 기억을 기본 프린터로 맞췄는지 (/printer/status 에 알려 줌)
 	updateURL := func() string {
 		if u := strings.TrimSpace(cfg["update_url"]); u != "" {
 			return u
@@ -302,6 +301,10 @@ func main() {
 			exe = edge
 			args = append([]string{"--app=" + pageURL, "--start-fullscreen"}, common...)
 		}
+		// 크롬이 기억한 '마지막 프린터'가 윈도우 기본 프린터와 다르면 지워서 기본 프린터로 나가게 (알PDF 등으로 새는 문제)
+		if changed, _ := syncPrinterPref(prefPathOf(profDir), defaultPrinterName()); changed {
+			printerFixed = true
+		}
 		c := exec.Command(exe, args...)
 		c.Dir = appDir
 		if err := c.Start(); err != nil {
@@ -369,7 +372,9 @@ func main() {
 				mu.Unlock()
 				restart("")
 			case "/printer/status": // 기본 프린터 이름·상태 (행사 준비 점검)
-				jsonOut(printerStatus())
+				st := printerStatus()
+				st.Fixed = printerFixed
+				jsonOut(st)
 			case "/settings/save": // 앱 설정 사본 — 크롬 저장소가 미처 못 쓴 채 꺼져도 다음 실행에 되살림
 				body, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 				if len(body) > 1 && body[0] == '{' {
