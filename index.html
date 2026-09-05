@@ -1331,11 +1331,12 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.9.3';
+  const APP_VERSION = '1.9.4';
   const BUILD_DATE = '2026-09-04';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.9.4', d: '2026-09-05', items: ['윈도우 앱: 설정을 실행기 파일(settings.json)에서 먼저 읽어 켤 때부터 되살림 — 크롬이 닫힐 때 사이트 데이터를 지우는 학교 컴퓨터 정책이 있어도 비밀번호·설정이 유지됨', '교사 메뉴 › 학교·기록·앱에 \'설정 보관\' 상태 표시 (어디에 저장되는지, 실행기 버전, 사본 저장 시각) + [지금 저장해 보기]', '교사 메뉴 왼쪽 위에 실행기 버전 표시 (옛 실행기면 알 수 있게)'] },
     { v: '1.9.3', d: '2026-09-05', items: ['비밀번호·설정을 바꾼 직후 앱을 끄면 저장이 안 되던 문제 수정 — 윈도우 앱이 크롬을 부드럽게 닫고, 설정 사본을 실행기 파일(settings.json)에도 보관해 다음 실행에 되살림 (새 실행 파일)', '잠금: 가만히 두면 자동 잠금 (안 함·3·5·10·30분, 기본 안 함) — 교사 메뉴 › 학교·기록·앱', '첫 화면 오른쪽 위 [잠금] 단추 (비밀번호를 설정한 경우)'] },
     { v: '1.9.2', d: '2026-09-05', items: ['윈도우 앱: 인쇄 방식 선택 — 기본 프린터로 바로 출력(지금까지 방식) / [뽑기]마다 프린터 선택창 (교사 메뉴 › 완성·인쇄, 새 실행 파일 필요)', '잠금 비밀번호(숫자 4자리) — 교사 메뉴 › 학교·기록·앱에서 설정하면 앱을 켤 때와 교사 메뉴에 들어갈 때 스마트폰식 번호판이 떠요 (기본은 꺼짐)', '교사 메뉴 왼쪽 아래 [저장하고 잠그기] (비밀번호를 설정한 경우)'] },
     { v: '1.9.1', d: '2026-09-04', items: ['행사 세트를 고르면 첫 화면이 그 행사 분위기로 — 배경·태그 색, 부제 문장, 행사 그림(케이크·학사모·트리·풍선 등), 흩날림(눈·색종이·꽃잎·별·풍선·만국기), 약속이 소품(산타 모자·고깔·학사모·꽃·머리띠·토끼 귀·안경)', '첫 화면 사진 카드가 그 세트의 실제 액자로 바뀜', '교사 메뉴 › 행사 세트에 첫 화면 부제 편집 추가', '학교폭력예방·일상 세트는 지금 모습 그대로'] },
@@ -1431,11 +1432,11 @@
   const T = { idle: 30, decorate: 60, decorateMore: 30, ready: 8, done: 4, warn: 3, review: 1200, gap: 300 };
   const KIOSK = /[?&]kiosk=1/.test(location.search);   // 윈도우 자동 인쇄(--kiosk-printing) 실행 여부
   const QUIT_PORT = +((location.search.match(/[?&]quit=(\d+)/) || [])[1] || 0);   // 윈도우 실행기(exe)가 켠 '앱 종료' 통로
-  const quitApp = () => { if (QUIT_PORT) { flushSettings(); location.href = 'http://127.0.0.1:' + QUIT_PORT + '/quit'; } else window.close(); };
+  const quitApp = () => { if (QUIT_PORT) { flushSettings(true); location.href = 'http://127.0.0.1:' + QUIT_PORT + '/quit'; } else window.close(); };
   // 모니터 (윈도우 앱): 실행기가 알려 준 모니터 수와 지금 보여 주는 모니터 번호
   const MONITORS = +((location.search.match(/[?&]monitors=(\d+)/) || [])[1] || 1);
   const MONITOR = +((location.search.match(/[?&]monitor=(\d+)/) || [])[1] || 1);
-  const moveToMonitor = n => { if (QUIT_PORT) { flushSettings(); location.href = 'http://127.0.0.1:' + QUIT_PORT + '/monitor?n=' + n; } };
+  const moveToMonitor = n => { if (QUIT_PORT) { flushSettings(true); location.href = 'http://127.0.0.1:' + QUIT_PORT + '/monitor?n=' + n; } };
   const nextMonitor = () => MONITOR >= MONITORS ? 1 : MONITOR + 1;
   const LOCAL = QUIT_PORT ? 'http://127.0.0.1:' + QUIT_PORT : '';
   const localJson = async (path) => { const r = await fetch(LOCAL + path, { cache: 'no-store' }); return r.json(); };
@@ -1464,11 +1465,22 @@
 
   /* ===================== 설정 (사진은 저장하지 않음) ===================== */
   const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, hero: {}, promises: {}, promiseLabels: {} };
+  /* 저장 위치 — 브라우저 저장소(localStorage) + 윈도우 앱이면 실행기 파일(settings.json).
+     학교 컴퓨터는 크롬이 닫힐 때 사이트 데이터를 지우는 정책이 걸려 있거나 저장소 쓰기가 막힌 경우가 있어,
+     윈도우 앱에서는 실행기에 둔 사본을 먼저 믿고 켤 때 되살린다. */
+  const STORE = { where: '브라우저', mirror: '', restored: false };   // 교사 메뉴 '설정 보관' 표시용
   let settings = loadSettings();
   function loadSettings() {
-    try { const j = localStorage.getItem('yaksok-settings'); if (j) return Object.assign({}, DEFAULTS, JSON.parse(j)); } catch (e) {}
-    return Object.assign({}, DEFAULTS);
+    let local = null;
+    try { const j = localStorage.getItem('yaksok-settings'); if (j) local = JSON.parse(j); } catch (e) {}
+    let mirror = null;
+    if (QUIT_PORT && LV) {   // 실행기 사본을 (켤 때 한 번) 동기적으로 읽음 — 첫 화면부터 되살린 설정으로
+      try { const x = new XMLHttpRequest(); x.open('GET', LOCAL + '/settings/load', false); x.send(); if (x.status === 200 && x.responseText && x.responseText !== 'null') mirror = JSON.parse(x.responseText); STORE.where = '실행기 파일 + 브라우저'; } catch (e) { STORE.where = '브라우저 (실행기 연결 안 됨)'; }
+      if (mirror && typeof mirror === 'object' && (!local || (mirror._ts || 1) >= (local._ts || 0))) { STORE.restored = !local || (mirror._ts || 1) > (local._ts || 0); local = mirror; }
+    }
+    return Object.assign({}, DEFAULTS, local || {});
   }
+  if (QUIT_PORT && LV && STORE.restored) { try { localStorage.setItem('yaksok-settings', JSON.stringify(settings)); } catch (e) {} }
   let mirrorT = null;
   function saveSettings() {
     settings._ts = Date.now();   // 마지막으로 바꾼 때 — 실행기에 둔 사본과 비교용
@@ -1477,8 +1489,17 @@
     $('#app').classList.toggle('haslock', !!settings.lockPin);
     if ($('#app').dataset.screen === 's10') refreshTBar();
   }
-  // 설정 사본을 실행기에 바로 보냄 (앱을 닫거나 다시 열기 직전에 — 크롬이 저장소를 미처 못 써도 사라지지 않게)
-  function flushSettings() { clearTimeout(mirrorT); if (!(QUIT_PORT && LV)) return; try { if (!navigator.sendBeacon(LOCAL + '/settings/save', JSON.stringify(settings))) fetch(LOCAL + '/settings/save', { method: 'POST', body: JSON.stringify(settings), keepalive: true }).catch(() => {}); } catch (e) {} }
+  // 설정 사본을 실행기에 보냄 (바꾼 뒤·앱을 닫거나 다시 열기 직전 — 크롬이 저장소를 못 써도 사라지지 않게)
+  function flushSettings(beacon) {
+    clearTimeout(mirrorT); if (!(QUIT_PORT && LV)) return;
+    const body = JSON.stringify(settings), stamp = () => new Date().toTimeString().slice(0, 8);
+    try {
+      if (beacon) { STORE.mirror = (navigator.sendBeacon(LOCAL + '/settings/save', body) ? '보냄 ' : '실패 ') + stamp(); return; }
+      fetch(LOCAL + '/settings/save', { method: 'POST', body, keepalive: true }).then(r => r.json()).then(j => { STORE.mirror = (j && j.ok ? '저장됨 ' : '실패 ') + stamp(); const e = document.getElementById('store-state'); if (e) e.textContent = storeText(); }).catch(() => { STORE.mirror = '실패 ' + stamp(); });
+    } catch (e) { STORE.mirror = '실패 ' + stamp(); }
+  }
+  const storeText = () => QUIT_PORT ? (LV ? `실행기 v${LV} · 사본 ${STORE.mirror || (STORE.restored ? '복구됨' : '아직 없음')}` : '옛 실행기 — 브라우저에만 저장돼요. 새 약속네컷.exe로 바꾸면 실행기 파일에도 보관해요') : '이 브라우저의 사이트 데이터에 저장돼요';
+  window.addEventListener('pagehide', () => flushSettings(true));
   const frameOn = f => settings.frames[f.id] !== false;
   const catOn = c => settings.cats[c.id] !== false;
 
@@ -3085,7 +3106,7 @@
     el.innerHTML = `
       <aside class="tside">
         <h2>교사 메뉴</h2>
-        <div class="tver">v${APP_VERSION} · ${BUILD_DATE}<br>${KIOSK ? '윈도우 앱' : BRIDGE ? '안드로이드 앱' : '브라우저'} · ${FILTER_OK ? '캔버스 필터' : '픽셀 필터'}</div>
+        <div class="tver">v${APP_VERSION} · ${BUILD_DATE}<br>${KIOSK ? '윈도우 앱 · 실행기 ' + (LV || '옛 버전') : BRIDGE ? '안드로이드 앱' : '브라우저'} · ${FILTER_OK ? '캔버스 필터' : '픽셀 필터'}</div>
         <nav class="tnav">${TTABS.map(t => t ? `<button class="ttab${t[0] === 'quick' ? ' star' : ''}${teacherTab === t[0] ? ' on' : ''}" data-tab="${t[0]}">${ic(t[1])}${t[2]}</button>` : '<div class="tgap"></div>').join('')}</nav>
         <div class="tfoot">
           ${QUIT_PORT && MONITORS > 1 ? `<button class="tfbtn" data-act="monnext">${MONITOR}번 모니터 → ${nextMon}번으로</button>` : ''}
@@ -3178,6 +3199,7 @@
           <div class="trow"><div class="tlbl">${sub('기록', '날짜별 완성·인쇄·세트')}</div>
             <div class="tctl" style="flex-direction:column;align-items:stretch;gap:8px"><pre id="stats-box" class="tlog">${esc(statsText())}</pre>
             <div class="tctl"><button class="btn sec tiny" data-act="statscopy">기록 복사</button><button class="btn sec tiny" data-act="statsclear">기록 지우기</button><span class="thint">완성한 사진 수·인쇄 매수·세트·많이 고른 약속을 날짜별로 세어요</span></div></div></div>
+          ${row(sub('설정 보관', '어디에 저장되나'), `<span class="thint" id="store-state">${esc(storeText())}</span>${QUIT_PORT && LV ? '<button class="btn sec tiny" data-act="storetest">지금 저장해 보기</button>' : ''}`)}
           ${QUIT_PORT ? row(sub('업데이트', `지금 v${APP_VERSION}`), `<button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 새 버전이 있으면 자동으로 바꾸기</span><button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button>`) : ''}
           ${row(sub('잠금 비밀번호', settings.lockPin ? '설정됨 ● ● ● ●' : '설정 안 됨'), `<button class="btn sec tiny" data-act="pinset">${ic('lock')} ${settings.lockPin ? '비밀번호 바꾸기' : '비밀번호 설정'}</button>${settings.lockPin ? '<button class="btn sec tiny" data-act="pinclear">비밀번호 지우기</button>' : ''}<span class="thint">숫자 4자리 · 설정하면 앱을 켤 때와 교사 메뉴에 들어갈 때 번호판이 떠요</span>`)}
           ${settings.lockPin ? row('가만히 두면 잠금', `${seg('lockAfter', [[0, '안 함'], [3, '3분'], [5, '5분'], [10, '10분'], [30, '30분']])}<span class="thint">이 시간 동안 아무도 만지지 않으면 잠금 화면으로 (교사 메뉴에서도)</span>`) : ''}
@@ -3202,7 +3224,7 @@
     el.querySelectorAll('[data-pmode]').forEach(b => b.addEventListener('click', () => {
       pop(); const dialog = b.dataset.pmode === 'dialog'; if (dialog === PDLG) return;
       if (!LV) { toast('인쇄 방식 바꾸기는 새 실행 파일(약속네컷.exe)이 필요해요 — 윈도우 앱 zip을 다시 받아 바꿔 주세요'); return; }
-      saveSettings(); settingsBackup = null; flushSettings(); toast('인쇄 방식을 바꾸는 중… 잠시 뒤 다시 열려요');
+      saveSettings(); settingsBackup = null; flushSettings(true); toast('인쇄 방식을 바꾸는 중… 잠시 뒤 다시 열려요');
       setTimeout(() => { location.href = LOCAL + '/print/mode?dialog=' + (dialog ? 1 : 0); }, 400);
     }));
     if (QUIT_PORT) localJson('/update/status').then(j => {
@@ -3234,9 +3256,10 @@
       else if (a === 'resetcount') { settings.printCount = 0; saveSettings(); $('#pc').textContent = '0'; }
       else if (a === 'monnext') { pop(); if (nextMon && nextMon !== MONITOR) moveToMonitor(nextMon); }
       else if (a === 'pinset') { pop(); showLock('set', () => { ENTER.s10(); }); }
+      else if (a === 'storetest') { pop(); saveSettings(); flushSettings(); toast('실행기에 설정 사본을 보냈어요 — 잠시 뒤 상태를 확인하세요'); }
       else if (a === 'pinclear') { if (b.dataset.armed) { settings.lockPin = ''; saveSettings(); ENTER.s10(); toast('비밀번호를 지웠어요 — 잠금 없이 켜져요'); } else { b.dataset.armed = '1'; b.textContent = '정말 지울까요? 한 번 더'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = '비밀번호 지우기'; } }, 4000); } }
       else if (a === 'locknow') { lockNow(); toast('설정을 저장하고 잠갔어요'); }
-      else if (a === 'updcheck') { const out = el.querySelector('#upd-result'); out.textContent = '확인 중…'; localJson('/update/check').then(j => { if (j.error) { out.textContent = '확인 실패: ' + j.error; return; } if (j.newer) { out.innerHTML = `새 버전 <b>${j.latest}</b>이 있어요 `; const go = document.createElement('button'); go.className = 'btn tiny'; go.textContent = '지금 업데이트'; go.addEventListener('click', () => { pop(); flushSettings(); toast('업데이트 중… 잠시 뒤 다시 열려요'); setTimeout(() => { location.href = LOCAL + '/update/apply'; }, 400); }); out.appendChild(go); } else out.textContent = `최신 버전이에요 (${j.latest})`; }).catch(() => { out.textContent = '실행기와 연결되지 않아요'; }); }
+      else if (a === 'updcheck') { const out = el.querySelector('#upd-result'); out.textContent = '확인 중…'; localJson('/update/check').then(j => { if (j.error) { out.textContent = '확인 실패: ' + j.error; return; } if (j.newer) { out.innerHTML = `새 버전 <b>${j.latest}</b>이 있어요 `; const go = document.createElement('button'); go.className = 'btn tiny'; go.textContent = '지금 업데이트'; go.addEventListener('click', () => { pop(); flushSettings(true); toast('업데이트 중… 잠시 뒤 다시 열려요'); setTimeout(() => { location.href = LOCAL + '/update/apply'; }, 400); }); out.appendChild(go); } else out.textContent = `최신 버전이에요 (${j.latest})`; }).catch(() => { out.textContent = '실행기와 연결되지 않아요'; }); }
       else if (a === 'updback') { if (b.dataset.armed) { toast('이전 버전으로 되돌리는 중…'); setTimeout(() => { location.href = LOCAL + '/update/rollback'; }, 400); } else { b.dataset.armed = '1'; b.textContent = '정말 되돌릴까요? 한 번 더'; setTimeout(() => { delete b.dataset.armed; b.textContent = '이전 버전으로 되돌리기'; }, 4000); } }
       else if (a === 'statscopy') { const t = statsText(); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('기록을 복사했어요 — 보고서에 붙여 넣으세요'), () => { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('기록을 복사했어요'); } catch (e) { toast('복사가 안 돼요 — 화면의 기록을 보고 적어 주세요'); } ta.remove(); }); }
       else if (a === 'statsclear') { if (b.dataset.armed) { localStorage.removeItem(STATS_KEY); delete b.dataset.armed; b.textContent = '기록 지우기'; $('#stats-box').textContent = statsText(); toast('기록을 지웠어요'); } else { b.dataset.armed = '1'; b.textContent = '정말 지울까요? 한 번 더'; setTimeout(() => { delete b.dataset.armed; b.textContent = '기록 지우기'; }, 4000); } }
@@ -3281,14 +3304,7 @@
   go('s0');
   $('#app').classList.toggle('haslock', !!settings.lockPin);
   if (settings.lockPin) showLock('unlock');   // 잠금 비밀번호가 있으면 켤 때 번호판부터
-  // 윈도우 앱: 실행기에 둔 설정 사본이 더 새것이면(크롬이 저장소를 못 쓰고 꺼진 경우) 그것으로 되살림
-  if (QUIT_PORT && LV) localJson('/settings/load').then(d => {
-    if (!d || typeof d !== 'object' || !(d._ts > (settings._ts || 0))) return;
-    settings = Object.assign({}, DEFAULTS, d); try { localStorage.setItem('yaksok-settings', JSON.stringify(settings)); } catch (e) {}
-    applyTexts(); applyTheme(); $('#app').classList.toggle('haslock', !!settings.lockPin);
-    if (settings.lockPin && !lock.mode) showLock('unlock');
-    if (current === 's0') seasonStart();
-  }).catch(() => {});
+  if (QUIT_PORT && LV && STORE.restored) setTimeout(() => toast('실행기에 보관한 설정으로 되살렸어요'), 1200);
 })();
 </script>
 

@@ -31,7 +31,7 @@ var appHTML []byte
 var fontFS embed.FS
 
 // 기본 업데이트 주소 — 이 저장소의 index.html 이 항상 최신 앱 파일 (교사 메뉴에서 다른 주소로 바꿀 수 있음)
-const launcherVer = "1.9.3" // 실행기 버전 (앱이 lv= 로 받아 실행기에 있는 기능을 판단)
+const launcherVer = "1.9.4" // 실행기 버전 (앱이 lv= 로 받아 실행기에 있는 기능을 판단)
 
 const defaultUpdateURL = "https://raw.githubusercontent.com/doguri25/yaksoknekut/master/index.html"
 
