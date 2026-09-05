@@ -30,6 +30,8 @@ var appHTML []byte
 var fontFS embed.FS
 
 // 기본 업데이트 주소 — 이 저장소의 index.html 이 항상 최신 앱 파일 (교사 메뉴에서 다른 주소로 바꿀 수 있음)
+const launcherVer = "1.9.2" // 실행기 버전 (앱이 lv= 로 받아 실행기에 있는 기능을 판단)
+
 const defaultUpdateURL = "https://raw.githubusercontent.com/doguri25/yaksoknekut/master/index.html"
 
 var user32 = syscall.NewLazyDLL("user32.dll")
@@ -213,14 +215,16 @@ func main() {
 	nextMsg := startMsg
 
 	launch := func(msg string) *exec.Cmd {
-		q := fmt.Sprintf("kiosk=1&quit=%d&monitors=%d&monitor=%d", port, len(mons), monIdx)
+		q := fmt.Sprintf("kiosk=1&quit=%d&monitors=%d&monitor=%d&lv=%s", port, len(mons), monIdx, launcherVer)
+		if cfg["print_dialog"] == "1" {
+			q += "&pdlg=1" // 인쇄 방식: 프린터 선택창 (기본은 기본 프린터로 바로 출력)
+		}
 		if msg != "" {
 			q += "&" + msg
 		}
 		u := &url.URL{Scheme: "file", Path: "/" + strings.ReplaceAll(htmlPath, `\`, "/"), RawQuery: q}
 		pageURL := u.String()
 		common := []string{
-			"--kiosk-printing",
 			"--use-fake-ui-for-media-stream",
 			"--autoplay-policy=no-user-gesture-required",
 			"--no-first-run", "--no-default-browser-check",
@@ -228,6 +232,9 @@ func main() {
 			"--disable-features=TranslateUI,MediaFoundationD3D11VideoCapture",
 			"--disable-session-crashed-bubble", "--hide-crash-restore-bubble",
 			"--user-data-dir=" + profDir,
+		}
+		if cfg["print_dialog"] != "1" {
+			common = append(common, "--kiosk-printing") // 확인창 없이 기본 프린터로 바로 출력
 		}
 		if len(mons) > 1 && monIdx >= 1 && monIdx <= len(mons) {
 			m := mons[monIdx-1]
@@ -311,6 +318,22 @@ func main() {
 				writeConfig(cfgPath, cfg)
 				mu.Unlock()
 				restart("")
+			case "/print/mode": // 인쇄 방식 바꾸기 — 크롬 실행 옵션이 달라져 다시 연다
+				dialog := r.URL.Query().Get("dialog") == "1"
+				page("인쇄 방식을 바꾸는 중…")
+				mu.Lock()
+				if dialog {
+					cfg["print_dialog"] = "1"
+				} else {
+					delete(cfg, "print_dialog")
+				}
+				writeConfig(cfgPath, cfg)
+				mu.Unlock()
+				if dialog {
+					restart("pmode=dialog")
+				} else {
+					restart("pmode=auto")
+				}
 			case "/update/status":
 				_, hasPrev := os.Stat(filepath.Join(appDir, "yaksok-necut.prev.html"))
 				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil})

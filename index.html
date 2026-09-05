@@ -527,6 +527,29 @@
   }
   .overlay.on { display: grid; }
   #backdrop { position: fixed; inset: 0; display: none; background: rgba(39, 64, 58, .18); z-index: 1; }
+  /* ---------- 잠금 화면 (비밀번호 번호판) ---------- */
+  .lock { position: absolute; inset: 0; z-index: 66; display: none; align-items: center; justify-content: center; background: radial-gradient(circle at 14% 20%, var(--hero-a), transparent 28%), radial-gradient(circle at 88% 84%, var(--hero-b), transparent 28%), var(--bg); }
+  .lock.on { display: flex; }
+  .lock-card { position: relative; background: #fff; border-radius: 34px; box-shadow: var(--shadow); padding: 20px 46px 18px; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 460px; }
+  .lock-card .mascot { width: 80px; height: auto; }
+  .lock-card h2 { font-size: 32px; margin: 0; line-height: 1.2; }
+  .lock-sub { margin: 0; color: var(--muted); font-size: 18px; text-align: center; }
+  .pin-dots { display: flex; gap: 18px; margin: 4px 0 4px; }
+  .pin-dots i { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--coral); background: #fff; transition: background .12s; }
+  .pin-dots i.on { background: var(--coral); }
+  .pin-dots.shake { animation: pin-shake .45s; }
+  @keyframes pin-shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-12px); } 40%, 80% { transform: translateX(12px); } }
+  .keypad { display: grid; grid-template-columns: repeat(3, 76px); gap: 8px 14px; }
+  .keypad button { width: 76px; height: 76px; border-radius: 50%; border: 0; background: var(--bg); color: var(--ink); font: 36px "Jua", sans-serif; cursor: pointer; touch-action: manipulation; box-shadow: 0 4px 0 var(--line); display: grid; place-items: center; padding: 0; }
+  .keypad button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+  .keypad button.fn { background: transparent; box-shadow: none; color: var(--muted); }
+  .keypad button.fn .ic { width: 34px; height: 34px; }
+  .keypad button.blank { visibility: hidden; }
+  .lock-msg { min-height: 24px; margin: 0; font-size: 17px; color: #D6336C; }
+  .lock-links { display: flex; gap: 22px; margin-top: 2px; }
+  .lock-links button { border: 0; background: transparent; color: var(--muted); font: 700 16px "Sunflower", sans-serif; text-decoration: underline; cursor: pointer; touch-action: manipulation; }
+  .lock-help { display: none; max-width: 520px; margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); background: var(--bg); border-radius: 12px; padding: 10px 14px; text-align: left; }
+  .lock-help.on { display: block; }
   #backdrop.on { display: block; }
   .panel {
     background: #fff; border-radius: 34px; padding: 44px 48px;
@@ -560,6 +583,7 @@
   .tfoot { margin-top: auto; padding: 0 4px; display: flex; flex-direction: column; gap: 6px; }
   .tfbtn { border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 8px 12px; font: 16px "Jua", "Sunflower", sans-serif; color: var(--ink); text-align: left; cursor: pointer; touch-action: manipulation; }
   .tfbtn:active { background: var(--bg); }
+  .tfbtn .ic { width: 18px; height: 18px; vertical-align: -3px; margin-right: 4px; }
   /* 오른쪽 내용 */
   .tmain { min-height: 0; overflow-y: auto; padding: 22px 30px 12px; }
   .thead { display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -1039,6 +1063,24 @@
     <div class="panel"><h2>태블릿을 가로로<br>돌려 주세요</h2><div class="rotate-ic"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21a16 16 0 0 1 28-9"/><path d="M36 4v8h-8"/><path d="M40 27a16 16 0 0 1-28 9"/><path d="M12 44v-8h8"/></svg></div></div>
   </div>
 
+  <!-- 잠금 화면: 교사 메뉴 › 학교·기록·앱에서 비밀번호를 설정하면 앱을 켤 때와 교사 메뉴에 들어갈 때 뜸 -->
+  <div class="lock" id="lock" aria-hidden="true">
+    <div class="lock-card">
+      <span id="lock-mascot"></span>
+      <h2 id="lock-title">잠겨 있어요</h2>
+      <p class="lock-sub" id="lock-sub">선생님이 비밀번호를 눌러 주세요</p>
+      <div class="pin-dots" id="pin-dots"><i></i><i></i><i></i><i></i></div>
+      <div class="keypad" id="keypad">
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+        <button class="blank" tabindex="-1" aria-hidden="true"></button><button data-k="0">0</button><button class="fn" data-k="del" aria-label="지우기"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 10h24a3 3 0 0 1 3 3v22a3 3 0 0 1-3 3H17L5 24z"/><path d="M24 18l12 12M36 18L24 30"/></svg></button>
+      </div>
+      <p class="lock-msg" id="lock-msg"></p>
+      <div class="lock-links"><button id="lock-forgot">비밀번호를 잊었어요</button><button id="lock-cancel">취소</button></div>
+      <p class="lock-help" id="lock-help"></p>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 </div>
 
@@ -1286,11 +1328,12 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.9.1';
+  const APP_VERSION = '1.9.2';
   const BUILD_DATE = '2026-09-04';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.9.2', d: '2026-09-05', items: ['윈도우 앱: 인쇄 방식 선택 — 기본 프린터로 바로 출력(지금까지 방식) / [뽑기]마다 프린터 선택창 (교사 메뉴 › 완성·인쇄, 새 실행 파일 필요)', '잠금 비밀번호(숫자 4자리) — 교사 메뉴 › 학교·기록·앱에서 설정하면 앱을 켤 때와 교사 메뉴에 들어갈 때 스마트폰식 번호판이 떠요 (기본은 꺼짐)', '교사 메뉴 왼쪽 아래 [저장하고 잠그기] (비밀번호를 설정한 경우)'] },
     { v: '1.9.1', d: '2026-09-04', items: ['행사 세트를 고르면 첫 화면이 그 행사 분위기로 — 배경·태그 색, 부제 문장, 행사 그림(케이크·학사모·트리·풍선 등), 흩날림(눈·색종이·꽃잎·별·풍선·만국기), 약속이 소품(산타 모자·고깔·학사모·꽃·머리띠·토끼 귀·안경)', '첫 화면 사진 카드가 그 세트의 실제 액자로 바뀜', '교사 메뉴 › 행사 세트에 첫 화면 부제 편집 추가', '학교폭력예방·일상 세트는 지금 모습 그대로'] },
     { v: '1.9.0', d: '2026-09-04', items: ['교사 메뉴 새 배치 — 왼쪽 세로 메뉴(자주 쓰는 설정 · 행사 세트 · 약속 문장 · 촬영 · 완성·인쇄 · 소리 · 화면 · 학교·기록·앱), 각 페이지가 한 화면에 들어오게 정리', '자주 쓰는 설정 첫 화면 — 행사 세트·완성 사진은·인쇄 매수·소리·카운트다운과 오늘 기록 한 줄', '액자 켜고 끄기를 작은 미리보기 카드로, 긴 설명은 ⓘ 단추 뒤로, 켜기/끄기는 스위치 모양으로, 아래 저장 바에 바꾼 항목 수 표시', '설정 값과 기본값은 그대로 (저장해 둔 설정 유지)'] },
     { v: '1.8.5', d: '2026-09-04', items: ['교사 메뉴 › 프린터에 인쇄 크기 (90~110%, 2%씩) — 가장자리가 잘리거나 흰 테두리가 남는 프린터 보정 (기본 100%, 지금과 같음)', '크리스마스·새해 세트와 어린이날 세트 추가 (액자 4종씩, 전용 스티커, 문장·첫 화면 문구)', '가운뎃점(·)이 든 이름(입학·환영, 촬영·흐름 등)의 글자 높이가 다른 항목과 어긋나던 문제 수정 — 점 글꼴을 내장'] },
@@ -1394,6 +1437,9 @@
   const localJson = async (path) => { const r = await fetch(LOCAL + path, { cache: 'no-store' }); return r.json(); };
   // 실행기가 업데이트 결과를 주소에 실어 보내면 첫 화면에서 알려 줌 (upd=ok:1.8.1 / err:... / back:1.8.0 / auto:1.8.1)
   const UPD_MSG = (location.search.match(/[?&]upd=([^&]+)/) || [])[1];
+  const PDLG = /[?&]pdlg=1/.test(location.search);   // 윈도우 앱 인쇄 방식: 프린터 선택창 (없으면 기본 프린터로 바로 출력)
+  const LV = (location.search.match(/[?&]lv=([^&]+)/) || [])[1] || '';   // 실행기(exe) 버전 — 없으면 인쇄 방식 바꾸기가 안 되는 옛 실행기
+  const PMODE_MSG = (location.search.match(/[?&]pmode=([^&]+)/) || [])[1];
   const DEFAULT_UPDATE_URL = 'https://raw.githubusercontent.com/doguri25/yaksoknekut/master/index.html';   // 이 저장소의 최신 앱 파일
   // 기기 종류 (음성·인쇄 방식을 기기에 맞게 고르는 데 씀)
   const UA = navigator.userAgent || '';
@@ -1413,7 +1459,7 @@
   const MAX_STICKERS = 12;
 
   /* ===================== 설정 (사진은 저장하지 않음) ===================== */
-  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, hero: {}, promises: {}, promiseLabels: {} };
+  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', hero: {}, promises: {}, promiseLabels: {} };
   let settings = loadSettings();
   function loadSettings() {
     try { const j = localStorage.getItem('yaksok-settings'); if (j) return Object.assign({}, DEFAULTS, JSON.parse(j)); } catch (e) {}
@@ -1493,6 +1539,7 @@
   }
   const beepGo = () => tone(1320, .3);
   const pop = () => tone(620, .08, 'square', .07);
+  const buzz = () => { tone(220, .18, 'square', .08, 0); tone(200, .18, 'square', .08, .12); };   // 비밀번호 틀림
   const chime = () => { tone(784, .25, 'triangle', .2, 0); tone(988, .25, 'triangle', .2, .15); tone(1319, .5, 'triangle', .2, .3); };
   // 음성 안내 (브라우저 내장 한국어 음성 사용, 교사 메뉴에서 끄거나 목소리를 고를 수 있음)
   let voices = [], ttsStatus = '', ttsLastVoice = '', lastUtter = null;
@@ -2330,7 +2377,8 @@
   applyTexts();
   $('#btn-about-close').addEventListener('click', () => { pop(); $('#about').classList.remove('on'); });
   // 교사 설정: 앱 정보 창의 버튼을 누르면 바로 열림 (대기 화면 오른쪽 위 5초 누르기도 그대로 됨)
-  $('#btn-teacher-hold').addEventListener('click', () => { $('#about').classList.remove('on'); pop(); go('s10'); });
+  function openTeacher() { if (settings.lockPin) showLock('teacher', () => go('s10')); else go('s10'); }   // 비밀번호가 있으면 번호판 먼저
+  $('#btn-teacher-hold').addEventListener('click', () => { $('#about').classList.remove('on'); pop(); openTeacher(); });
   $('#about').addEventListener('click', e => { if (e.target === e.currentTarget) $('#about').classList.remove('on'); });
 
   /* ---------- 전체 화면 유지 ----------
@@ -2354,6 +2402,7 @@
     const [kind, ...rest] = decodeURIComponent(UPD_MSG).split(':'), v = rest.join(':');
     toast(kind === 'ok' ? `약속네컷을 ${v} 버전으로 업데이트했어요` : kind === 'auto' ? `새 버전 ${v}으로 자동 업데이트했어요` : kind === 'back' ? `이전 버전(${v})으로 되돌렸어요` : `업데이트하지 못했어요: ${v}`);
   }, 900);
+  if (PMODE_MSG) setTimeout(() => toast(PMODE_MSG === 'dialog' ? '이제 [뽑기]를 누르면 프린터 선택창이 떠요' : '이제 기본 프린터로 바로 출력돼요'), 900);
   if (QUIT_PORT && MONITORS > 1) {
     $('#app').classList.add('hasmon');
     $('#btn-mon-text').textContent = MONITORS === 2 ? `${nextMonitor()}번 모니터로 옮기기` : `다음 모니터로 (지금 ${MONITOR}번)`;
@@ -2363,6 +2412,44 @@
   $('#btn-quit-no').addEventListener('click', () => { pop(); $('#quit-ask').classList.remove('on'); });
   $('#btn-quit-yes').addEventListener('click', () => { pop(); quitApp(); });
   $('#quit-ask').addEventListener('click', e => { if (e.target === e.currentTarget) $('#quit-ask').classList.remove('on'); });
+
+  /* ---------- 잠금 화면 · 번호판 (숫자 4자리) ----------
+     mode: 'unlock' 앱을 켤 때·[지금 잠그기] (취소 없음) / 'teacher' 교사 메뉴 들어갈 때 / 'set' 새 비밀번호(두 번 입력) */
+  const lock = { mode: null, buf: '', first: '', onOk: null };
+  const LOCK_TEXT = { unlock: ['잠겨 있어요', '선생님이 비밀번호를 눌러 주세요'], teacher: ['교사 메뉴', '비밀번호를 눌러 주세요'], set: ['새 비밀번호', '숫자 4자리를 눌러 주세요'] };
+  function lockDots() { $$('#pin-dots i').forEach((d, i) => d.classList.toggle('on', i < lock.buf.length)); }
+  function showLock(mode, onOk) {
+    lock.mode = mode; lock.buf = ''; lock.first = ''; lock.onOk = onOk || null;
+    if (!$('#lock-mascot').firstChild) { const m = $('.brand-logo .mascot').cloneNode(true); m.classList.add('bounce'); $('#lock-mascot').appendChild(m); applyHats(moodOf() ? moodOf().hat : null); }
+    $('#lock-title').textContent = LOCK_TEXT[mode][0]; $('#lock-sub').textContent = LOCK_TEXT[mode][1]; $('#lock-msg').textContent = '';
+    $('#lock-cancel').style.display = mode === 'unlock' ? 'none' : ''; $('#lock-forgot').style.display = mode === 'set' ? 'none' : ''; $('#lock-help').classList.remove('on');
+    lockDots(); $('#lock').classList.add('on'); $('#lock').setAttribute('aria-hidden', 'false');
+  }
+  function hideLock() { $('#lock').classList.remove('on'); $('#lock').setAttribute('aria-hidden', 'true'); lock.mode = null; lock.buf = ''; }
+  function lockFail(msg, after) {
+    const d = $('#pin-dots'); d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); $('#lock-msg').textContent = msg; buzz();
+    lock.buf = ''; setTimeout(() => { lockDots(); if (after) after(); }, 500);
+  }
+  function lockCheck() {
+    const v = lock.buf;
+    if (lock.mode === 'set') {
+      if (!lock.first) { lock.first = v; lock.buf = ''; lockDots(); $('#lock-title').textContent = '한 번 더'; $('#lock-sub').textContent = '같은 숫자 4자리를 다시 눌러 확인해요'; return; }
+      if (v === lock.first) { settings.lockPin = v; saveSettings(); hideLock(); toast('비밀번호를 설정했어요'); if (lock.onOk) lock.onOk(); }
+      else lockFail('두 번이 달라요 — 처음부터 다시', () => { lock.first = ''; $('#lock-title').textContent = LOCK_TEXT.set[0]; $('#lock-sub').textContent = LOCK_TEXT.set[1]; });
+      return;
+    }
+    if (v === settings.lockPin) { const f = lock.onOk; hideLock(); pop(); if (f) f(); } else lockFail('비밀번호가 달라요');
+  }
+  function lockKey(k) {
+    if (!lock.mode) return; pop();
+    if (k === 'del') lock.buf = lock.buf.slice(0, -1); else if (lock.buf.length < 4) lock.buf += k;
+    lockDots(); $('#lock-msg').textContent = '';
+    if (lock.buf.length === 4) setTimeout(lockCheck, 120);
+  }
+  $$('#keypad button[data-k]').forEach(b => b.addEventListener('click', () => lockKey(b.dataset.k)));
+  $('#lock-cancel').addEventListener('click', () => { pop(); hideLock(); });
+  $('#lock-forgot').addEventListener('click', () => { pop(); const h = $('#lock-help'); h.innerHTML = KIOSK ? '비밀번호는 이 컴퓨터의 앱 설정에 저장돼요. 잊었다면 약속네컷을 끄고 <b>C:\\Users\\(사용자 이름)\\AppData\\Local\\YaksokNecut\\profile</b> 폴더를 지운 뒤 다시 켜세요 — 모든 설정이 처음으로 돌아가요 (읽어주세요.txt 참고).' : '비밀번호는 이 브라우저의 사이트 데이터에 저장돼요. 잊었다면 브라우저 설정에서 이 페이지의 사이트 데이터(쿠키·저장소)를 삭제하세요 — 모든 설정이 처음으로 돌아가요.'; h.classList.toggle('on'); });
+  document.addEventListener('keydown', e => { if (!lock.mode) return; if (/^[0-9]$/.test(e.key)) { e.preventDefault(); lockKey(e.key); } else if (e.key === 'Backspace') { e.preventDefault(); lockKey('del'); } else if (e.key === 'Escape' && lock.mode !== 'unlock') hideLock(); });
 
   /* ===================== S0 대기 ===================== */
   /* ---------- 첫 화면 계절 장식 (벚꽃·비눗방울·낙엽·눈) ---------- */
@@ -2428,7 +2515,7 @@
     hot.addEventListener('pointerdown', e => {
       e.stopPropagation(); cancel();
       t1 = setTimeout(() => { hot.classList.add('arming'); requestAnimationFrame(() => { ring.style.strokeDashoffset = '0'; }); }, 1500);
-      t2 = setTimeout(() => { cancel(); go('s10'); }, 5000);
+      t2 = setTimeout(() => { cancel(); openTeacher(); }, 5000);
     });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => hot.addEventListener(ev, cancel));
     hot.addEventListener('click', e => e.stopPropagation());
@@ -2956,6 +3043,7 @@
     const OUT = [['print', '인쇄'], ['board', '칠판에 크게 보기'], ['both', '인쇄하고 칠판에도']];
     const outHelp = "'칠판에 크게 보기'는 프린터 없이 화면 전체에 완성 사진을 띄우고 박수·색종이가 나와요. '인쇄하고 칠판에도'는 인쇄한 뒤 칠판에도 보여 줘요.";
     const printNote = BRIDGE ? '앱 모드로 실행 중입니다 — [뽑기]를 누르면 안드로이드 인쇄창이 뜹니다. 처음 한 번 프린터와 용지(4×6, 여백 없음)를 고르면 다음부터는 [인쇄]만 누르면 됩니다.'
+      : KIOSK && PDLG ? '프린터 선택창 모드입니다 — [뽑기]를 누르면 크롬 인쇄창이 떠서 프린터를 고를 수 있어요. 용지는 4×6(엽서)·테두리 없음으로 맞추세요. 확인창 없이 바로 뽑으려면 위에서 \'기본 프린터로 바로 출력\'을 고르세요.'
       : KIOSK ? '자동 인쇄 모드로 실행 중입니다 — [뽑기]를 누르면 윈도우 기본 프린터로 확인창 없이 바로 출력됩니다. 기본 프린터의 용지가 4×6(엽서)·테두리 없음인지 한 번만 확인하세요.'
       : '인쇄창에서 프린터를 고르고 용지를 4×6(엽서)으로 맞추세요. 처음 한 번 고르면 다음부터는 같은 설정이 유지됩니다. 안드로이드 태블릿에서는 매번 인쇄창의 [인쇄]를 한 번 눌러 주어야 합니다. 확인 없이 바로 뽑으려면 윈도우 앱(약속네컷.exe)을 쓰세요.';
     const st = loadStats(), td = st.days[todayKey()] || { done: 0, prints: 0, board: 0, sets: {} };
@@ -2972,6 +3060,7 @@
         <div class="tfoot">
           ${QUIT_PORT && MONITORS > 1 ? `<button class="tfbtn" data-act="monnext">${MONITOR}번 모니터 → ${nextMon}번으로</button>` : ''}
           ${KIOSK ? '' : '<button class="tfbtn" data-act="full">전체 화면 켜기/끄기</button>'}
+          ${settings.lockPin ? `<button class="tfbtn" data-act="locknow">${ic('lock')} 저장하고 잠그기</button>` : ''}
           <button class="tfbtn" data-act="close">앱 종료</button>
         </div>
       </aside>
@@ -3022,7 +3111,9 @@
         </div>
 
         <div class="tpage" data-pane="print">
-          <div class="thead"><h3>완성·인쇄</h3><span class="tdesc">${BRIDGE ? '앱 모드 · 안드로이드 인쇄창으로 출력' : KIOSK ? '자동 인쇄 모드 · 윈도우 기본 프린터로 확인창 없이 출력' : '브라우저 인쇄창에서 프린터·용지(4×6)를 고른 뒤 출력'}</span></div>
+          <div class="thead"><h3>완성·인쇄</h3><span class="tdesc">${BRIDGE ? '앱 모드 · 안드로이드 인쇄창으로 출력' : KIOSK ? (PDLG ? '프린터 선택창 모드 · [뽑기]마다 프린터를 고르는 창이 떠요' : '자동 인쇄 모드 · 윈도우 기본 프린터로 확인창 없이 출력') : '브라우저 인쇄창에서 프린터·용지(4×6)를 고른 뒤 출력'}</span></div>
+          ${QUIT_PORT ? row(sub('인쇄 방식', '윈도우 앱'), `<span class="seg" id="pmode"><button data-pmode="auto" class="${PDLG ? '' : 'on'}">기본 프린터로 바로 출력</button><button data-pmode="dialog" class="${PDLG ? 'on' : ''}">프린터 선택창 뜨기</button></span>${info('h-pmode')}<span class="thint">바꾸면 앱이 잠깐 닫혔다 다시 열려요</span>`,
+            help('h-pmode', "'기본 프린터로 바로 출력'은 [뽑기]를 누르면 윈도우 기본 프린터로 확인창 없이 나와요. '프린터 선택창 뜨기'는 [뽑기]마다 크롬 인쇄창이 떠서 프린터와 용지를 고를 수 있어요 — 프린터가 여러 대이거나 기본 프린터가 아닌 프린터를 쓸 때. 이 설정은 이 컴퓨터의 실행기에 저장돼 다음 실행부터도 유지돼요.")) : ''}
           ${row('완성 사진은', `${seg('output', OUT)}${info('h-out2')}`, help('h-out2', outHelp))}
           ${row('칠판에 보여 주는 시간', seg('boardSeconds', [[5, '5초'], [8, '8초'], [12, '12초']]))}
           ${row('최대 인쇄 매수', `${seg('maxCopies', [[1, '1장'], [2, '2장'], [3, '3장'], [4, '4장']])}<span class="thint">1장이면 매수 선택 화면이 안 떠요</span>`)}
@@ -3058,6 +3149,7 @@
             <div class="tctl" style="flex-direction:column;align-items:stretch;gap:8px"><pre id="stats-box" class="tlog">${esc(statsText())}</pre>
             <div class="tctl"><button class="btn sec tiny" data-act="statscopy">기록 복사</button><button class="btn sec tiny" data-act="statsclear">기록 지우기</button><span class="thint">완성한 사진 수·인쇄 매수·세트·많이 고른 약속을 날짜별로 세어요</span></div></div></div>
           ${QUIT_PORT ? row(sub('업데이트', `지금 v${APP_VERSION}`), `<button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 새 버전이 있으면 자동으로 바꾸기</span><button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button>`) : ''}
+          ${row(sub('잠금 비밀번호', settings.lockPin ? '설정됨 ● ● ● ●' : '설정 안 됨'), `<button class="btn sec tiny" data-act="pinset">${ic('lock')} ${settings.lockPin ? '비밀번호 바꾸기' : '비밀번호 설정'}</button>${settings.lockPin ? '<button class="btn sec tiny" data-act="pinclear">비밀번호 지우기</button>' : ''}<span class="thint">숫자 4자리 · 설정하면 앱을 켤 때와 교사 메뉴에 들어갈 때 번호판이 떠요</span>`)}
           ${row('초기화', `<button class="btn sec tiny" data-act="reset" id="btn-reset">${ic('undo')} 기본 설정으로 되돌리기</button><span class="thint">문구·세트·소리·테마 등 모든 설정이 처음 값으로 · 두 번 눌러요 · 인쇄 매수는 유지</span>`)}
         </div>
       </div>
@@ -3076,6 +3168,12 @@
     }));
     const vs = el.querySelector('#voice-sel'); if (vs) vs.addEventListener('change', () => { settings.voiceName = vs.value; saveSettings(); speak('안녕? 나는 약속네컷이야!'); });
     el.querySelectorAll('[data-mon]').forEach(b => b.addEventListener('click', () => { pop(); if (+b.dataset.mon !== MONITOR) moveToMonitor(+b.dataset.mon); }));
+    el.querySelectorAll('[data-pmode]').forEach(b => b.addEventListener('click', () => {
+      pop(); const dialog = b.dataset.pmode === 'dialog'; if (dialog === PDLG) return;
+      if (!LV) { toast('인쇄 방식 바꾸기는 새 실행 파일(약속네컷.exe)이 필요해요 — 윈도우 앱 zip을 다시 받아 바꿔 주세요'); return; }
+      saveSettings(); settingsBackup = null; toast('인쇄 방식을 바꾸는 중… 잠시 뒤 다시 열려요');
+      setTimeout(() => { location.href = LOCAL + '/print/mode?dialog=' + (dialog ? 1 : 0); }, 400);
+    }));
     if (QUIT_PORT) localJson('/update/status').then(j => {
       const au = el.querySelector('#upd-auto'), bk = el.querySelector('#upd-back');
       if (!j.url) localJson('/update/seturl?u=' + encodeURIComponent(DEFAULT_UPDATE_URL)).catch(() => {});   // 실행기에 주소가 없으면 기본 주소(GitHub 저장소)를 저장
@@ -3104,6 +3202,9 @@
       else if (a === 'ps+' || a === 'ps-') { settings.printScale = clamp((+settings.printScale || 100) + (a === 'ps+' ? 2 : -2), 90, 110); saveSettings(); $('#ps').textContent = settings.printScale + '%'; }
       else if (a === 'resetcount') { settings.printCount = 0; saveSettings(); $('#pc').textContent = '0'; }
       else if (a === 'monnext') { pop(); if (nextMon && nextMon !== MONITOR) moveToMonitor(nextMon); }
+      else if (a === 'pinset') { pop(); showLock('set', () => { ENTER.s10(); }); }
+      else if (a === 'pinclear') { if (b.dataset.armed) { settings.lockPin = ''; saveSettings(); ENTER.s10(); toast('비밀번호를 지웠어요 — 잠금 없이 켜져요'); } else { b.dataset.armed = '1'; b.textContent = '정말 지울까요? 한 번 더'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = '비밀번호 지우기'; } }, 4000); } }
+      else if (a === 'locknow') { saveSettings(); applyTexts(); applyTheme(); settingsBackup = null; go('s0'); showLock('unlock'); toast('설정을 저장하고 잠갔어요'); }
       else if (a === 'updcheck') { const out = el.querySelector('#upd-result'); out.textContent = '확인 중…'; localJson('/update/check').then(j => { if (j.error) { out.textContent = '확인 실패: ' + j.error; return; } if (j.newer) { out.innerHTML = `새 버전 <b>${j.latest}</b>이 있어요 `; const go = document.createElement('button'); go.className = 'btn tiny'; go.textContent = '지금 업데이트'; go.addEventListener('click', () => { pop(); toast('업데이트 중… 잠시 뒤 다시 열려요'); setTimeout(() => { location.href = LOCAL + '/update/apply'; }, 400); }); out.appendChild(go); } else out.textContent = `최신 버전이에요 (${j.latest})`; }).catch(() => { out.textContent = '실행기와 연결되지 않아요'; }); }
       else if (a === 'updback') { if (b.dataset.armed) { toast('이전 버전으로 되돌리는 중…'); setTimeout(() => { location.href = LOCAL + '/update/rollback'; }, 400); } else { b.dataset.armed = '1'; b.textContent = '정말 되돌릴까요? 한 번 더'; setTimeout(() => { delete b.dataset.armed; b.textContent = '이전 버전으로 되돌리기'; }, 4000); } }
       else if (a === 'statscopy') { const t = statsText(); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('기록을 복사했어요 — 보고서에 붙여 넣으세요'), () => { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('기록을 복사했어요'); } catch (e) { toast('복사가 안 돼요 — 화면의 기록을 보고 적어 주세요'); } ta.remove(); }); }
@@ -3147,6 +3248,7 @@
   document.addEventListener('dragstart', e => e.preventDefault());
   window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
   go('s0');
+  if (settings.lockPin) showLock('unlock');   // 잠금 비밀번호가 있으면 켤 때 번호판부터
 })();
 </script>
 
