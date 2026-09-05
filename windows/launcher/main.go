@@ -8,6 +8,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -30,7 +31,7 @@ var appHTML []byte
 var fontFS embed.FS
 
 // 기본 업데이트 주소 — 이 저장소의 index.html 이 항상 최신 앱 파일 (교사 메뉴에서 다른 주소로 바꿀 수 있음)
-const launcherVer = "1.9.2" // 실행기 버전 (앱이 lv= 로 받아 실행기에 있는 기능을 판단)
+const launcherVer = "1.9.3" // 실행기 버전 (앱이 lv= 로 받아 실행기에 있는 기능을 판단)
 
 const defaultUpdateURL = "https://raw.githubusercontent.com/doguri25/yaksoknekut/master/index.html"
 
@@ -94,6 +95,31 @@ func listMonitors() []monitor {
 	return ms
 }
 
+// ---------- 브라우저 부드럽게 닫기 ----------
+// 크롬은 localStorage(앱 설정)를 몇 초 뒤에 몰아서 디스크에 쓰므로, 강제로 죽이면 방금 바꾼 설정(비밀번호 등)이 사라질 수 있다.
+// 먼저 창에 WM_CLOSE를 보내 스스로 닫히게 하고(저장을 마무리함), 그래도 남아 있으면 강제 종료한다.
+func closeBrowser(c *exec.Cmd) {
+	if c == nil || c.Process == nil {
+		return
+	}
+	pid := uint32(c.Process.Pid)
+	getPid := user32.NewProc("GetWindowThreadProcessId")
+	post := user32.NewProc("PostMessageW")
+	cb := syscall.NewCallback(func(h uintptr, lp uintptr) uintptr {
+		var wp uint32
+		getPid.Call(h, uintptr(unsafe.Pointer(&wp)))
+		if wp == pid {
+			post.Call(h, 0x0010, 0, 0) // WM_CLOSE
+		}
+		return 1
+	})
+	user32.NewProc("EnumWindows").Call(cb, 0)
+	go func() {
+		time.Sleep(5 * time.Second)
+		c.Process.Kill() // 아직 살아 있으면 강제 종료 (이미 끝났으면 오류만 나고 무시됨)
+	}()
+}
+
 // ---------- 설정 파일 (key=value 한 줄씩) ----------
 func readConfig(path string) map[string]string {
 	m := map[string]string{}
@@ -144,6 +170,7 @@ func main() {
 	appDir := filepath.Join(dir, "app")
 	profDir := filepath.Join(dir, "profile")
 	cfgPath := filepath.Join(dir, "config.txt")
+	settingsPath := filepath.Join(dir, "settings.json") // 앱 설정 사본 (교사 메뉴에서 바꿀 때마다 앱이 보내 줌)
 	os.MkdirAll(appDir, 0o755)
 	os.MkdirAll(profDir, 0o755)
 	htmlPath := filepath.Join(appDir, "yaksok-necut.html")
@@ -268,9 +295,7 @@ func main() {
 		mu.Unlock()
 		go func() {
 			time.Sleep(300 * time.Millisecond)
-			if c != nil {
-				c.Process.Kill()
-			}
+			closeBrowser(c)
 		}()
 	}
 
@@ -278,6 +303,8 @@ func main() {
 		go http.Serve(ln, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Access-Control-Allow-Private-Network", "true")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 			w.Header().Set("Cache-Control", "no-store")
 			if r.Method == "OPTIONS" {
 				w.WriteHeader(204)
@@ -302,9 +329,7 @@ func main() {
 				mu.Unlock()
 				go func() {
 					time.Sleep(300 * time.Millisecond)
-					if c != nil {
-						c.Process.Kill()
-					}
+					closeBrowser(c)
 				}()
 			case "/monitor":
 				n, _ := strconv.Atoi(r.URL.Query().Get("n"))
@@ -318,6 +343,21 @@ func main() {
 				writeConfig(cfgPath, cfg)
 				mu.Unlock()
 				restart("")
+			case "/settings/save": // 앱 설정 사본 — 크롬 저장소가 미처 못 쓴 채 꺼져도 다음 실행에 되살림
+				body, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20))
+				if len(body) > 1 && body[0] == '{' {
+					os.WriteFile(settingsPath, body, 0o644)
+					jsonOut(map[string]interface{}{"ok": true})
+				} else {
+					jsonOut(map[string]interface{}{"ok": false})
+				}
+			case "/settings/load":
+				w.Header().Set("Content-Type", "application/json; charset=utf-8")
+				if b, err := os.ReadFile(settingsPath); err == nil && len(b) > 1 {
+					w.Write(b)
+				} else {
+					w.Write([]byte("null"))
+				}
 			case "/print/mode": // 인쇄 방식 바꾸기 — 크롬 실행 옵션이 달라져 다시 연다
 				dialog := r.URL.Query().Get("dialog") == "1"
 				page("인쇄 방식을 바꾸는 중…")

@@ -447,6 +447,8 @@
   #topbtns .ic { width: 18px; height: 18px; }
   #topbtns .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(39,64,58,.10); }
   #app.hasquit #btn-quit { display: inline-flex; }
+  #app.haslock[data-screen="s0"] #btn-lock { display: inline-flex; }   /* 잠금 비밀번호를 설정하면 첫 화면에 [잠금] */
+  #app.haslock #hot { top: 56px; }
   #app.hasquit.hasmon[data-screen="s0"] #btn-mon { display: inline-flex; }   /* 모니터 옮기기는 첫 화면에서만 */
   #app.hasquit #hot { top: 56px; }
   #app[data-screen="s4"] #topbtns, #app[data-screen="s10"] #topbtns { display: none !important; }   /* 촬영 중·교사 메뉴에서는 숨김 */
@@ -1045,6 +1047,7 @@
   <!-- 종료 단추 (윈도우 앱) — 촬영 중·교사 메뉴 빼고 모든 화면 오른쪽 위 -->
   <div id="topbtns">
     <button class="btn" id="btn-mon" aria-label="다른 모니터로 옮기기"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="40" height="26" rx="4"/><path d="M18 42h12M24 34v8"/></svg><span id="btn-mon-text">2번 모니터로 옮기기</span></button>
+    <button class="btn" id="btn-lock" aria-label="잠금 화면으로"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="21" width="30" height="21" rx="5"/><path d="M15 21v-6a9 9 0 0 1 18 0v6"/><circle cx="24" cy="31" r="2.6" fill="currentColor"/></svg>잠금</button>
     <button class="btn" id="btn-quit" aria-label="약속네컷 종료"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" aria-hidden="true"><path d="M12 12l24 24M36 12L12 36"/></svg>종료</button>
   </div>
   <!-- 종료 확인 (윈도우 앱) -->
@@ -1328,11 +1331,12 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.9.2';
+  const APP_VERSION = '1.9.3';
   const BUILD_DATE = '2026-09-04';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.9.3', d: '2026-09-05', items: ['비밀번호·설정을 바꾼 직후 앱을 끄면 저장이 안 되던 문제 수정 — 윈도우 앱이 크롬을 부드럽게 닫고, 설정 사본을 실행기 파일(settings.json)에도 보관해 다음 실행에 되살림 (새 실행 파일)', '잠금: 가만히 두면 자동 잠금 (안 함·3·5·10·30분, 기본 안 함) — 교사 메뉴 › 학교·기록·앱', '첫 화면 오른쪽 위 [잠금] 단추 (비밀번호를 설정한 경우)'] },
     { v: '1.9.2', d: '2026-09-05', items: ['윈도우 앱: 인쇄 방식 선택 — 기본 프린터로 바로 출력(지금까지 방식) / [뽑기]마다 프린터 선택창 (교사 메뉴 › 완성·인쇄, 새 실행 파일 필요)', '잠금 비밀번호(숫자 4자리) — 교사 메뉴 › 학교·기록·앱에서 설정하면 앱을 켤 때와 교사 메뉴에 들어갈 때 스마트폰식 번호판이 떠요 (기본은 꺼짐)', '교사 메뉴 왼쪽 아래 [저장하고 잠그기] (비밀번호를 설정한 경우)'] },
     { v: '1.9.1', d: '2026-09-04', items: ['행사 세트를 고르면 첫 화면이 그 행사 분위기로 — 배경·태그 색, 부제 문장, 행사 그림(케이크·학사모·트리·풍선 등), 흩날림(눈·색종이·꽃잎·별·풍선·만국기), 약속이 소품(산타 모자·고깔·학사모·꽃·머리띠·토끼 귀·안경)', '첫 화면 사진 카드가 그 세트의 실제 액자로 바뀜', '교사 메뉴 › 행사 세트에 첫 화면 부제 편집 추가', '학교폭력예방·일상 세트는 지금 모습 그대로'] },
     { v: '1.9.0', d: '2026-09-04', items: ['교사 메뉴 새 배치 — 왼쪽 세로 메뉴(자주 쓰는 설정 · 행사 세트 · 약속 문장 · 촬영 · 완성·인쇄 · 소리 · 화면 · 학교·기록·앱), 각 페이지가 한 화면에 들어오게 정리', '자주 쓰는 설정 첫 화면 — 행사 세트·완성 사진은·인쇄 매수·소리·카운트다운과 오늘 기록 한 줄', '액자 켜고 끄기를 작은 미리보기 카드로, 긴 설명은 ⓘ 단추 뒤로, 켜기/끄기는 스위치 모양으로, 아래 저장 바에 바꾼 항목 수 표시', '설정 값과 기본값은 그대로 (저장해 둔 설정 유지)'] },
@@ -1427,11 +1431,11 @@
   const T = { idle: 30, decorate: 60, decorateMore: 30, ready: 8, done: 4, warn: 3, review: 1200, gap: 300 };
   const KIOSK = /[?&]kiosk=1/.test(location.search);   // 윈도우 자동 인쇄(--kiosk-printing) 실행 여부
   const QUIT_PORT = +((location.search.match(/[?&]quit=(\d+)/) || [])[1] || 0);   // 윈도우 실행기(exe)가 켠 '앱 종료' 통로
-  const quitApp = () => { if (QUIT_PORT) location.href = 'http://127.0.0.1:' + QUIT_PORT + '/quit'; else window.close(); };
+  const quitApp = () => { if (QUIT_PORT) { flushSettings(); location.href = 'http://127.0.0.1:' + QUIT_PORT + '/quit'; } else window.close(); };
   // 모니터 (윈도우 앱): 실행기가 알려 준 모니터 수와 지금 보여 주는 모니터 번호
   const MONITORS = +((location.search.match(/[?&]monitors=(\d+)/) || [])[1] || 1);
   const MONITOR = +((location.search.match(/[?&]monitor=(\d+)/) || [])[1] || 1);
-  const moveToMonitor = n => { if (QUIT_PORT) location.href = 'http://127.0.0.1:' + QUIT_PORT + '/monitor?n=' + n; };
+  const moveToMonitor = n => { if (QUIT_PORT) { flushSettings(); location.href = 'http://127.0.0.1:' + QUIT_PORT + '/monitor?n=' + n; } };
   const nextMonitor = () => MONITOR >= MONITORS ? 1 : MONITOR + 1;
   const LOCAL = QUIT_PORT ? 'http://127.0.0.1:' + QUIT_PORT : '';
   const localJson = async (path) => { const r = await fetch(LOCAL + path, { cache: 'no-store' }); return r.json(); };
@@ -1459,13 +1463,22 @@
   const MAX_STICKERS = 12;
 
   /* ===================== 설정 (사진은 저장하지 않음) ===================== */
-  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', hero: {}, promises: {}, promiseLabels: {} };
+  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, hero: {}, promises: {}, promiseLabels: {} };
   let settings = loadSettings();
   function loadSettings() {
     try { const j = localStorage.getItem('yaksok-settings'); if (j) return Object.assign({}, DEFAULTS, JSON.parse(j)); } catch (e) {}
     return Object.assign({}, DEFAULTS);
   }
-  function saveSettings() { try { localStorage.setItem('yaksok-settings', JSON.stringify(settings)); } catch (e) {} if ($('#app').dataset.screen === 's10') refreshTBar(); }   // 교사 메뉴가 열려 있으면 '바꾼 항목' 수 갱신
+  let mirrorT = null;
+  function saveSettings() {
+    settings._ts = Date.now();   // 마지막으로 바꾼 때 — 실행기에 둔 사본과 비교용
+    try { localStorage.setItem('yaksok-settings', JSON.stringify(settings)); } catch (e) {}
+    if (QUIT_PORT && LV) { clearTimeout(mirrorT); mirrorT = setTimeout(flushSettings, 300); }   // 윈도우 앱: 실행기 파일(settings.json)에도 사본 저장
+    $('#app').classList.toggle('haslock', !!settings.lockPin);
+    if ($('#app').dataset.screen === 's10') refreshTBar();
+  }
+  // 설정 사본을 실행기에 바로 보냄 (앱을 닫거나 다시 열기 직전에 — 크롬이 저장소를 미처 못 써도 사라지지 않게)
+  function flushSettings() { clearTimeout(mirrorT); if (!(QUIT_PORT && LV)) return; try { if (!navigator.sendBeacon(LOCAL + '/settings/save', JSON.stringify(settings))) fetch(LOCAL + '/settings/save', { method: 'POST', body: JSON.stringify(settings), keepalive: true }).catch(() => {}); } catch (e) {} }
   const frameOn = f => settings.frames[f.id] !== false;
   const catOn = c => settings.cats[c.id] !== false;
 
@@ -2448,8 +2461,25 @@
   }
   $$('#keypad button[data-k]').forEach(b => b.addEventListener('click', () => lockKey(b.dataset.k)));
   $('#lock-cancel').addEventListener('click', () => { pop(); hideLock(); });
-  $('#lock-forgot').addEventListener('click', () => { pop(); const h = $('#lock-help'); h.innerHTML = KIOSK ? '비밀번호는 이 컴퓨터의 앱 설정에 저장돼요. 잊었다면 약속네컷을 끄고 <b>C:\\Users\\(사용자 이름)\\AppData\\Local\\YaksokNecut\\profile</b> 폴더를 지운 뒤 다시 켜세요 — 모든 설정이 처음으로 돌아가요 (읽어주세요.txt 참고).' : '비밀번호는 이 브라우저의 사이트 데이터에 저장돼요. 잊었다면 브라우저 설정에서 이 페이지의 사이트 데이터(쿠키·저장소)를 삭제하세요 — 모든 설정이 처음으로 돌아가요.'; h.classList.toggle('on'); });
+  $('#lock-forgot').addEventListener('click', () => { pop(); const h = $('#lock-help'); h.innerHTML = KIOSK ? '비밀번호는 이 컴퓨터의 앱 설정에 저장돼요. 잊었다면 약속네컷을 끄고 <b>C:\\Users\\(사용자 이름)\\AppData\\Local\\YaksokNecut</b> 폴더를 통째로 지운 뒤 다시 켜세요 — 모든 설정이 처음으로 돌아가요 (읽어주세요.txt 참고).' : '비밀번호는 이 브라우저의 사이트 데이터에 저장돼요. 잊었다면 브라우저 설정에서 이 페이지의 사이트 데이터(쿠키·저장소)를 삭제하세요 — 모든 설정이 처음으로 돌아가요.'; h.classList.toggle('on'); });
   document.addEventListener('keydown', e => { if (!lock.mode) return; if (/^[0-9]$/.test(e.key)) { e.preventDefault(); lockKey(e.key); } else if (e.key === 'Backspace') { e.preventDefault(); lockKey('del'); } else if (e.key === 'Escape' && lock.mode !== 'unlock') hideLock(); });
+  // 지금 잠그기: 교사 메뉴에 있었다면 저장하고, 첫 화면으로 돌아가 잠금 화면
+  function lockNow() {
+    if (!settings.lockPin || lock.mode === 'unlock') return;
+    if (current === 's10') { saveSettings(); applyTexts(); applyTheme(); settingsBackup = null; }
+    if (lock.mode) hideLock();
+    if (current !== 's0') go('s0');
+    showLock('unlock');
+  }
+  $('#btn-lock').addEventListener('click', e => { e.stopPropagation(); pop(); lockNow(); });
+  // 가만히 두면 자동 잠금 (교사 메뉴 › 학교·기록·앱 › '가만히 두면 잠금', 기본 안 함)
+  let lastActive = Date.now();
+  ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { lastActive = Date.now(); }, true));
+  setInterval(() => {
+    const min = +settings.lockAfter || 0;
+    if (!settings.lockPin || !min || lock.mode || document.hidden) return;
+    if (Date.now() - lastActive >= min * 60000) lockNow();
+  }, 5000);
 
   /* ===================== S0 대기 ===================== */
   /* ---------- 첫 화면 계절 장식 (벚꽃·비눗방울·낙엽·눈) ---------- */
@@ -3020,7 +3050,7 @@
   function teacherChanged() {   // 메뉴에 들어온 뒤 바꾼 설정 항목 수 (인쇄 매수 제외)
     if (!settingsBackup) return 0;
     const keys = new Set([...Object.keys(settings), ...Object.keys(settingsBackup)]); let n = 0;
-    keys.forEach(k => { if (k !== 'printCount' && JSON.stringify(settings[k]) !== JSON.stringify(settingsBackup[k])) n++; });
+    keys.forEach(k => { if (k !== 'printCount' && k !== '_ts' && JSON.stringify(settings[k]) !== JSON.stringify(settingsBackup[k])) n++; });
     return n;
   }
   function refreshTBar() {
@@ -3150,6 +3180,7 @@
             <div class="tctl"><button class="btn sec tiny" data-act="statscopy">기록 복사</button><button class="btn sec tiny" data-act="statsclear">기록 지우기</button><span class="thint">완성한 사진 수·인쇄 매수·세트·많이 고른 약속을 날짜별로 세어요</span></div></div></div>
           ${QUIT_PORT ? row(sub('업데이트', `지금 v${APP_VERSION}`), `<button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 새 버전이 있으면 자동으로 바꾸기</span><button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button>`) : ''}
           ${row(sub('잠금 비밀번호', settings.lockPin ? '설정됨 ● ● ● ●' : '설정 안 됨'), `<button class="btn sec tiny" data-act="pinset">${ic('lock')} ${settings.lockPin ? '비밀번호 바꾸기' : '비밀번호 설정'}</button>${settings.lockPin ? '<button class="btn sec tiny" data-act="pinclear">비밀번호 지우기</button>' : ''}<span class="thint">숫자 4자리 · 설정하면 앱을 켤 때와 교사 메뉴에 들어갈 때 번호판이 떠요</span>`)}
+          ${settings.lockPin ? row('가만히 두면 잠금', `${seg('lockAfter', [[0, '안 함'], [3, '3분'], [5, '5분'], [10, '10분'], [30, '30분']])}<span class="thint">이 시간 동안 아무도 만지지 않으면 잠금 화면으로 (교사 메뉴에서도)</span>`) : ''}
           ${row('초기화', `<button class="btn sec tiny" data-act="reset" id="btn-reset">${ic('undo')} 기본 설정으로 되돌리기</button><span class="thint">문구·세트·소리·테마 등 모든 설정이 처음 값으로 · 두 번 눌러요 · 인쇄 매수는 유지</span>`)}
         </div>
       </div>
@@ -3171,7 +3202,7 @@
     el.querySelectorAll('[data-pmode]').forEach(b => b.addEventListener('click', () => {
       pop(); const dialog = b.dataset.pmode === 'dialog'; if (dialog === PDLG) return;
       if (!LV) { toast('인쇄 방식 바꾸기는 새 실행 파일(약속네컷.exe)이 필요해요 — 윈도우 앱 zip을 다시 받아 바꿔 주세요'); return; }
-      saveSettings(); settingsBackup = null; toast('인쇄 방식을 바꾸는 중… 잠시 뒤 다시 열려요');
+      saveSettings(); settingsBackup = null; flushSettings(); toast('인쇄 방식을 바꾸는 중… 잠시 뒤 다시 열려요');
       setTimeout(() => { location.href = LOCAL + '/print/mode?dialog=' + (dialog ? 1 : 0); }, 400);
     }));
     if (QUIT_PORT) localJson('/update/status').then(j => {
@@ -3204,8 +3235,8 @@
       else if (a === 'monnext') { pop(); if (nextMon && nextMon !== MONITOR) moveToMonitor(nextMon); }
       else if (a === 'pinset') { pop(); showLock('set', () => { ENTER.s10(); }); }
       else if (a === 'pinclear') { if (b.dataset.armed) { settings.lockPin = ''; saveSettings(); ENTER.s10(); toast('비밀번호를 지웠어요 — 잠금 없이 켜져요'); } else { b.dataset.armed = '1'; b.textContent = '정말 지울까요? 한 번 더'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = '비밀번호 지우기'; } }, 4000); } }
-      else if (a === 'locknow') { saveSettings(); applyTexts(); applyTheme(); settingsBackup = null; go('s0'); showLock('unlock'); toast('설정을 저장하고 잠갔어요'); }
-      else if (a === 'updcheck') { const out = el.querySelector('#upd-result'); out.textContent = '확인 중…'; localJson('/update/check').then(j => { if (j.error) { out.textContent = '확인 실패: ' + j.error; return; } if (j.newer) { out.innerHTML = `새 버전 <b>${j.latest}</b>이 있어요 `; const go = document.createElement('button'); go.className = 'btn tiny'; go.textContent = '지금 업데이트'; go.addEventListener('click', () => { pop(); toast('업데이트 중… 잠시 뒤 다시 열려요'); setTimeout(() => { location.href = LOCAL + '/update/apply'; }, 400); }); out.appendChild(go); } else out.textContent = `최신 버전이에요 (${j.latest})`; }).catch(() => { out.textContent = '실행기와 연결되지 않아요'; }); }
+      else if (a === 'locknow') { lockNow(); toast('설정을 저장하고 잠갔어요'); }
+      else if (a === 'updcheck') { const out = el.querySelector('#upd-result'); out.textContent = '확인 중…'; localJson('/update/check').then(j => { if (j.error) { out.textContent = '확인 실패: ' + j.error; return; } if (j.newer) { out.innerHTML = `새 버전 <b>${j.latest}</b>이 있어요 `; const go = document.createElement('button'); go.className = 'btn tiny'; go.textContent = '지금 업데이트'; go.addEventListener('click', () => { pop(); flushSettings(); toast('업데이트 중… 잠시 뒤 다시 열려요'); setTimeout(() => { location.href = LOCAL + '/update/apply'; }, 400); }); out.appendChild(go); } else out.textContent = `최신 버전이에요 (${j.latest})`; }).catch(() => { out.textContent = '실행기와 연결되지 않아요'; }); }
       else if (a === 'updback') { if (b.dataset.armed) { toast('이전 버전으로 되돌리는 중…'); setTimeout(() => { location.href = LOCAL + '/update/rollback'; }, 400); } else { b.dataset.armed = '1'; b.textContent = '정말 되돌릴까요? 한 번 더'; setTimeout(() => { delete b.dataset.armed; b.textContent = '이전 버전으로 되돌리기'; }, 4000); } }
       else if (a === 'statscopy') { const t = statsText(); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('기록을 복사했어요 — 보고서에 붙여 넣으세요'), () => { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('기록을 복사했어요'); } catch (e) { toast('복사가 안 돼요 — 화면의 기록을 보고 적어 주세요'); } ta.remove(); }); }
       else if (a === 'statsclear') { if (b.dataset.armed) { localStorage.removeItem(STATS_KEY); delete b.dataset.armed; b.textContent = '기록 지우기'; $('#stats-box').textContent = statsText(); toast('기록을 지웠어요'); } else { b.dataset.armed = '1'; b.textContent = '정말 지울까요? 한 번 더'; setTimeout(() => { delete b.dataset.armed; b.textContent = '기록 지우기'; }, 4000); } }
@@ -3248,7 +3279,16 @@
   document.addEventListener('dragstart', e => e.preventDefault());
   window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
   go('s0');
+  $('#app').classList.toggle('haslock', !!settings.lockPin);
   if (settings.lockPin) showLock('unlock');   // 잠금 비밀번호가 있으면 켤 때 번호판부터
+  // 윈도우 앱: 실행기에 둔 설정 사본이 더 새것이면(크롬이 저장소를 못 쓰고 꺼진 경우) 그것으로 되살림
+  if (QUIT_PORT && LV) localJson('/settings/load').then(d => {
+    if (!d || typeof d !== 'object' || !(d._ts > (settings._ts || 0))) return;
+    settings = Object.assign({}, DEFAULTS, d); try { localStorage.setItem('yaksok-settings', JSON.stringify(settings)); } catch (e) {}
+    applyTexts(); applyTheme(); $('#app').classList.toggle('haslock', !!settings.lockPin);
+    if (settings.lockPin && !lock.mode) showLock('unlock');
+    if (current === 's0') seasonStart();
+  }).catch(() => {});
 })();
 </script>
 
