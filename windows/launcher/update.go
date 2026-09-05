@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -124,4 +125,97 @@ func rollbackUpdate(appDir string) error {
 		return err
 	}
 	return os.WriteFile(cur, b, 0o644)
+}
+
+// ---------- 실행기(exe) 스스로 업데이트 ----------
+// 앱 파일(index.html) 안의 LAUNCHER_LATEST 값이 이 실행기보다 높으면, 같은 저장소의 windows/yaksok-necut.exe 를 받아 자기 자신을 바꾼다.
+// 윈도우는 실행 중인 exe를 덮어쓰지 못하지만 이름 바꾸기는 허용하므로: 지금 exe → .old.exe 로 이름 바꾸고, 새 파일을 그 자리에 놓는다.
+
+var reLauncherLatest = regexp.MustCompile(`const LAUNCHER_LATEST = '([0-9.]+)'`)
+
+// 앱 파일이 요구하는 실행기 버전 (없으면 "")
+func htmlLauncherVer(b []byte) string {
+	m := reLauncherLatest.FindSubmatch(b)
+	if m == nil {
+		return ""
+	}
+	return string(m[1])
+}
+
+// 업데이트 주소(…/index.html)에서 실행기 파일 주소를 만든다 (…/windows/yaksok-necut.exe). 모양이 다르면 "".
+func exeURLFrom(updateURL string) string {
+	u := strings.TrimSpace(updateURL)
+	if !strings.HasSuffix(u, "/index.html") {
+		return ""
+	}
+	return strings.TrimSuffix(u, "index.html") + "windows/yaksok-necut.exe"
+}
+
+// 받은 exe가 진짜 약속네컷 실행기 want 버전인지 확인 (크기·MZ 머리·버전 표시 문자열)
+func validateExe(b []byte, want string) error {
+	if len(b) < 3<<20 {
+		return errors.New("실행기 파일이 너무 작아요")
+	}
+	if b[0] != 'M' || b[1] != 'Z' {
+		return errors.New("윈도우 실행 파일이 아니에요")
+	}
+	if want != "" && !bytes.Contains(b, []byte("YAKSOK-LAUNCHER-VER:"+want)) {
+		return errors.New("실행기 버전 표시가 맞지 않아요 (" + want + ")")
+	}
+	return nil
+}
+
+func fetchExe(url string, want string, timeout time.Duration) ([]byte, error) {
+	c := &http.Client{Timeout: timeout}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "YaksokNecut-Updater")
+	req.Header.Set("Cache-Control", "no-cache")
+	res, err := c.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("실행기 내려받기 실패: %v", err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("서버 응답 %d", res.StatusCode)
+	}
+	b, err := io.ReadAll(io.LimitReader(res.Body, 60<<20))
+	if err != nil {
+		return nil, err
+	}
+	if err := validateExe(b, want); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+// 새 실행기 파일을 지금 exe 자리에 넣는다. 지금 exe는 <이름>.old.exe 로 남고 다음 실행 때 지워진다.
+func swapExe(exePath string, newBytes []byte) error {
+	dir := filepath.Dir(exePath)
+	base := strings.TrimSuffix(filepath.Base(exePath), filepath.Ext(exePath))
+	newPath := filepath.Join(dir, base+".new.exe")
+	oldPath := filepath.Join(dir, base+".old.exe")
+	if err := os.WriteFile(newPath, newBytes, 0o755); err != nil {
+		return fmt.Errorf("실행기가 있는 폴더에 쓸 수 없어요 (%v) — 바탕화면 등 쓸 수 있는 곳에 두고 다시 하거나 직접 바꿔 주세요", err)
+	}
+	os.Remove(oldPath)
+	if err := os.Rename(exePath, oldPath); err != nil {
+		os.Remove(newPath)
+		return fmt.Errorf("지금 실행기를 옮길 수 없어요: %v", err)
+	}
+	if err := os.Rename(newPath, exePath); err != nil {
+		os.Rename(oldPath, exePath) // 되돌리기
+		return fmt.Errorf("새 실행기를 놓을 수 없어요: %v", err)
+	}
+	return nil
+}
+
+// 지난 업데이트가 남긴 .old.exe 정리
+func cleanOldExe(exePath string) {
+	dir := filepath.Dir(exePath)
+	base := strings.TrimSuffix(filepath.Base(exePath), filepath.Ext(exePath))
+	os.Remove(filepath.Join(dir, base+".old.exe"))
+	os.Remove(filepath.Join(dir, base+".new.exe"))
 }

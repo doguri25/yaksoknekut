@@ -31,7 +31,12 @@ var appHTML []byte
 var fontFS embed.FS
 
 // 기본 업데이트 주소 — 이 저장소의 index.html 이 항상 최신 앱 파일 (교사 메뉴에서 다른 주소로 바꿀 수 있음)
-const launcherVer = "1.9.4" // 실행기 버전 (앱이 lv= 로 받아 실행기에 있는 기능을 판단)
+const launcherVer = "1.9.7" // 실행기 버전 (앱이 lv= 로 받아 실행기에 있는 기능을 판단)
+
+// 실행기 파일 안에 남는 버전 표시 — 새 exe를 받았을 때 진짜 약속네컷 실행기인지·어느 버전인지 확인하는 데 씀
+const launcherMarker = "YAKSOK-LAUNCHER-VER:" + launcherVer
+
+var launcherMarkerVar = launcherMarker // 실제로 쓰여야 exe 안에 문자열이 남음
 
 const defaultUpdateURL = "https://raw.githubusercontent.com/doguri25/yaksoknekut/master/index.html"
 
@@ -185,6 +190,9 @@ func main() {
 		}
 	}
 
+	exePath, _ := os.Executable()
+	cleanOldExe(exePath)
+	pendingPath := filepath.Join(dir, "pending-msg.txt") // 조용히 바꾼 실행기가 다음 실행 때 앱에 알려 줄 말
 	cfg := readConfig(cfgPath)
 	updateURL := func() string {
 		if u := strings.TrimSpace(cfg["update_url"]); u != "" {
@@ -193,6 +201,10 @@ func main() {
 		return defaultUpdateURL
 	}
 	startMsg := ""
+	if b, err := os.ReadFile(pendingPath); err == nil {
+		startMsg = strings.TrimSpace(string(b))
+		os.Remove(pendingPath)
+	}
 	// 켤 때 자동 업데이트 (주소가 설정되어 있고 끄지 않았을 때, 4초 안에 안 되면 그냥 진행)
 	if u := updateURL(); u != "" && cfg["auto_update"] != "0" {
 		if body, v, err := fetchLatest(u, 3*time.Second); err == nil {
@@ -200,6 +212,18 @@ func main() {
 			if cmpVer(v, htmlVersion(cur)) > 0 {
 				if installUpdate(appDir, body) == nil {
 					startMsg = "upd=auto:" + v
+				}
+			}
+			// 실행기도 새 버전이 있으면 뒤에서 조용히 받아 바꿔 둔다 (다음 실행부터 새 실행기)
+			if lv := htmlLauncherVer(body); lv != "" && cmpVer(lv, launcherVer) > 0 {
+				if xu := exeURLFrom(u); xu != "" && exePath != "" {
+					go func() {
+						if nb, err := fetchExe(xu, lv, 90*time.Second); err == nil {
+							if swapExe(exePath, nb) == nil {
+								os.WriteFile(pendingPath, []byte("upd=exe:"+lv), 0o644)
+							}
+						}
+					}()
 				}
 			}
 		}
@@ -240,6 +264,7 @@ func main() {
 	var cur *exec.Cmd
 	relaunch := false
 	nextMsg := startMsg
+	runNewExe := false // 실행기를 바꾼 뒤: 브라우저가 닫히면 새 실행기를 띄우고 이 프로세스는 끝냄
 
 	launch := func(msg string) *exec.Cmd {
 		q := fmt.Sprintf("kiosk=1&quit=%d&monitors=%d&monitor=%d&lv=%s", port, len(mons), monIdx, launcherVer)
@@ -343,6 +368,8 @@ func main() {
 				writeConfig(cfgPath, cfg)
 				mu.Unlock()
 				restart("")
+			case "/printer/status": // 기본 프린터 이름·상태 (행사 준비 점검)
+				jsonOut(printerStatus())
 			case "/settings/save": // 앱 설정 사본 — 크롬 저장소가 미처 못 쓴 채 꺼져도 다음 실행에 되살림
 				body, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 				if len(body) > 1 && body[0] == '{' {
@@ -376,7 +403,7 @@ func main() {
 				}
 			case "/update/status":
 				_, hasPrev := os.Stat(filepath.Join(appDir, "yaksok-necut.prev.html"))
-				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil})
+				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar})
 			case "/update/seturl":
 				u := strings.TrimSpace(r.URL.Query().Get("u"))
 				mu.Lock()
@@ -399,15 +426,17 @@ func main() {
 				mu.Unlock()
 				jsonOut(map[string]interface{}{"ok": true})
 			case "/update/check":
-				_, v, err := fetchLatest(updateURL(), 8*time.Second)
+				body, v, err := fetchLatest(updateURL(), 8*time.Second)
 				if err != nil {
 					jsonOut(map[string]interface{}{"current": curVer, "error": err.Error()})
 					return
 				}
-				jsonOut(map[string]interface{}{"current": curVer, "latest": v, "newer": cmpVer(v, curVer) > 0})
+				lv := htmlLauncherVer(body)
+				jsonOut(map[string]interface{}{"current": curVer, "latest": v, "newer": cmpVer(v, curVer) > 0,
+					"exe": map[string]interface{}{"current": launcherVer, "latest": lv, "newer": lv != "" && cmpVer(lv, launcherVer) > 0 && exeURLFrom(updateURL()) != ""}})
 			case "/update/apply":
 				body, v, err := fetchLatest(updateURL(), 20*time.Second)
-				if err == nil {
+				if err == nil && cmpVer(v, curVer) > 0 {
 					err = installUpdate(appDir, body)
 				}
 				if err != nil {
@@ -415,8 +444,30 @@ func main() {
 					restart("upd=err:" + url.QueryEscape(err.Error()))
 					return
 				}
+				msg := "upd=ok:" + v
+				// 실행기도 새 버전이면 지금 받아 바꾸고, 브라우저가 닫힌 뒤 새 실행기로 이어 간다
+				if lv := htmlLauncherVer(body); lv != "" && cmpVer(lv, launcherVer) > 0 && exePath != "" {
+					if xu := exeURLFrom(updateURL()); xu != "" {
+						page(v + " 버전으로 바꾸는 중… 실행기(" + lv + ")도 받고 있어요")
+						if nb, err := fetchExe(xu, lv, 120*time.Second); err == nil {
+							if err := swapExe(exePath, nb); err == nil {
+								mu.Lock()
+								runNewExe = true
+								mu.Unlock()
+								os.Remove(pendingPath)
+								msg = "upd=exe:" + lv
+							} else {
+								msg = "upd=err:" + url.QueryEscape("실행기 교체 실패 — "+err.Error())
+							}
+						} else {
+							msg = "upd=err:" + url.QueryEscape(err.Error())
+						}
+						restart(msg)
+						return
+					}
+				}
 				page(v + " 버전으로 바꾸는 중…")
-				restart("upd=ok:" + v)
+				restart(msg)
 			case "/update/rollback":
 				if err := rollbackUpdate(appDir); err != nil {
 					page(err.Error() + "<br>잠시 후 앱으로 돌아갑니다.")
@@ -447,7 +498,21 @@ func main() {
 		c.Wait()
 		mu.Lock()
 		again := relaunch
+		newExe := runNewExe
+		exeMsg := nextMsg
 		mu.Unlock()
+		if newExe {
+			time.Sleep(600 * time.Millisecond)
+			if exeMsg != "" {
+				os.WriteFile(pendingPath, []byte(exeMsg), 0o644) // 새 실행기가 켜지면 앱에 알림
+			}
+			nc := exec.Command(exePath)
+			nc.Dir = filepath.Dir(exePath)
+			if nc.Start() == nil {
+				return
+			}
+			os.Remove(pendingPath)
+		}
 		if !again {
 			return
 		}

@@ -1,3 +1,4 @@
 *.exe
+!windows/yaksok-necut.exe
 *.zip
 windows/launcher/*.test
