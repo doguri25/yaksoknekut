@@ -1,0 +1,46 @@
+  /* ---------- decorate ---------- */
+  .decor { display: grid; grid-template-columns: minmax(0, 1fr) 480px; gap: 22px; width: 100%; max-width: 1500px; align-items: start; margin-top: 54px; }
+  .decor-left { display: flex; flex-direction: column; gap: 14px; align-items: center; min-width: 0; }
+  .bar { width: 100%; height: 18px; background: #fff; border-radius: 999px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,.08); }
+  .bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--mint-dark), var(--coral)); border-radius: 999px; transition: width .25s linear; }
+  .stage, .decor-left .bar { width: 100%; max-width: 825px; }
+  .stage { position: relative; }
+  .stage canvas.decor-canvas { width: 100%; aspect-ratio: 3 / 2; display: block; border-radius: 22px; box-shadow: var(--shadow); background: #fff; touch-action: none; }
+  #stool {
+    position: absolute; display: none; transform: translateX(-50%);
+    gap: 8px; padding: 8px; border-radius: 999px;
+    background: #fff; box-shadow: var(--shadow); z-index: 3;
+  }
+  #stool.on { display: flex; }
+  #stool button {
+    width: 62px; height: 62px; border-radius: 50%; border: 0; cursor: pointer;
+    background: var(--bg); color: var(--ink);
+    font: 34px "Jua", var(--body-font), sans-serif; line-height: 1;
+    display: grid; place-items: center; touch-action: manipulation;
+  }
+  #stool button:active { transform: scale(.9); background: var(--peach); }
+  #stool button.del { background: var(--warn-soft, #FBE9E7); color: #E5484D; }
+  #stool button svg { width: 32px; height: 32px; }
+  .drawer { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 10px; height: 612px; min-width: 0; overflow: hidden; }
+  .drawer .tools { display: flex; gap: 8px; }
+  .drawer .tools .btn { flex: 1; min-width: 0; padding: 0 8px; font-size: 22px; }
+  .tabs { display: flex; gap: 6px; }
+  .tab {
+    flex: 1; min-width: 0; border: 0; border-radius: 999px; min-height: 56px;
+    background: var(--bg); color: var(--ink); font: 22px "Jua", "Gowun Dodum", sans-serif;
+    cursor: pointer; touch-action: manipulation; white-space: nowrap; padding: 0 2px; overflow: hidden;
+  }
+  .tab.on { background: var(--coral); color: #fff; }
+  /* 스티커 서랍: 4×3 칸이 남은 높이에 맞춰 늘어나므로 스크롤·겹침 없음 */
+  .sgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: 10px; flex: 1; min-height: 0; padding: 2px; }
+  .sbtn {
+    border: 4px solid transparent; border-radius: 20px; background: var(--bg);
+    display: grid; place-items: center; cursor: pointer; min-height: 0; min-width: 0; overflow: hidden;
+    transition: transform .12s; touch-action: manipulation; padding: 0;
+  }
+  .sbtn:active { transform: scale(.92); background: var(--peach); }
+  .sbtn canvas { height: 80%; width: auto; max-width: 84%; max-height: 84%; object-fit: contain; }
+  .drawer.shake { animation: shake .45s; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-12px); } 40% { transform: translateX(12px); } 60% { transform: translateX(-8px); } 80% { transform: translateX(8px); } }
+  .full-note { font-size: 19px; color: var(--muted); text-align: center; min-height: 28px; }
+

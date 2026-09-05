@@ -1,0 +1,31 @@
+  /* ---------- pick ---------- */
+  .hint { font-size: 40px; display: flex; align-items: center; gap: 18px; }
+  .slotboxes { display: flex; gap: 8px; }
+  .slotboxes span { width: 46px; height: 46px; border-radius: 10px; border: 4px solid var(--coral); background: #fff; }
+  .slotboxes span.full { background: var(--coral); }
+  .pickwrap { display: flex; align-items: center; justify-content: center; gap: 26px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 600px; --ar: 1.5; }
+  .pickpv { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .pickpv canvas { width: 500px; aspect-ratio: 3 / 2; border-radius: 20px; box-shadow: var(--shadow); background: #fff; display: block; }
+  .pickpv-cap { font: 24px "Jua", var(--body-font), sans-serif; color: var(--muted); }
+  .card {
+    position: relative; border: 8px solid transparent; border-radius: 26px;
+    overflow: hidden; background: #fff; box-shadow: var(--shadow);
+    width: 100%;
+    aspect-ratio: var(--ar);
+    cursor: pointer; transition: transform .15s, border-color .15s;
+    touch-action: manipulation;
+  }
+  .card canvas { width: 100%; height: 100%; display: block; }
+  .card.sel { border-color: var(--coral); }
+  .card:active { transform: scale(.97); }
+  .card .num {
+    position: absolute; top: 10px; left: 10px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--coral); color: #fff; font-size: 36px;
+    display: none; place-items: center;
+    box-shadow: 0 3px 0 var(--coral-dark);
+  }
+  .card.sel .num { display: grid; }
+  .row { display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; }
+

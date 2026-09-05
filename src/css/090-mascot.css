@@ -1,0 +1,33 @@
+  /* ---------- mascot ---------- */
+  .mascot { width: 272px; height: auto; }
+  .mascot.bounce { animation: bounce 2.2s ease-in-out infinite; transform-origin: 50% 100%; }
+  @keyframes bounce { 0%,100% { transform: translateY(0) scale(1,1); } 50% { transform: translateY(-18px) scale(.98,1.03); } }
+  .mascot .eye { animation: blink 4s infinite; transform-origin: center; }
+  @keyframes blink { 0%,92%,100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+  .tap-hint { font-size: 56px; display: flex; align-items: center; gap: 20px; }
+  .tap-hint .finger { display: inline-block; animation: tap 1.2s infinite; font-size: 72px; }
+  @keyframes tap { 0%,100% { transform: translateY(0); } 50% { transform: translateY(14px); } }
+  .campaign { font-size: 28px; color: var(--muted); background: #fff; padding: 10px 30px; border-radius: 999px; box-shadow: var(--shadow); }
+  #hot { position: absolute; top: 0; right: 0; width: 150px; height: 150px; z-index: 9; }
+  /* 윈도우 앱(exe)에서만 보이는 작은 종료 단추 — 오른쪽 위. 교사 메뉴 5초 누르기 영역은 그 아래로 내려감 */
+  #topbtns { position: absolute; top: 16px; right: 16px; z-index: 10; display: flex; gap: 8px; }
+  #topbtns .btn { display: none; align-items: center; gap: 6px; min-height: 0; padding: 7px 14px 7px 11px; border-radius: 999px; background: rgba(255,255,255,.75); color: var(--muted); font: 18px "Jua", var(--body-font), sans-serif; box-shadow: 0 3px 0 rgba(39,64,58,.10); border: 1px solid rgba(39,64,58,.10); }
+  #topbtns .ic { width: 18px; height: 18px; }
+  #topbtns .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(39,64,58,.10); }
+  #app.hasquit #btn-quit { display: inline-flex; }
+  #app.fontwait .screen, #app.fontwait #topbtns { visibility: hidden; }   /* 고른 본문 글꼴 준비 전엔 글자를 잠깐 숨김 (배경만 보임) */
+  #app.exeready[data-screen="s0"] #btn-restart { display: inline-flex; background: var(--coral); color: #fff; border-color: transparent; box-shadow: 0 3px 0 var(--coral-dark); }   /* 새 실행기를 받아 둔 뒤: [실행기 새 버전 · 다시 시작] */
+  #restart-ask { z-index: 67; }   /* 잠금 화면(66) 위에도 */
+  #restart-ask .panel { max-width: 640px; }
+  #restart-ask .small b { color: var(--coral); font-size: 30px; }
+  #app.haslock[data-screen="s0"] #btn-lock { display: inline-flex; }   /* 잠금 비밀번호를 설정하면 첫 화면에 [잠금] */
+  #app.haslock #hot { top: 56px; }
+  #app.hasquit.hasmon[data-screen="s0"] #btn-mon { display: inline-flex; }   /* 모니터 옮기기는 첫 화면에서만 */
+  #app.hasquit #hot { top: 56px; }
+  #app[data-screen="s4"] #topbtns, #app[data-screen="s10"] #topbtns { display: none !important; }   /* 촬영 중·교사 메뉴에서는 숨김 */
+  #hot .hot-ring { position: absolute; top: 22px; right: 22px; width: 64px; height: 64px; opacity: 0; transition: opacity .3s; }
+  #hot.arming .hot-ring { opacity: 1; }
+  #hot .hot-ring circle { fill: none; stroke-width: 8; }
+  #hot .hot-ring .b { stroke: rgba(39,64,58,.15); }
+  #hot .hot-ring .f { stroke: var(--coral); stroke-linecap: round; transition: stroke-dashoffset 3.4s linear; }
+

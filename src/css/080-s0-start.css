@@ -1,0 +1,74 @@
+  /* ---------- S0 시작 화면 ---------- */
+  #s0 {
+    isolation: isolate;
+    justify-content: flex-start; align-items: stretch; gap: 0;
+    padding: 26px 64px 22px;
+    background:
+      radial-gradient(circle at 14% 20%, var(--s0-a, var(--hero-a)), transparent 26%),
+      radial-gradient(circle at 88% 84%, var(--s0-b, var(--hero-b)), transparent 26%),
+      linear-gradient(135deg, var(--s0-c1, #FFFAF4), var(--s0-c2, #FFF3E8) 55%, var(--s0-bg, var(--bg)));   /* --s0-*: 행사 세트 무드 (없으면 테마 색) */
+  }
+  #mood-art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .attract-ov { position: absolute; inset: 0; z-index: 6; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding: 26px 64px 22px; background: rgba(255,255,255,.5); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); cursor: pointer; }
+  .attract-ov.on { display: flex; }
+  .at-head { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .at-head .hero-title { font-size: 46px; margin: 4px 0 0; text-align: center; line-height: 1.12; }
+  .at-stage { position: relative; width: 660px; height: 440px; }
+  .at-card { position: absolute; inset: 0; border-radius: 26px; border: 10px solid #fff; box-shadow: 0 28px 62px rgba(39,64,58,.22); overflow: hidden; opacity: 0; transform: rotate(var(--rot, -3deg)) scale(.94); transition: opacity .7s, transform .7s; background: #fff; }
+  .at-card.on { opacity: 1; transform: rotate(var(--rot, -3deg)) scale(1); }
+  .at-card canvas { width: 100%; height: 100%; display: block; }
+  .at-foot { width: 100%; display: flex; align-items: flex-end; justify-content: center; position: relative; min-height: 60px; }
+  .at-foot #at-mascot { position: absolute; left: 0; bottom: -6px; width: 150px; }
+  .at-foot #at-mascot .mascot { width: 100%; height: auto; }
+  .at-tap { margin: 0 0 6px; font: 32px "Jua", sans-serif; color: var(--coral); animation: tap-pulse 1.2s ease-in-out infinite; }
+  @keyframes tap-pulse { 0%, 100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.06); opacity: 1; } }
+  .paper-badge { display: none; position: absolute; right: 28px; bottom: 22px; z-index: 3; background: #fff; border: 2px solid var(--coral); color: var(--coral-dark); border-radius: 999px; padding: 7px 16px; font: 18px "Jua", sans-serif; box-shadow: var(--shadow); }
+  .paper-badge.on { display: inline-flex; align-items: center; gap: 6px; }
+  .paper-badge b { font-size: 22px; }
+  #s0.mood .pcard.front .faces, #s0.mood .pcard.front .pcap { display: none; }
+  #pcard-canvas { display: none; position: absolute; inset: 0; width: 100%; height: 100%; }
+  #s0.mood #pcard-canvas { display: block; }
+  #app[data-screen="s0"] #brand, #app[data-screen="s10"] #brand { display: none; }   /* 첫 화면(큰 로고가 따로 있음)·교사 메뉴(설정창과 겹침)에서는 숨김 */
+  .fs { position: absolute; opacity: .38; font-weight: 900; animation: floaty 5s ease-in-out infinite; pointer-events: none; }
+  .fs-a { color: #F1BF3E; font-size: 34px; top: 14%; left: 44%; }
+  .fs-b { color: #E9839B; font-size: 28px; bottom: 10%; left: 42%; animation-delay: -1.6s; }
+  .fs-c { color: #65B994; font-size: 42px; top: 22%; right: 3%; animation-delay: -3.2s; }
+  @keyframes floaty { 50% { transform: translateY(-12px) rotate(6deg); } }
+  .brand-bar { display: flex; align-items: center; gap: 18px; z-index: 2; }
+  .brand-bar h1 { font-size: 40px; line-height: 1.1; margin: 0; }
+  .brand-logo {
+    width: 88px; height: 88px; border-radius: 26px; background: #fff; border: 0;
+    box-shadow: var(--shadow); display: grid; place-items: center; cursor: pointer; padding: 6px;
+  }
+  .brand-logo .mascot { width: 100%; }
+  .brand-logo .mascot.bounce { animation: bounce-sm 2.4s ease-in-out infinite; }
+  @keyframes bounce-sm { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  .brand-logo:focus-visible { outline: 4px solid #2B8CFF; outline-offset: 3px; }
+  .eyebrow { margin: 0 0 4px; color: var(--coral); font: 18px "Jua", "Gowun Dodum", sans-serif; letter-spacing: .04em; }
+  .attract { flex: 1; display: grid; grid-template-columns: minmax(380px, 1.05fr) minmax(360px, .95fr); align-items: center; gap: 50px; min-height: 0; width: 100%; max-width: 1360px; margin: 0 auto; }
+  .hero { z-index: 2; display: flex; flex-direction: column; align-items: flex-start; }
+  .pill { display: inline-flex; align-items: center; min-height: 42px; padding: 0 18px; border-radius: 999px; background: var(--pill-bg, var(--peach)); color: var(--pill-fg, var(--coral-dark)); font: 20px "Jua", "Gowun Dodum", sans-serif; }
+  .hero-title { margin: 20px 0 16px; font-size: 60px; line-height: 1.16; letter-spacing: -.03em; text-align: left; text-wrap: initial; }
+  .hero-title strong { color: var(--coral); font-weight: 400; position: relative; z-index: 0; }
+  .hero-title strong::after { content: ""; position: absolute; left: 0; right: 0; bottom: 2px; height: 14px; border-radius: 99px; background: var(--lemon); z-index: -1; }
+  .hero-sub { max-width: none; white-space: nowrap; font-size: 23px; line-height: 1.6; color: var(--muted); margin: 0 0 26px; }
+  .btn.giant { min-height: 100px; min-width: 330px; font-size: 40px; gap: 18px; }
+  .cbadge { position: relative; width: 64px; height: 64px; border-radius: 50%; background: #fff; color: var(--coral); display: grid; place-items: center; margin-left: -16px; flex: none; }
+  .cbadge .cam { width: 40px; height: 40px; }
+  .cbadge .spark { position: absolute; width: 26px; height: 26px; top: -9px; right: -9px; }
+  .privacy { margin: 16px 0 0; color: var(--muted); font-size: 17px; }
+  .hero-art { position: relative; height: 496px; display: grid; place-items: center; }
+  .pcard {
+    position: absolute; width: 486px; aspect-ratio: 3 / 2; border-radius: 28px; background: #fff;
+    box-shadow: 0 28px 62px rgba(39, 64, 58, .20); border: 10px solid #fff; overflow: hidden;
+  }
+  .pcard.back { transform: rotate(7deg) translate(36px, -34px); background: linear-gradient(150deg, var(--back-a, var(--sky)), var(--back-b, var(--mint))); display: grid; place-items: end end; padding: 0 22px 16px 0; color: var(--primary-ink, #0B7D6E); font: 30px "Jua", sans-serif; }
+  .pcard.front { transform: rotate(-4deg) translate(-18px, 16px); background: linear-gradient(160deg, #FFE8DD, #FFF7EF 55%, #F1EEFF); display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .faces { display: flex; gap: 8px; transform: translateY(-16px); }
+  .face { width: 84px; height: 102px; border-radius: 50% 50% 44% 44%; display: grid; place-items: center; font-size: 23px; font-weight: 900; color: #463D58; border: 5px solid rgba(255,255,255,.85); }
+  .f1 { background: #FFD09E; transform: rotate(-4deg); } .f2 { background: #D6E9FF; } .f3 { background: #FFD5DF; transform: rotate(4deg); }
+  .pcap { position: absolute; left: 14px; right: 14px; bottom: 14px; min-height: 58px; border-radius: 18px; background: var(--coral); color: #fff; display: grid; place-items: center; font: 26px "Jua", sans-serif; }
+  .doodle { position: absolute; font-size: 90px; filter: drop-shadow(0 10px 10px rgba(39,64,58,.15)); }
+  .dh { color: #F38BA5; right: 0; top: 4%; transform: rotate(14deg); }
+  .ds { color: #F2C84C; left: -2%; bottom: 8%; transform: rotate(-14deg); }
+

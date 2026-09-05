@@ -1,0 +1,27 @@
+  /* ---------- print / done ---------- */
+  .after { display: none; flex-direction: column; align-items: center; gap: 10px; }
+  .mascot.wavey .arm { transform-origin: 176px 128px; animation: wavearm .5s ease-in-out infinite alternate; }
+  @keyframes wavearm { from { transform: rotate(-18deg); } to { transform: rotate(22deg); } }
+  #confetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; z-index: 45; }
+  /* 칠판에 크게 보기 */
+  #board { position: absolute; inset: 0; display: none; z-index: 36; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: radial-gradient(circle at 50% 38%, #2E5A4E, #1B3730 72%); cursor: pointer; }
+  #board.on { display: flex; }
+  #board-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #board .board-title { font: 66px "Jua", sans-serif; color: #FFE066; text-shadow: 0 6px 0 rgba(0,0,0,.18); animation: board-pop .5s cubic-bezier(.3,1.5,.5,1) both; }
+  #board-img { height: 600px; width: auto; border: 12px solid #fff; border-radius: 20px; box-shadow: 0 30px 70px rgba(0,0,0,.45); animation: board-pop .7s cubic-bezier(.3,1.5,.5,1) .1s both; position: relative; }
+  #board .board-hint { color: rgba(255,255,255,.72); font-size: 22px; margin: 6px 0 0; }
+  @keyframes board-pop { 0% { transform: scale(.4) rotate(-6deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+  #app.noanim #board .board-title, #app.noanim #board-img { animation: none; }
+  #confetti.on { display: block; }
+  .after.on { display: flex; }
+  .arrow-big { font-size: 120px; line-height: 1; animation: nudge 1s infinite alternate; color: var(--coral); }
+  .arrow-big .ic { width: 110px; height: 110px; stroke-width: 4.5; }
+  @keyframes nudge { from { transform: translateX(-10px); } to { transform: translateX(14px); } }
+  .countdown { font-size: 60px; color: var(--muted); }
+
+  /* 뽑은 뒤 프린터 문제 알림 */
+  #printer-alert { z-index: 50; }
+  #printer-alert .palert { max-width: 760px; gap: 14px; }
+  .palert-ic { width: 84px; height: 84px; color: #D6336C; }
+  .palert-what { margin: 0; font-size: 34px; color: #D6336C; }
+  #printer-alert .small { font-size: 19px; line-height: 1.5; }

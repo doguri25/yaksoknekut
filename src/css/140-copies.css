@@ -1,0 +1,25 @@
+  /* ---------- copies ---------- */
+  .copies { display: none; align-items: center; gap: 18px; font-size: 34px; font-family: "Jua", "Gowun Dodum", sans-serif; }
+  .copies.on { display: flex; }
+  .seg.big { padding: 6px; border-radius: 999px; background: #fff; box-shadow: var(--shadow); }
+  .seg.big button { font-size: 32px; padding: 12px 30px; border-radius: 999px; min-height: 64px; }
+  .pbtn { border: 4px solid transparent; border-radius: 16px; background: var(--bg); color: var(--ink); font: 20px "Jua", var(--body-font), sans-serif; padding: 12px 10px; cursor: pointer; text-align: center; line-height: 1.25; min-height: 64px; touch-action: manipulation; }
+  .pbtn.ink { background: var(--lemon); }
+  /* 약속 손글씨 판 */
+  .ink-card { background: #fff; border-radius: 30px; box-shadow: var(--shadow); padding: 18px 26px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 1200px; }
+  .ink-head { text-align: center; }
+  .ink-head h2 { font-size: 34px; margin: 0; }
+  .ink-head p { margin: 4px 0 0; font-size: 18px; color: var(--muted); }
+  #ink-pad { display: block; background: #fff; border-radius: 18px; box-shadow: inset 0 0 0 3px var(--line); touch-action: none; cursor: crosshair; }
+  .ink-tools { display: flex; align-items: center; gap: 12px; }
+  .ink-colors { display: inline-flex; gap: 8px; margin-right: 10px; }
+  .ink-colors button { width: 40px; height: 40px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 0 0 2px var(--line); cursor: pointer; padding: 0; }
+  .ink-colors button.on { box-shadow: 0 0 0 3px var(--coral); }
+  .ink-tools .btn.small { min-height: 52px; font-size: 22px; }
+  .pbtn.on { border-color: var(--coral); background: var(--peach); }
+  .pbtn.empty { grid-column: 1 / -1; color: var(--muted); }
+  .pbtn:active { transform: scale(.96); }
+  .cbtn { border: 6px solid transparent; border-radius: 20px; cursor: pointer; min-width: 0; min-height: 0; box-shadow: inset 0 0 0 2px rgba(39,64,58,.12); touch-action: manipulation; padding: 0; }
+  .cbtn.on { border-color: var(--coral); }
+  .cbtn:active { transform: scale(.94); }
+

@@ -16,6 +16,7 @@
 |---|---|
 | `index.html` | 앱 본체 (한 파일) |
 | `windows/yaksok-necut.exe` | 윈도우 실행기 최신 빌드 — 실행기 자동 업데이트가 받아 가는 파일 |
+| `src/` + `build.py` | 앱 소스 조각(CSS·마크업·JS·글꼴 블록)과 빌드 스크립트 — `python3 build.py` 로 `index.html` 을 만듦 ([src/README.md](src/README.md)) |
 | `windows/launcher/` | 윈도우 실행기(Go) 소스, 주아 글꼴, 아이콘 리소스 — [만드는 법](windows/build.md) |
 | `windows/bat/` | exe 대신 쓰는 시작 파일(bat) 방식 |
 | `docs/` | 교사용 안내서(PDF·DOCX), 학생용 포스터 |

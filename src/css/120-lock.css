@@ -1,0 +1,49 @@
+  /* ---------- 잠금 화면 (비밀번호 번호판) ---------- */
+  /* 첫 화면처럼: 뒤 화면(무드 색·장식)이 흐리게 비치고, 왼쪽에 로고·제목, 오른쪽에 번호판 카드 */
+  .lock { position: absolute; inset: 0; z-index: 66; display: none; flex-direction: column; padding: 26px 64px 22px; background: rgba(255,255,255,.62); -webkit-backdrop-filter: blur(24px) saturate(1.1); backdrop-filter: blur(24px) saturate(1.1); isolation: isolate; }
+  .lock.on { display: flex; }
+  .lock .fs { opacity: .5; }
+  .lock-brand { display: flex; align-items: center; gap: 18px; }
+  .lock-brand .lock-logo { width: 88px; height: 88px; border-radius: 26px; background: #fff; box-shadow: var(--shadow); display: grid; place-items: center; padding: 6px; }
+  .lock-brand .lock-logo .mascot { width: 100%; height: auto; }
+  .lock-brand h1 { font-size: 40px; line-height: 1.1; margin: 0; }
+  .lock-body { flex: 1; display: grid; grid-template-columns: minmax(380px, 1.05fr) minmax(360px, .95fr); align-items: center; gap: 50px; width: 100%; max-width: 1360px; margin: 0 auto; min-height: 0; }
+  .lock-hero { display: flex; flex-direction: column; align-items: flex-start; }
+  .lock-hero .hero-title { font-size: 56px; margin: 18px 0 12px; }
+  .lock-hero .hero-sub { white-space: normal; margin-bottom: 18px; }
+  .lock-hero .lock-msg { min-height: 30px; font-size: 22px; }
+  .lock-quit { position: absolute; top: 16px; right: 16px; display: none; align-items: center; gap: 6px; min-height: 0; padding: 7px 14px 7px 11px; border-radius: 999px; background: rgba(255,255,255,.8); color: var(--muted); font: 18px "Jua", var(--body-font), sans-serif; box-shadow: 0 3px 0 rgba(39,64,58,.10); border: 1px solid rgba(39,64,58,.08); cursor: pointer; touch-action: manipulation; }
+  .lock-quit .ic { width: 18px; height: 18px; }
+  .lock-quit:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(39,64,58,.10); }
+  #app.hasquit .lock-quit { display: inline-flex; }
+  #quit-ask { z-index: 68; }   /* 잠금 화면(66) 위에도 뜨게 */
+  .lock-links { display: flex; gap: 22px; margin-top: 2px; }
+  .lock-links button { border: 0; background: transparent; color: var(--muted); font: 700 17px var(--body-font), sans-serif; text-decoration: underline; cursor: pointer; touch-action: manipulation; padding: 0; }
+  .lock-help { display: none; max-width: 520px; margin: 10px 0 0; font-size: 15px; line-height: 1.5; font-weight: 400; color: var(--muted); background: #fff; border-radius: 12px; padding: 10px 14px; text-align: left; }
+  .lock-help.on { display: block; }
+  .lock-side { display: grid; place-items: center; }
+  .lock-card { position: relative; background: #fff; border-radius: 34px; box-shadow: var(--shadow); padding: 24px 40px 22px; display: flex; flex-direction: column; align-items: center; gap: 8px; transform: rotate(-2deg); }
+  .lock-card .lock-cap { font: 22px "Jua", sans-serif; color: var(--muted); margin: 0 0 2px; }
+  .pin-dots { display: flex; gap: 18px; margin: 4px 0 4px; }
+  .pin-dots i { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--coral); background: #fff; transition: background .12s; }
+  .pin-dots i.on { background: var(--coral); }
+  .pin-dots.shake { animation: pin-shake .45s; }
+  @keyframes pin-shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-12px); } 40%, 80% { transform: translateX(12px); } }
+  .keypad { display: grid; grid-template-columns: repeat(3, 76px); gap: 8px 14px; }
+  .keypad button { width: 76px; height: 76px; border-radius: 50%; border: 0; background: var(--bg); color: var(--ink); font: 36px "Jua", sans-serif; cursor: pointer; touch-action: manipulation; box-shadow: 0 4px 0 var(--line); display: grid; place-items: center; padding: 0; }
+  .keypad button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+  .keypad button.fn { background: transparent; box-shadow: none; color: var(--muted); }
+  .keypad button.fn .ic { width: 34px; height: 34px; }
+  .keypad button.blank { visibility: hidden; }
+  .lock-msg { margin: 0; color: #D6336C; }
+  #backdrop.on { display: block; }
+  .panel {
+    background: #fff; border-radius: 34px; padding: 44px 48px;
+    text-align: center; display: flex; flex-direction: column; align-items: center; gap: 22px;
+    max-width: 900px; box-shadow: 0 26px 46px -10px rgba(39, 64, 58, .38);   /* 아래쪽으로만 떨어지는 그림자 */
+  }
+  .panel p { font-size: 26px; }
+  .panel .small { font-size: 20px; color: var(--muted); max-width: 60ch; font-weight: 400; }
+  #orient { display: none; z-index: 60; }
+  @media (orientation: portrait) { #orient { display: grid; } }
+

@@ -1,0 +1,14 @@
+  /* ---------- print ---------- */
+  #print-area { display: none; }
+  @media print {
+    body { background: #fff; }
+    #app { display: none !important; }
+    #print-area { display: block; }
+    #print-area .pg { width: 100%; height: 100vh; break-after: page; page-break-after: always; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    #print-area .pg:last-child { break-after: auto; page-break-after: auto; }
+    #print-area img { width: var(--pscale, 100%); height: var(--pscale, 100%); object-fit: contain; display: block; flex: none; }   /* --pscale: 교사 메뉴 '인쇄 크기' (100%가 기본) */
+    @page { size: 6in 4in; margin: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mascot.bounce, .tap-hint .finger, .arrow-big, .mascot .eye, .screen.on, .pose-emoji svg, .pose-emoji .peye, .buddy .mascot { animation: none; }
+  }

@@ -1,0 +1,56 @@
+  /* ---------- buttons ---------- */
+  .btn {
+    appearance: none; border: 0; cursor: pointer;
+    min-height: 96px; padding: 0 52px;
+    border-radius: 999px;
+    background: var(--coral); color: #fff;
+    font-size: 36px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center; gap: 14px;
+    box-shadow: 0 8px 0 var(--coral-dark);
+    transition: transform .15s, box-shadow .15s, opacity .2s;
+    touch-action: manipulation;
+    white-space: nowrap;
+  }
+  .btn:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--coral-dark); }
+  .btn.sec { background: #fff; color: var(--ink); box-shadow: 0 8px 0 var(--line); }
+  .btn.sec:active { box-shadow: 0 2px 0 var(--line); }
+  .btn.small { min-height: 72px; font-size: 28px; padding: 0 34px; }
+  .btn.tiny { min-height: 56px; font-size: 22px; padding: 0 24px; box-shadow: 0 5px 0 var(--line); }
+  .btn.tiny:active { box-shadow: 0 1px 0 var(--line); transform: translateY(4px); }
+  .btn[disabled] { opacity: .35; pointer-events: none; }
+  .btn:focus-visible, .tile:focus-visible, .card:focus-visible, .ftile:focus-visible { outline: 5px solid #2B8CFF; outline-offset: 4px; }
+  .btn svg { width: 40px; height: 40px; }
+  .btn .ic { flex: none; }
+  .btn.small .ic { width: 32px; height: 32px; }
+  .btn.tiny .ic { width: 26px; height: 26px; }
+  .privacy .ic { width: 20px; height: 20px; vertical-align: -4px; margin-right: 2px; }
+  .rotate-ic .ic { width: 96px; height: 96px; color: var(--coral); }
+
+  .corner {
+    position: absolute; left: 26px; bottom: 26px;
+    width: 92px; height: 92px; min-height: 0; padding: 0;
+    border-radius: 50%;
+    background: #fff; color: var(--ink);
+    box-shadow: 0 7px 0 var(--line);
+    z-index: 5;
+  }
+  .corner:active { box-shadow: 0 2px 0 var(--line); transform: translateY(5px); }
+  .corner svg { width: 46px; height: 46px; }
+
+  .step {
+    position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
+    background: #fff; border-radius: 999px;
+    padding: 10px 30px; font-size: 28px;
+    box-shadow: var(--shadow);
+    display: none; z-index: 5;
+    white-space: nowrap;
+  }
+  .step.on { display: block; }
+  .step b { color: var(--coral); font-weight: 400; margin-right: 6px; }
+  /* 단계 표시 칩이 내용을 가리지 않도록 위 여백 확보 */
+  #s1, #s2, #s5, #s6, #s8 { padding-top: 88px; }
+  #s1, #s2 { justify-content: flex-start; }   /* 타일이 왼쪽 아래 홈 버튼과 겹치지 않게 위에서부터 배치 */
+  #s6 { gap: 12px; }
+  #s6 .preview { height: 300px; }
+  #s8 .preview { height: 336px; }
+

@@ -1,0 +1,73 @@
+  /* ---------- brand / about ---------- */
+  #brand {
+    position: absolute; bottom: 16px; right: 20px; z-index: 8;   /* 오른쪽 아래 — 카메라 화면과 겹치지 않는 자리 */
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 0; cursor: pointer; padding: 6px 18px 6px 8px;
+    background: rgba(255,255,255,.92); border-radius: 999px;
+    box-shadow: var(--shadow); color: var(--ink);
+    font: 24px "Jua", "Gowun Dodum", sans-serif; touch-action: manipulation;
+  }
+  #brand svg { width: 38px; height: 38px; }
+  #brand:active { transform: scale(.96); }
+  #brand:focus-visible { outline: 4px solid #2B8CFF; outline-offset: 3px; }
+  .overlay .about-panel { gap: 12px; width: auto; max-width: 1100px; max-height: calc(100% - 40px); overflow-y: auto; padding: 26px 40px 24px; font-family: "Jua", "Gowun Dodum", sans-serif; }   /* .panel 보다 뒤에 오는 규칙이라 간격·여백을 여기서 확정 */
+  #season { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+  .about-panel .mascot { display: none; }   /* 세로 공간 절약 — 세로 스크롤이 생기지 않게 */
+  /* 약속이 반응 (고르기·꾸미기 화면 왼쪽 아래) */
+  .buddy { position: absolute; left: calc(50% - 508px); bottom: 10px; width: 96px; display: none; z-index: 3; pointer-events: none; }
+  #app[data-screen="s7"] .buddy { left: calc(50% - 50px); }   /* 꾸미기 화면에선 '다 꾸몄어요' 버튼과 서랍 사이 빈자리 */
+  #app[data-screen="s5"] .buddy, #app[data-screen="s7"] .buddy { display: block; }
+  .buddy .mascot { width: 100%; height: auto; transform-origin: 50% 100%; animation: bounce-sm 3s ease-in-out infinite; }
+  .buddy .eyes-happy, .buddy .mouth-big { display: none; }
+  .buddy.react .eyes-open, .buddy.react .mouth { display: none; }
+  .buddy.react .eyes-happy, .buddy.react .mouth-big { display: block; }
+  .buddy.react .mascot { animation: buddy-hop .55s cubic-bezier(.3,1.4,.5,1); }
+  .buddy.react .arm { transform-origin: 176px 128px; animation: wavearm .28s ease-in-out 2 alternate; }
+  .buddy .bub { position: absolute; left: 30px; bottom: 112px; background: #fff; color: var(--ink); border-radius: 16px; padding: 6px 14px; font: 24px "Jua", sans-serif; white-space: nowrap; box-shadow: 0 6px 16px rgba(39,64,58,.14); opacity: 0; transform: scale(.5); transform-origin: var(--tail, 14px) 100%; transition: opacity .15s, transform .2s cubic-bezier(.3,1.5,.5,1); }
+  .buddy .bub::after { content: ''; position: absolute; left: var(--tail, 14px); bottom: -9px; border: 8px solid transparent; border-top-color: #fff; border-bottom: 0; }
+  .buddy.react .bub { opacity: 1; transform: none; }
+  @keyframes buddy-hop { 0% { transform: translateY(0) scale(1, 1); } 35% { transform: translateY(-16px) scale(.95, 1.08); } 70% { transform: translateY(0) scale(1.06, .94); } 100% { transform: none; } }
+  .about-panel h2 { font-size: 34px; }
+  .about-ver { font-size: 20px; color: var(--coral); background: var(--peach); border-radius: 999px; padding: 3px 16px; }
+  .about-list { display: grid; grid-template-columns: auto auto; gap: 2px 16px; margin: 2px 0 2px; text-align: left; font-size: 21px; }
+  .about-list dt { color: var(--muted); font-size: 18px; letter-spacing: .06em; align-self: center; }
+  .about-list dd { margin: 0; }
+  .about-panel .small { font-size: 18px; max-width: none; white-space: nowrap; color: var(--muted); }
+  .about-panel .about-lic { margin: 2px 0 0; font-size: 15px; line-height: 1.4; color: var(--muted); white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .about-panel .about-lic b { color: var(--ink); font-size: 15px; font-weight: 400; }
+  .about-panel .about-lic .lic-more { border: 0; background: var(--bg); color: var(--coral-dark); font: 14px "Jua", sans-serif; border-radius: 999px; padding: 3px 11px; cursor: pointer; touch-action: manipulation; transition: background-color .18s; }
+  .about-panel .about-lic .lic-more:active { background: var(--peach); }
+  #licbox { z-index: 41; }
+  #licbox .panel { max-width: 640px; padding: 30px 40px 26px; gap: 10px; font-family: "Jua", "Gowun Dodum", sans-serif; }
+  #licbox h2 { font-size: 30px; margin: 0; }
+  #licbox .lic-tag { font-size: 17px; color: var(--coral); background: var(--peach); border-radius: 999px; padding: 3px 14px; }
+  #licbox .lic-body { text-align: left; font: 400 17px/1.55 var(--body-font), "Gowun Dodum", sans-serif; color: var(--ink); margin: 2px 0 0; }
+  #licbox .lic-body li { margin: 0 0 4px; padding-left: 18px; position: relative; }
+  #licbox .lic-body li::before { content: "•"; position: absolute; left: 2px; color: var(--coral); }
+  #licbox .lic-body ul { list-style: none; margin: 0; padding: 0; }
+  #licbox .lic-foot { font-size: 14px; color: var(--muted); margin: 0; }
+  .changelog { width: 100%; max-width: 440px; text-align: left; font-family: var(--body-font), "Gowun Dodum", sans-serif; font-weight: 400; font-size: 17px; line-height: 1.5; }
+  .cl-latest { background: var(--bg); border-radius: 14px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; height: 122px; overflow: hidden; }
+  .cl-latest li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cl-latest li.more { color: var(--muted); font-size: 14px; }
+  .cl-latest b { font-family: "Jua", sans-serif; font-weight: 400; color: var(--coral); font-size: 17px; }
+  .changelog details { margin-top: 6px; height: 30px; overflow: hidden; }
+  .changelog summary { cursor: pointer; color: var(--muted); font-size: 16px; list-style: none; text-align: center; padding: 4px; }
+  .changelog summary::before { content: "▸ "; }
+  .changelog details[open] summary::before { content: "▾ "; }
+  .changelog ul { margin: 4px 0 0; padding: 0 0 0 2px; list-style: none; }
+  .changelog li { margin: 0 0 2px; padding-left: 16px; position: relative; }
+  .changelog li::before { content: "•"; position: absolute; left: 2px; color: var(--coral); }
+  .cl-latest ul { font-size: 16px; color: var(--ink); }
+  .changelog details > div { max-height: 170px; }
+  .cl-old { margin-top: 8px; font-size: 15px; color: var(--ink-2, #40534E); }
+  .cl-old b { font-family: "Jua", sans-serif; font-weight: 400; color: var(--coral); font-size: 16px; }
+  .cl-old em { font-style: normal; color: var(--muted); font-size: 13px; margin-left: 4px; }
+  .changelog details[open] { height: 150px; overflow-y: auto; }
+  .about-panel .btn.small { min-height: 56px; font-size: 24px; padding: 0 26px; margin-top: 2px; }
+  .btn.hold { position: relative; overflow: hidden; }
+  .btn.hold .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--peach); }
+  .btn.hold.holding .fill { width: 100%; transition: width 1.5s linear; }
+  .btn.hold .lbl { position: relative; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.hold small { font-size: 16px; color: var(--muted); }
+

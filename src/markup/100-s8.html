@@ -1,0 +1,32 @@
+  <!-- S8 뽑기 -->
+  <section class="screen" id="s8">
+    <canvas class="preview" id="final-preview"></canvas>
+    <div class="copies" id="copies">
+      <span>몇 장 뽑을까요?</span>
+      <span class="seg big" id="copies-seg"></span>
+    </div>
+    <div class="row" id="print-actions">
+      <button class="btn sec small" id="btn-more"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 5l3.6 10.4L32 19l-10.4 3.6L18 33l-3.6-10.4L4 19l10.4-3.6z"/><path d="M36 25l2.2 6 6 2.2-6 2.2-2.2 6-2.2-6-6-2.2 6-2.2z"/></svg> 더 꾸미기</button>
+      <button class="btn" id="btn-print"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 18V6h22v12"/><path d="M13 32H8a3 3 0 0 1-3-3V21a3 3 0 0 1 3-3h32a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-5"/><rect x="13" y="27" width="22" height="15" rx="2"/><circle cx="37" cy="23" r="1.6" fill="currentColor"/></svg> 뽑기</button>
+    </div>
+    <div class="after" id="after">
+      <svg class="mascot wavey" viewBox="0 0 220 220" aria-hidden="true" style="width:150px">
+        <ellipse cx="110" cy="205" rx="64" ry="9" fill="rgba(39,64,58,.10)"/>
+        <path d="M40 130 C40 75 70 40 110 40 C150 40 180 75 180 130 C180 172 150 196 110 196 C70 196 40 172 40 130Z" fill="#7ED6BE"/>
+        <path d="M96 42 C92 26 104 18 110 30 C116 18 128 26 124 42Z" fill="#5FC3A8"/>
+        <path d="M72 112 Q84 100 96 112" stroke="#27403A" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M124 112 Q136 100 148 112" stroke="#27403A" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <circle cx="66" cy="136" r="11" fill="#FFB3C1"/><circle cx="154" cy="136" r="11" fill="#FFB3C1"/>
+        <path d="M88 140 Q110 168 132 140Z" fill="#27403A"/>
+        <g class="arm"><path d="M176 128 C200 118 208 96 196 74" stroke="#7ED6BE" stroke-width="18" fill="none" stroke-linecap="round"/><circle cx="196" cy="70" r="16" fill="#7ED6BE"/></g>
+      </svg>
+      <h2 id="after-text">프린터에서 나와요<br>선생님께 받아 가세요</h2>
+      <div class="arrow-big"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 24h32"/><path d="M26 11l13 13-13 13"/></svg></div>
+      <p class="muted" style="font-size:20px">잠시 후 저절로 넘어가요 · 화면을 누르면 바로</p>
+    </div>
+    <canvas id="confetti" aria-hidden="true"></canvas>
+    <button class="btn corner" data-go="s7" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+  </section>
+

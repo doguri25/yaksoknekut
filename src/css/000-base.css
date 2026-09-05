@@ -1,0 +1,75 @@
+  /* 가운뎃점(·)은 Jua(와 쿠키런·티머니)에 글자가 없어 기기 글꼴(맑은 고딕 등)로 대체되면서 줄 높이가 들쭉날쭉해짐 → 같은 높이의 작은 점 글꼴로 보충 */
+  @font-face { font-family: "Jua"; src: url(data:font/woff2;base64,d09GMgABAAAAAAFYAAoAAAAAAtAAAAEOAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAABmAANAo4TwE2AiQDCAsGAAQgBYEiByYbLAIAnge2rWh9Q+znzlju8fDfWPv7ZgaVRFpoNKJr4tBIrrER+lYkNErgbOOrJI+NbIFA6uQS/Bf2P8XAMbMdP7zwYEwJ7i5ZYpklgWQ+zNIukQJMb2glPCulXfL7UY6HqE5RkoCpa+pRVTX7P+xXPvEOAKiAhIxeWaBXUUFRBKr///Ol/6sCQAIFgU50AwogOrf6+hIJIO3d/tulF3d34y9LeQ4Egtf1/sHr8LUx5xq8Pc60rZ1FajGyBILlanxx1tOawJOqYtOZJp1inMCs0YEAoYEZiQ0o5PWI22VRmoR2vUDiQFu0sF6rodX77cr85d33KaP5llX3tlXMu3Rnw75D985su9Fz9KbzlxcAAAA=) format("woff2"); unicode-range: U+00B7; ascent-override: 80%; descent-override: 20%; line-gap-override: 25%; }
+  /* 본문 글꼴 9종은 아래 <script type="text/plain" data-font> 블록에 있고, 앱이 필요한 것만 <style>로 옮긴다 (ensureFont) */
+  :root {
+    --body-font: "Maplestory";   /* 본문 글꼴 — 교사 메뉴 › 화면에서 바꿈 (applyFont) */
+    --bg: #F1FAF5;
+    --surface: #FFFFFF;
+    --ink: #27403A;
+    --muted: #6F8681;
+    --line: #D9EAE3;
+    --coral: #FF7A59;
+    --coral-dark: #E2603F;
+    --mint: #BFEBDC;
+    --mint-dark: #7ED6BE;
+    --peach: #FFDCC8;
+    --lemon: #FFF2BF;
+    --lavender: #E6DEFF;
+    --sky: #D3EAFF;
+    --pink: #FFD8E6;
+    --radius: 28px;
+    --shadow: 0 6px 0 rgba(39, 64, 58, .07), 0 14px 30px rgba(39, 64, 58, .10);
+    --dot: rgba(11,125,110,.09); --hero-a: rgba(255,216,230,.85); --hero-b: rgba(191,235,220,.95);   /* 배경 점무늬 · 첫 화면 그림 색 (세트 무드가 덮어씀) */
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(circle at 1px 1px, var(--dot) 2px, transparent 2.6px) 0 0 / 30px 30px,
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--body-font), "Gowun Dodum", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;   /* 본문: 둥근 글꼴 (기본 메이플스토리체, 교사 메뉴에서 선택) */
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.4;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* 앱은 1280×800 기준으로 그린 뒤, 창 크기에 맞춰 전체를 같은 비율로 확대·축소 (--s는 JS가 계산) */
+  #app {
+    position: fixed; left: 50%; top: 50%;
+    width: 1280px; height: 800px;   /* JS가 창 비율에 맞춰 늘려 창을 꽉 채움 (레터박스 없음) */
+    transform: translate(-50%, -50%) scale(var(--s, 1));
+    transform-origin: center center; z-index: 2;
+    background:
+      radial-gradient(circle at 1px 1px, var(--dot) 2px, transparent 2.6px) 0 0 / 30px 30px,
+      var(--bg);
+    overflow: hidden;
+  }
+  .screen {
+    position: absolute; inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 28px;
+  }
+  .screen.on { display: flex; animation: screen-in .25s cubic-bezier(.2,.8,.3,1) both; }
+  #app[data-dir="back"] .screen.on { animation-name: screen-in-back; }
+  #app.noanim .screen.on { animation: none; }
+  @keyframes screen-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+  @keyframes screen-in-back { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: none; } }
+  h1, h2, .jua, .btn, .step, .tile-name, .count, .hint, .num {
+    font-family: "Jua", "Gowun Dodum", "Noto Sans KR", sans-serif;
+    font-weight: 400;
+  }
+  h1 { font-size: 56px; margin: 0; line-height: 1.15; }
+  h2 { font-size: 44px; margin: 0; line-height: 1.2; text-align: center; text-wrap: balance; }
+  p { margin: 0; }
+  .muted { color: var(--muted); }
+

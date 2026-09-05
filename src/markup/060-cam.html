@@ -1,0 +1,44 @@
+  <!-- S3 준비 / S4 촬영 -->
+  <section class="screen" id="cam" data-mode="ready">
+    <button class="btn corner" id="btn-cam-back" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="cam-wrap">
+      <div class="cambox" id="cambox">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="demo-face">
+          <svg viewBox="0 0 220 220" aria-hidden="true">
+            <path d="M40 130 C40 75 70 40 110 40 C150 40 180 75 180 130 C180 172 150 196 110 196 C70 196 40 172 40 130Z" fill="#7ED6BE"/>
+            <circle cx="84" cy="112" r="12" fill="#27403A"/><circle cx="136" cy="112" r="12" fill="#27403A"/>
+            <circle cx="66" cy="136" r="11" fill="#FFB3C1"/><circle cx="154" cy="136" r="11" fill="#FFB3C1"/>
+            <path d="M92 142 Q110 160 128 142" stroke="#27403A" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span class="tag">연습 모드 · 카메라 없음</span>
+        </div>
+        <div class="guide">
+          <span class="gcorner tl"></span><span class="gcorner tr"></span><span class="gcorner bl"></span><span class="gcorner br"></span>
+          <span class="twinkle t1">✦</span><span class="twinkle t2">✦</span><span class="twinkle t3">♥</span>
+          <div class="txt">다 같이 화면 안에 들어와요</div>
+        </div>
+        <div class="shoot-ui dots" id="dots"><span></span><span></span><span></span><span></span></div>
+        <div class="shoot-ui cut-label" id="cut-label"></div>
+        <div class="shoot-ui count" id="count"></div>
+        <canvas class="review" id="review"></canvas>
+        <div class="flash" id="flash"></div>
+      </div>
+      <div class="side ready-ui">
+        <div class="autostart"><span class="n" id="ready-n">8</span><span class="lbl">초 뒤에 저절로 시작해요</span></div>
+        <button class="btn" id="btn-ready">준비됐어요!</button>
+      </div>
+      <div class="side shoot-ui">
+        <div class="pose-badge">추천 동작 <small>안 해도 괜찮아요</small></div>
+        <div class="pose-card">
+          <p class="pose-sub">이렇게 해 봐요</p>
+          <div class="pose-emoji" id="pose-emoji" aria-hidden="true"></div>
+          <div class="pose-text" id="pose-text">하트</div>
+          <p class="pose-note" id="pose-note"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+

@@ -1,0 +1,26 @@
+  /* ---------- preview ---------- */
+  .preview {
+    display: block; height: 368px; aspect-ratio: 3 / 2;
+    border-radius: 22px; box-shadow: var(--shadow); background: #fff;
+  }
+  .pwrap { position: relative; }
+  .fname {   /* 사진 아래에 따로 놓아 사진을 가리지 않음 */
+    margin-top: -2px;
+    background: var(--coral); color: #fff; border-radius: 999px;
+    padding: 5px 22px; font: 24px "Jua", "Gowun Dodum", sans-serif;
+    box-shadow: 0 3px 0 var(--coral-dark);
+  }
+  .preview.blink { animation: blink-in .35s ease-out; }
+  @keyframes blink-in { 0% { transform: scale(.97); opacity: .6; } 100% { transform: scale(1); opacity: 1; } }
+  .filters { display: flex; gap: 14px; justify-content: center; }
+  .ftile {
+    width: 136px; border: 6px solid transparent; border-radius: 22px;
+    overflow: hidden; background: #fff; box-shadow: var(--shadow);
+    cursor: pointer; transition: transform .15s, border-color .15s;
+    touch-action: manipulation;
+  }
+  .ftile canvas { width: 100%; aspect-ratio: 1; display: block; }
+  .ftile b { display: block; text-align: center; font: 26px "Jua", sans-serif; padding: 6px 4px 8px; font-weight: 400; }
+  .ftile.sel { border-color: var(--coral); }
+  .ftile:active { transform: scale(.95); }
+

@@ -205,30 +205,49 @@ func main() {
 		os.Remove(pendingPath)
 	}
 	var readyMu sync.Mutex
-	exeReady := "" // 배경에서 받아 바꿔 둔 새 실행기 버전 — 앱이 /update/status 로 보고 [다시 시작]을 안내
-	// 켤 때 자동 업데이트 (주소가 설정되어 있고 끄지 않았을 때, 4초 안에 안 되면 그냥 진행)
+	exeReady := ""  // 배경에서 받아 바꿔 둔 새 실행기 버전 — 앱이 /update/status 로 보고 [다시 시작]을 안내
+	htmlReady := "" // 느린 망에서 뒤늦게 받아 설치해 둔 새 앱 버전 — 다시 시작하면 적용
+	// 켤 때 자동 업데이트 (주소가 설정되어 있고 끄지 않았을 때)
+	// 1) 첫 4KB의 버전 스탬프만 읽어(≈0.1초) 새 버전이 있는지 본다 → 없으면 바로 시작
+	// 2) 앱이 새 버전이면 6초 안에 받아 설치하고 시작, 더 걸리면 뒤에서 받아 두고 앱에 [다시 시작] 안내
+	// 3) 실행기가 새 버전이면 뒤에서 조용히 받아 바꿔 둔다
 	if u := updateURL(); u != "" && cfg["auto_update"] != "0" {
-		if body, v, err := fetchLatest(u, 3*time.Second); err == nil {
-			cur, _ := os.ReadFile(htmlPath)
-			if cmpVer(v, htmlVersion(cur)) > 0 {
-				if installUpdate(appDir, body) == nil {
+		cur, _ := os.ReadFile(htmlPath)
+		curV := htmlVersion(cur)
+		stampApp, stampLv, stampOK := fetchStamp(u, 3*time.Second)
+		needApp := !stampOK || cmpVer(stampApp, curV) > 0 // 스탬프가 없는 옛 파일이면 예전처럼 통째로 받아 확인
+		lv := stampLv
+		if needApp {
+			body, v, err := fetchLatest(u, 6*time.Second)
+			if err == nil {
+				if cmpVer(v, curV) > 0 && installUpdate(appDir, body) == nil {
 					startMsg = "upd=auto:" + v
 				}
-			}
-			// 실행기도 새 버전이 있으면 뒤에서 조용히 받아 바꿔 둔다 (다음 실행부터 새 실행기)
-			if lv := htmlLauncherVer(body); lv != "" && cmpVer(lv, launcherVer) > 0 {
-				if xu := exeURLFrom(u); xu != "" && exePath != "" {
-					go func() {
-						if nb, err := fetchExe(xu, lv, 90*time.Second); err == nil {
-							if swapExe(exePath, nb) == nil {
-								os.WriteFile(pendingPath, []byte("upd=exe:"+lv), 0o644)
-								readyMu.Lock()
-								exeReady = lv
-								readyMu.Unlock()
-							}
-						}
-					}()
+				if !stampOK {
+					lv = htmlLauncherVer(body)
 				}
+			} else if stampOK && isTimeout(err) {
+				go func() { // 느린 망: 뒤에서 받아 설치해 두고 앱에 알림 (다음 실행 또는 [다시 시작]에 적용)
+					if body, v, err := fetchLatest(u, 240*time.Second); err == nil && cmpVer(v, curV) > 0 && installUpdate(appDir, body) == nil {
+						readyMu.Lock()
+						htmlReady = v
+						readyMu.Unlock()
+					}
+				}()
+			}
+		}
+		if lv != "" && cmpVer(lv, launcherVer) > 0 {
+			if xu := exeURLFrom(u); xu != "" && exePath != "" {
+				go func() {
+					if nb, err := fetchExe(xu, lv, 180*time.Second); err == nil {
+						if swapExe(exePath, nb) == nil {
+							os.WriteFile(pendingPath, []byte("upd=exe:"+lv), 0o644)
+							readyMu.Lock()
+							exeReady = lv
+							readyMu.Unlock()
+						}
+					}
+				}()
 			}
 		}
 	}
@@ -414,24 +433,32 @@ func main() {
 			case "/update/status":
 				_, hasPrev := os.Stat(filepath.Join(appDir, "yaksok-necut.prev.html"))
 				readyMu.Lock()
-				er := exeReady
+				er, hr := exeReady, htmlReady
 				readyMu.Unlock()
-				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar, "exeReady": er})
+				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar, "exeReady": er, "htmlReady": hr})
 			case "/update/restart":
 				// 배경에서 바꿔 둔 새 실행기로 지금 다시 시작 (앱의 [다시 시작] 단추 / 첫 화면에서 3분 쉬면 자동)
 				readyMu.Lock()
-				er := exeReady
+				er, hr := exeReady, htmlReady
 				readyMu.Unlock()
-				if er == "" {
-					jsonOut(map[string]interface{}{"ok": false, "error": "준비된 새 실행기가 없어요"})
+				if er == "" && hr == "" {
+					jsonOut(map[string]interface{}{"ok": false, "error": "준비된 새 버전이 없어요"})
 					return
 				}
-				page("새 실행기(" + er + ")로 다시 시작해요… 잠시 뒤 다시 열립니다.")
-				mu.Lock()
-				runNewExe = true
-				mu.Unlock()
-				os.Remove(pendingPath)
-				restart("upd=exe:" + er)
+				if er != "" {
+					page("새 실행기(" + er + ")로 다시 시작해요… 잠시 뒤 다시 열립니다.")
+					mu.Lock()
+					runNewExe = true
+					mu.Unlock()
+					os.Remove(pendingPath)
+					restart("upd=exe:" + er)
+				} else { // 앱 파일만 새로 받아 둔 경우: 브라우저만 다시 열면 새 버전
+					page("새 버전(" + hr + ")으로 다시 시작해요… 잠시 뒤 다시 열립니다.")
+					readyMu.Lock()
+					htmlReady = ""
+					readyMu.Unlock()
+					restart("upd=auto:" + hr)
+				}
 			case "/update/seturl":
 				u := strings.TrimSpace(r.URL.Query().Get("u"))
 				mu.Lock()

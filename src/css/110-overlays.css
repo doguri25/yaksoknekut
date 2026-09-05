@@ -1,0 +1,13 @@
+  /* ---------- overlays ---------- */
+  /* 팝업 뒤: 앱 화면은 살짝 흐리고 옅게, 창 밖 여백은 #backdrop(앱 밖 요소)이 같은 톤으로 덮음 */
+  .overlay {
+    position: absolute; inset: 0; display: none; place-items: center;
+    background: rgba(39, 64, 58, .18); z-index: 40; padding: 24px;
+    -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  }
+  .overlay.on { display: grid; }
+  #backdrop { position: fixed; inset: 0; display: none; background: rgba(39, 64, 58, .18); z-index: 1; }
+  /* 오류 화면 */
+  #crash { z-index: 80; }
+  #crash .small b { color: var(--coral); font-size: 28px; }
+  #crash .crash-detail { margin: 0; max-width: 620px; font: 400 13px/1.45 ui-monospace, Consolas, monospace; color: var(--muted); word-break: break-all; }

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -72,6 +73,53 @@ func validateApp(b []byte) (string, error) {
 // 내장 글꼴을 쓰도록 구글 글꼴 링크를 바꿔 줌 (인터넷 없는 교실에서도 둥근 글꼴)
 func localizeFonts(b []byte) []byte {
 	return fontLinkRe.ReplaceAll(b, []byte(localFontLink))
+}
+
+// 파일 맨 앞의 버전 스탬프 <!-- yaksok-necut app=1.11.0 launcher=1.9.11 --> 만 읽는다 (첫 4KB, Range 요청).
+// 3MB 전체를 매번 받지 않아도 새 버전이 있는지 알 수 있어 켤 때 빠르고, 느린 학교 망에서도 시간 초과로 업데이트가 조용히 실패하는 일이 없다.
+var stampRe = regexp.MustCompile(`yaksok-necut app=([0-9.]+) launcher=([0-9.]+)`)
+
+func parseStamp(b []byte) (app, launcher string, ok bool) {
+	m := stampRe.FindSubmatch(b)
+	if m == nil {
+		return "", "", false
+	}
+	return string(m[1]), string(m[2]), true
+}
+
+func fetchStamp(url string, timeout time.Duration) (app, launcher string, ok bool) {
+	if strings.TrimSpace(url) == "" {
+		return "", "", false
+	}
+	c := &http.Client{Timeout: timeout}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", "", false
+	}
+	req.Header.Set("User-Agent", "YaksokNecut-Updater")
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Range", "bytes=0-4095")
+	res, err := c.Do(req)
+	if err != nil {
+		return "", "", false
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 && res.StatusCode != 206 {
+		return "", "", false
+	}
+	b, _ := io.ReadAll(io.LimitReader(res.Body, 4096)) // 서버가 Range를 무시해도 앞 4KB만 읽고 끊는다
+	return parseStamp(b)
+}
+
+func isTimeout(err error) bool {
+	if err == nil {
+		return false
+	}
+	var ne net.Error
+	if errors.As(err, &ne) && ne.Timeout() {
+		return true
+	}
+	return strings.Contains(err.Error(), "Timeout") || strings.Contains(err.Error(), "deadline")
 }
 
 func fetchLatest(url string, timeout time.Duration) ([]byte, string, error) {

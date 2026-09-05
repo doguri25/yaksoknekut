@@ -158,13 +158,44 @@ func TestEmbeddedAppVersions(t *testing.T) {
 	if err != nil {
 		t.Skip("no embedded html")
 	}
-	if v := htmlVersion(b); v != "1.10.3" {
+	if v := htmlVersion(b); v == "" {
 		t.Fatalf("app version %q", v)
 	}
-	if v := htmlLauncherVer(b); v != "1.9.10" {
-		t.Fatalf("launcher latest %q", v)
+	if app, lv, ok := parseStamp(b[:4096]); !ok || app != htmlVersion(b) || lv != launcherVer {
+		t.Fatalf("stamp in first 4KB: %v %v %v (want app=%s launcher=%s)", app, lv, ok, htmlVersion(b), launcherVer)
 	}
 	if cmpVer(htmlLauncherVer(b), launcherVer) != 0 {
 		t.Fatalf("LAUNCHER_LATEST %s != launcherVer %s", htmlLauncherVer(b), launcherVer)
+	}
+}
+
+func TestStamp(t *testing.T) {
+	app, lv, ok := parseStamp([]byte("<!-- yaksok-necut app=1.11.0 launcher=1.9.11 -->\n<!doctype html>"))
+	if !ok || app != "1.11.0" || lv != "1.9.11" {
+		t.Fatalf("stamp %v %v %v", app, lv, ok)
+	}
+	if _, _, ok := parseStamp([]byte("<!doctype html><html>")); ok {
+		t.Fatal("no stamp should fail")
+	}
+	// Range 요청으로 첫 4KB만 읽는지
+	big := append([]byte("<!-- yaksok-necut app=2.0.0 launcher=1.9.11 -->\n"), []byte(strings.Repeat("x", 3<<20))...)
+	var gotRange string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotRange = r.Header.Get("Range")
+		if gotRange != "" {
+			w.Header().Set("Content-Range", "bytes 0-4095/3145776")
+			w.WriteHeader(206)
+			w.Write(big[:4096])
+			return
+		}
+		w.Write(big)
+	}))
+	defer srv.Close()
+	app, lv, ok = fetchStamp(srv.URL, 3*time.Second)
+	if !ok || app != "2.0.0" || lv != "1.9.11" || gotRange != "bytes=0-4095" {
+		t.Fatalf("fetchStamp %v %v %v range=%q", app, lv, ok, gotRange)
+	}
+	if cmpVer("1.9.11", "1.9.9") <= 0 || cmpVer("1.11.0", "1.10.4") <= 0 {
+		t.Fatal("cmpVer")
 	}
 }

@@ -1,0 +1,21 @@
+  /* ---------- tiles ---------- */
+  .tiles { display: grid; gap: 22px; width: 1200px; }
+  .tile {
+    background: #fff; border: 7px solid transparent;
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 16px 16px 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    cursor: pointer; transition: transform .18s, border-color .18s;
+    touch-action: manipulation;
+  }
+  .tile:active { transform: scale(.96); border-color: var(--coral); }
+  .tile canvas { width: 100%; border-radius: 16px; display: block; aspect-ratio: 3 / 2; }
+  .tile-name { font-size: 32px; }
+  .tile-sub { font-size: 20px; color: var(--muted); text-align: center; line-height: 1.3; }
+
+  .big-tiles { grid-template-columns: 1fr 1fr; width: 1120px; }
+  .big-tiles .tile { padding: 28px 24px 22px; gap: 10px; }
+  .big-tiles svg { width: 100%; height: auto; max-height: 280px; display: block; }
+  .big-tiles .tile-name { font-size: 46px; }
+  .big-tiles .tile-sub { font-size: 24px; }
+
