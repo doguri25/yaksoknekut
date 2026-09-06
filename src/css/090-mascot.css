@@ -18,6 +18,8 @@
   .topbtns .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(39,64,58,.10); }
   #app.hasquit #btn-quit { display: inline-flex; }
   #btn-home { display: inline-flex; }
+  #pq-chip.on { display: inline-flex; pointer-events: none; color: var(--ink); }   /* 인쇄 대기열: 뽑은 뒤 "인쇄 중 ○장" (실행기 1.10.0+) */
+  #pq-chip.bad { color: #D6336C; border-color: rgba(214,51,108,.35); }
   #app[data-screen="s0"] #topleft { display: none; }   /* 첫 화면에는 [처음으로]가 필요 없음 */
   #app.fontwait .screen, #app.fontwait .topbtns { visibility: hidden; }   /* 고른 본문 글꼴 준비 전엔 글자를 잠깐 숨김 (배경만 보임) */
   #app.exeready[data-screen="s0"] #btn-restart { display: inline-flex; background: var(--coral); color: #fff; border-color: transparent; box-shadow: 0 3px 0 var(--coral-dark); }   /* 새 실행기를 받아 둔 뒤: [실행기 새 버전 · 다시 시작] */

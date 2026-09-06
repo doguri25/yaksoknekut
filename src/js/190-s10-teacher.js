@@ -84,7 +84,7 @@
       <div class="tmain" id="tmain">
 
         <div class="tpage" data-pane="quick">
-          <div class="thead"><h3>자주 쓰는 설정</h3><span class="tdesc">행사 당일에 만지는 것만 모았어요 · 나머지는 왼쪽 메뉴에서</span></div>
+          <div class="thead"><h3>자주 쓰는 설정</h3><span class="tdesc">행사 당일에 만지는 것만 모았어요 · 나머지는 왼쪽 메뉴에서 <button class="tlink2" data-act="wizard">처음 설치라면 → 시작 도우미</button></span></div>
           <div class="tcheck" id="tcheck">
             <span class="tchk ${camInfo.label ? 'ok' : 'ask'}"><i></i><b>카메라</b><span>${camInfo.label ? esc(camInfo.label.replace(/\s*\(.*\)$/, '').slice(0, 22)) : '아직 확인 안 됨'}</span>${camInfo.label ? '' : '<button class="tlink2" data-act="camcheck">지금 확인</button>'}</span>
             <span class="tchk ${QUIT_PORT && LV ? (PDLG ? 'ok' : 'wait') : 'info'}" id="chk-printer"><i></i><b>프린터</b><span>${BRIDGE ? '앱 인쇄창' : QUIT_PORT && LV ? (PDLG ? '뽑을 때 선택창에서 고름' : '확인 중…') : QUIT_PORT ? '옛 실행기 — 확인 불가' : '인쇄창에서 고름'}</span></span>
@@ -149,12 +149,13 @@
           ${row('칠판에 보여 주는 시간', seg('boardSeconds', [[5, '5초'], [8, '8초'], [12, '12초']]))}
           ${row('최대 인쇄 매수', `${seg('maxCopies', [[1, '1장'], [2, '2장'], [3, '3장'], [4, '4장']])}<span class="thint">1장이면 매수 선택 화면이 안 떠요</span>`)}
           ${row('인쇄 크기', `<button class="tround" data-act="ps-" aria-label="작게">−</button><span class="stat" id="ps">${clamp(+settings.printScale || 100, 90, 110)}%</span><button class="tround" data-act="ps+" aria-label="크게">+</button><span class="thint">가장자리가 잘리면 −, 흰 테두리가 남으면 + (2%씩)</span>`)}
-          ${row('프린터 점검', `<button class="btn sec tiny" data-act="testprint">테스트 인쇄</button><span class="thint">오늘 인쇄 <b id="pc">${settings.printCount || 0}</b>장</span><button class="btn sec tiny" data-act="resetcount">0으로</button>${info('h-print')}<span class="thint">용지 4×6(엽서) · 테두리 없음</span>`, help('h-print', printNote))}
-          ${row(sub('인화지 잔량', settings.paper == null ? '안 씀' : '5장 이하면 첫 화면에 표시'), settings.paper == null
-            ? `<button class="btn sec tiny" data-act="paper36">+36장 넣었어요</button><button class="btn sec tiny" data-act="paper54">+54장</button><button class="btn sec tiny" data-act="paper18">+18장</button><span class="thint">인화지 팩을 넣을 때 눌러 두면 인쇄마다 하나씩 줄어요</span>`
+          ${row('프린터 점검', `<button class="btn sec tiny" data-act="testprint">테스트 인쇄</button><span class="thint">오늘 인쇄 <b id="pc">${settings.printCount || 0}</b>장</span><button class="btn sec tiny" data-act="resetcount">0으로</button>${info('h-print')}${QUIT_PORT && LV && cmpVer(LV, '1.10.0') >= 0 ? `<span class="tsep"></span><span class="tsub">대기열 감시</span>${sw('queueWatch', settings.queueWatch !== false)}` : '<span class="thint">용지 4×6(엽서) · 테두리 없음</span>'}`,
+            help('h-print', printNote + (QUIT_PORT && LV && cmpVer(LV, '1.10.0') >= 0 ? " <b>대기열 감시</b>(기본 켬): [뽑기] 뒤 윈도우 인쇄 대기열을 지켜봐 오른쪽 위에 '인쇄 중 ○장'을 보이고 다 나오면 알려 줘요. 프린터는 준비됨인데 작업이 한참 그대로면(대기열 멈춤·일시 중지·오프라인) '인쇄가 멈춘 것 같아요' 알림과 [대기열 비우기]가 떠요. 알림이 번거로우면 끄세요." : '')))}
+          ${row(sub('인화지 잔량', settings.paper == null ? '안 씀 · 팩을 넣을 때 눌러 두면 인쇄마다 하나씩 줄어요' : '5장 이하면 첫 화면에 표시'), settings.paper == null
+            ? `<button class="btn sec tiny" data-act="paper36">+36장 넣었어요</button><button class="btn sec tiny" data-act="paper54">+54장</button><button class="btn sec tiny" data-act="paper18">+18장</button><span class="thint">5장 이하면 첫 화면에 표시돼요</span>`
             : `<button class="tround" data-act="paper-" aria-label="하나 빼기">−</button><span class="stat" id="paper-n">${settings.paper}</span><button class="tround" data-act="paper+" aria-label="하나 더하기">+</button><span class="thint">장</span><button class="btn sec tiny" data-act="paper36">+36</button><button class="btn sec tiny" data-act="paper54">+54</button><button class="btn sec tiny" data-act="paper18">+18</button><button class="btn sec tiny" data-act="paperoff">안 씀</button>`)}
           ${row(sub('마지막 사진', lastPrint ? `${lastPrint.when.toTimeString().slice(0, 5)} · ${esc(lastPrint.frame)}` : '아직 없어요'), lastPrint
-            ? `<img src="${lastPrint.url}" alt="" style="height:72px;border-radius:8px;box-shadow:0 2px 6px rgba(39,64,58,.2)"><button class="btn sec tiny" data-act="reprint">${ic('printer')} 한 장 더 뽑기</button><span class="thint">종이 걸림·잉크 번짐 때 · 앱을 끄면 사라져요</span>`
+            ? `<img src="${lastPrint.url}" alt="" style="height:58px;border-radius:8px;box-shadow:0 2px 6px rgba(39,64,58,.2)"><button class="btn sec tiny" data-act="reprint">${ic('printer')} 한 장 더 뽑기</button><span class="thint">종이 걸림·잉크 번짐 때 · 앱을 끄면 사라져요</span>`
             : `<span class="thint">사진을 인쇄하면 여기서 한 장 더 뽑을 수 있어요 (앱을 끄면 사라져요)</span>`)}
         </div>
 
@@ -201,8 +202,10 @@
               <span class="thint">설정 코드 한 줄로 다른 컴퓨터나 초기화 뒤에 복구할 수 있어요 (비밀번호·카메라는 빼고)</span>
               <div id="bk-box" style="display:none"><textarea id="bk-text" class="tinput" style="width:100%;max-width:none;height:84px;font:400 14px/1.4 var(--body-font),sans-serif;resize:none" spellcheck="false" placeholder="여기에 설정 코드를 붙여 넣으세요 (YK2.… 로 시작)"></textarea><div class="tctl" style="margin-top:6px"><button class="btn tiny" data-act="bkapply" id="bk-apply" style="display:none">이 코드로 복구</button><button class="btn sec tiny" data-act="bkclose">닫기</button><span class="thint" id="bk-msg"></span></div></div>
             </div></div>
-          ${QUIT_PORT ? row(sub('업데이트', `앱 v${APP_VERSION} · 실행기 ${LV || '옛 버전'}`), `<div class="tctl" style="flex-direction:column;align-items:stretch;gap:4px"><div class="tctl"><button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span>${exeReady ? `<button class="btn tiny" data-act="exerestart">${updKind === 'app' ? '앱' : '실행기'} ${exeReady} 준비됨 · 지금 다시 시작</button>` : ''}<button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button></div><div class="tctl"><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 자동 업데이트</span>${sw('autoRestart', settings.autoRestart !== false)}<span class="thint">새 실행기가 준비되면 첫 화면에서 3분 쉬는 동안 알아서 다시 시작 (만지면 취소)</span></div></div>`) : ''}
-          ${row('초기화', `<button class="btn sec tiny" data-act="reset" id="btn-reset">${ic('undo')} 기본 설정으로 되돌리기</button><span class="thint">문구·세트·소리·테마 등 모든 설정이 처음 값으로 · 두 번 눌러요 · 인쇄 매수는 유지</span>`)}
+          ${QUIT_PORT ? row(sub('업데이트', `앱 v${APP_VERSION} · 실행기 ${LV || '옛 버전'}`), `<div class="tctl" style="flex-direction:column;align-items:stretch;gap:4px"><div class="tctl"><button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span>${exeReady ? `<button class="btn tiny" data-act="exerestart">${updKind === 'app' ? '앱' : '실행기'} ${exeReady} 준비됨 · 지금 다시 시작</button>` : ''}<button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button></div><div class="tctl"><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 자동 업데이트</span>${sw('autoRestart', settings.autoRestart !== false)}<span class="thint">새 실행기 오면 3분 쉴 때 다시 시작</span>${LV && cmpVer(LV, '1.10.0') >= 0 ? `<label class="tsw"><input type="checkbox" id="relaunch-auto" checked><i></i></label><span class="thint">닫히면 다시 열기</span>${info('h-relaunch')}` : ''}</div></div>`,
+            help('h-relaunch', "<b>닫히면 다시 열기</b>: 크롬(엣지)이 뜻하지 않게 닫히면(아이가 Alt+F4를 누름 · 브라우저가 튕김) 실행기가 2~3초 뒤 앱을 다시 열어 부스가 멈춘 채 방치되지 않게 해요. 오른쪽 위 [종료]나 이 메뉴의 [앱 종료]로 끝낸 경우는 다시 열지 않아요. <b>자동 재시작</b>: 새 실행기를 받아 두면 첫 화면에서 3분 동안 아무도 안 만질 때 10초 카운트다운 뒤 새 실행기로 켜요(만지면 취소).")) : ''}
+          ${row(sub('초기화 · 도움', '초기화는 두 번 눌러요 · 인쇄 매수는 유지'), `<button class="btn sec tiny" data-act="reset" id="btn-reset">${ic('undo')} 기본 설정으로 되돌리기</button><span class="tsep"></span><button class="btn sec tiny" data-act="wizard">시작 도우미</button><button class="btn sec tiny" data-act="diag">문제 정보 복사</button>${info('h-help')}`,
+            help('h-help', `<b>시작 도우미</b>: 처음 설치할 때 ① 기본 프린터 → ② 용지 4×6·테두리 없음·인쇄 크기 → ③ 테스트 인쇄·카메라를 순서대로 확인해요. <b>문제 정보 복사</b>: 앱·실행기 버전, 프린터·대기열·카메라 상태, 설정 요약, 최근 오류를 한 번에 복사해요 — 안 될 때 이 내용을 ${AUTHOR.email} 로 보내 주시면 원인을 바로 찾을 수 있어요 (사진·이름 같은 개인 정보는 들어가지 않아요).`))}
         </div>
       </div>
       <div class="tbar"><span class="tbar-left" id="tbar-count"></span><button class="btn sec tiny" data-act="cancel">취소</button><button class="btn tiny" data-act="save">${ic('check')} 저장하고 첫 화면으로</button></div>`;
@@ -238,6 +241,7 @@
       const au = el.querySelector('#upd-auto'), bk = el.querySelector('#upd-back');
       if (!j.url) localJson('/update/seturl?u=' + encodeURIComponent(DEFAULT_UPDATE_URL)).catch(() => {});   // 실행기에 주소가 없으면 기본 주소(GitHub 저장소)를 저장
       if (au) { au.checked = !!j.auto; au.addEventListener('change', () => localJson('/update/auto?on=' + (au.checked ? 1 : 0)).catch(() => {})); }
+      const ra = el.querySelector('#relaunch-auto'); if (ra) { ra.checked = j.relaunch !== false; ra.addEventListener('change', () => localJson('/relaunch/auto?on=' + (ra.checked ? 1 : 0)).then(() => toast(ra.checked ? '크롬이 닫히면 다시 열어요' : '이제 크롬이 닫혀도 다시 열지 않아요')).catch(() => {})); }
       if (bk && j.canRollback) bk.style.display = '';
     }).catch(() => {});
     if (QUIT_PORT && LV && !PDLG) localJson('/printer/status').then(j => {   // 행사 준비 점검: 기본 프린터 상태
@@ -288,13 +292,9 @@
       else if (a === 'shuttertest') { if (!vol()) toast('소리가 꺼져 있어요'); else if ((settings.shutterSound || 'classic') === 'none') toast('셔터 소리가 없음으로 되어 있어요'); else shutter(); }
       else if (a === 'counttest') { if (!vol()) toast('소리가 꺼져 있어요'); else if ((settings.countSound || 'beep') === 'none') toast('카운트다운 소리가 없음으로 되어 있어요'); else { beep(); setTimeout(beep, 350); setTimeout(beepGo, 700); } }
       else if (a === 'promises-reset') { settings.promises = settings.promises || {}; delete settings.promises[set]; saveSettings(); const y = main.scrollTop; ENTER.s10(); el.querySelector('#tmain').scrollTop = y; toast('기본 문장으로 되돌렸어요'); }
-      else if (a === 'testprint') {
-        const c = document.createElement('canvas'); c.width = PW; c.height = PH;
-        compose(c, { frame: setFrames[0] || FRAMES[0], placeholder: true, print: true });
-        const area = $('#print-area'); area.innerHTML = '<div class="pg"><img alt="테스트 인쇄"></div>';
-        const img = area.querySelector('img'); img.src = c.toDataURL('image/jpeg', .92);
-        img.decode().catch(() => {}).then(() => { doPrint(); fitApp(); refitSoon(); }); usePaper(1); saveSettings(); const pp = el.querySelector('#paper-n'); if (pp) pp.textContent = settings.paper == null ? '' : settings.paper;
-      }
+      else if (a === 'testprint') { testPrint(); }
+      else if (a === 'wizard') { pop(); openWizard(1); }
+      else if (a === 'diag') { pop(); copyDiag(b); }
       else if (a === 'reprint') { pop(); if (reprintLast()) { toast('마지막 사진을 한 장 더 뽑아요'); const pp = el.querySelector('#paper-n'); if (pp) pp.textContent = settings.paper == null ? '' : settings.paper; $('#pc').textContent = settings.printCount; } else toast('다시 뽑을 사진이 없어요'); }
       else if (a.startsWith('paper')) {
         pop(); const v = a.slice(5);
@@ -307,7 +307,7 @@
       else if (a === 'exerestart') { restartNow(); }
       else if (a === 'close') { quitApp(); if (!QUIT_PORT) setTimeout(() => toast('창이 닫히지 않으면 태블릿 홈 버튼으로 나가세요'), 300); }
       else if (a === 'reset') {
-        if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '정말 초기화할까요? 한 번 더 누르면 초기화'; b.classList.remove('sec'); setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.innerHTML = ic('undo') + ' 기본 설정으로 되돌리기'; b.classList.add('sec'); } }, 4000); return; }
+        if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '정말 초기화? 한 번 더 누르면 초기화'; b.classList.remove('sec'); setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.innerHTML = ic('undo') + ' 기본 설정으로 되돌리기'; b.classList.add('sec'); } }, 4000); return; }
         const keep = settings.printCount || 0; settings = JSON.parse(JSON.stringify(DEFAULTS)); settings.printCount = keep; saveSettings(); applyTexts(); applyTheme();
         settingsBackup = null; ENTER.s10(); toast('기본 설정으로 되돌렸어요');
       }

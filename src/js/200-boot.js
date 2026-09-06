@@ -20,6 +20,7 @@
     function showCrash(msg) {
       if (shown) return; shown = true;
       const log = crashLog(); log.push(Date.now()); try { sessionStorage.setItem('yaksok-crashes', JSON.stringify(log)); } catch (e) {}
+      logError(msg);
       $('#crash-detail').textContent = String(msg || '').slice(0, 160) + ` · v${APP_VERSION}`;
       $('#crash').classList.add('on');
       if (log.length >= 3) { $('#crash-sub').textContent = '같은 문제가 반복되고 있어요 — [지금 다시 시작]을 누르거나, 계속되면 앱을 끄고 다시 켜 주세요'; return; }
@@ -31,7 +32,7 @@
     window.addEventListener('unhandledrejection', e => { const r = e.reason; if (!(r instanceof Error)) return; if (BENIGN.test(r.name + ' ' + r.message)) return; showCrash(r.message); });
     window.__yaksokCrash = showCrash;   // 점검용
   })();
-  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
+  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, pollQueue, watchQueue: watchQueueAfterPrint, get queue() { return pqLast; }, diagText, openWizard, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
   go('s0');
   $('#app').classList.toggle('haslock', !!settings.lockPin);
   if (settings.lockPin) showLock('unlock');   // 잠금 비밀번호가 있으면 켤 때 번호판부터

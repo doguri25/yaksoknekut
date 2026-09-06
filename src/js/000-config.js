@@ -269,12 +269,16 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.12.2';
-  const LAUNCHER_LATEST = '1.9.12';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
+  const APP_VERSION = '1.14.1';
+  const LAUNCHER_LATEST = '1.10.0';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
   const BUILD_DATE = '2026-09-06';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.14.1', d: '2026-09-06', items: ['완료 화면 인쇄 안내에서 "다음 친구 준비!" 문구 제거 — "사진은 약 40초 뒤 프린터에서 나와요"만'] },
+    { v: '1.14.0', d: '2026-09-06', items: ['완료 화면에 인쇄 안내 한 줄 — "사진은 약 40초 뒤 프린터에서 나와요 · 다음 친구 준비!" (매수만큼 더). 윈도우 앱에서 대기열에 앞선 사진이 있으면 "앞에 사진 ○장이 있어서 조금 더 걸려요 · 약 ○분 뒤" — 아이들이 프린터 앞에 몰려 서 있지 않게', '내부 정리: 테스트를 기능별 18묶음으로 다시 나누고 브라우저 3개로 나눠 돌려 9분 → 4분쯤'] },
+    { v: '1.13.1', d: '2026-09-06', items: ['인쇄 대기열 감시를 켜고 끌 수 있는 스위치 (완성·인쇄 › 프린터 점검 줄, 기본 켬) — 크롬 다시 열기(기본 켬)·문제 정보 복사(단추)와 함께 1.13.0 기능은 모두 처음부터 켜져 있어요'] },
+    { v: '1.13.0', d: '2026-09-06', items: ['윈도우 앱: 인쇄 대기열 감시 — [뽑기] 뒤 오른쪽 위에 "인쇄 중 ○장"이 보이고 다 나오면 알려 줘요. 프린터는 준비됨인데 작업이 한참 그대로면(스풀러 멈춤·일시 중지·오프라인) "인쇄가 멈춘 것 같아요" 알림 + [대기열 비우기] (실행기 1.10.0)', '윈도우 앱: 크롬(엣지)이 뜻하지 않게 닫히면(Alt+F4·튕김) 실행기가 2~3초 뒤 다시 열어요 — [종료] 단추·교사 메뉴 [앱 종료]로 끝낸 경우는 그대로 끝남. 학교·기록·앱 › 업데이트 줄에서 끌 수 있음', '교사 메뉴 › 학교·기록·앱 › [문제 정보 복사] — 앱·실행기 버전, 프린터·대기열·카메라 상태, 설정 요약, 최근 오류를 한 번에 복사해 만든 사람에게 보내기', '시작 도우미 (교사 메뉴 › 자주 쓰는 설정 위쪽 · 학교·기록·앱) — ① 기본 프린터 확인 → ② 용지 4×6·테두리 없음·인쇄 크기 → ③ 테스트 인쇄·카메라 확인을 순서대로 안내 (처음 설치할 때 한 번)'] },
     { v: '1.12.2', d: '2026-09-06', items: ['첫 화면 다음의 모든 화면 왼쪽 위에 [처음으로] 단추 — 오른쪽 위 [종료]와 같은 모양. 아직 사진을 안 찍었으면 바로, 찍은 뒤라면 "처음 화면으로 갈까요?" 한 번 물어봄 (촬영 중·교사 메뉴에서는 [종료]처럼 숨김)'] },
     { v: '1.12.1', d: '2026-09-06', items: ['액자 바탕색을 한 단계 진하게 — 미색·연한 파스텔이 인화하면 거의 흰색으로 나와서, 밝은 액자 33종과 꾸미기 종이색을 같은 색감의 진한 파스텔로 (글씨·장식·어두운 액자는 그대로)', '촬영 화면 추천 동작 약속이가 위아래로 통통 — 윈도우 \'애니메이션 효과 끄기\' 설정이나 교사 메뉴 \'화면 전환 움직임 끄기\' 때문에 멈춰 보이던 것을 항상 움직이게, 폭도 조금 크게'] },
     { v: '1.12.0', d: '2026-09-06', items: ['한 컷만 다시 찍기 (교사 메뉴 › 촬영, 기본 꺼짐) — 켜면 고르기 화면의 사진 카드마다 [다시 찍기]가 붙어, 눈 감은 그 컷 하나만 다시 찍고 고르던 순서 그대로 돌아와요 (4장을 다 다시 찍지 않아 줄이 밀리지 않음 · 한 팀 3번까지)', '날짜·학교 도장 (교사 메뉴 › 완성·인쇄, 기본 꺼짐) — 켜면 완성 사진 오른쪽 아래 여백에 "2026.09.06 · 홍북초등학교" 한 줄이 작게 들어가요 (미리보기와 인쇄물 모두)'] },
@@ -395,11 +399,16 @@
   const LOCAL = QUIT_PORT ? 'http://127.0.0.1:' + QUIT_PORT : '';
   // 실행기에 묻기 — 8초 안에 답이 없으면 실패로 (실행기가 멈춰도 앱이 기다리다 굳지 않게)
   const localJson = async (path, ms) => { const ac = new AbortController(); const t = setTimeout(() => ac.abort(), ms || 8000); try { const r = await fetch(LOCAL + path, { cache: 'no-store', signal: ac.signal }); return await r.json(); } finally { clearTimeout(t); } };
+  // 최근 오류 5개 (교사 메뉴 › [문제 정보 복사]에 들어감) — 사진·개인 정보 없음
+  const ERR_KEY = 'yaksok-errlog';
+  function logError(msg) { try { const a = JSON.parse(localStorage.getItem(ERR_KEY) || '[]'); a.push({ t: Date.now(), m: String(msg || '').slice(0, 200), v: APP_VERSION, s: typeof current === 'string' ? current : '' }); localStorage.setItem(ERR_KEY, JSON.stringify(a.slice(-5))); } catch (e) {} }
+  function recentErrors() { try { return JSON.parse(localStorage.getItem(ERR_KEY) || '[]'); } catch (e) { return []; } }
   // 실행기가 업데이트 결과를 주소에 실어 보내면 첫 화면에서 알려 줌 (upd=ok:1.8.1 / err:... / back:1.8.0 / auto:1.8.1)
   const UPD_MSG = (location.search.match(/[?&]upd=([^&]+)/) || [])[1];
   const PDLG = /[?&]pdlg=1/.test(location.search);   // 윈도우 앱 인쇄 방식: 프린터 선택창 (없으면 기본 프린터로 바로 출력)
   const LV = (location.search.match(/[?&]lv=([^&]+)/) || [])[1] || '';   // 실행기(exe) 버전 — 없으면 인쇄 방식 바꾸기가 안 되는 옛 실행기
   const PMODE_MSG = (location.search.match(/[?&]pmode=([^&]+)/) || [])[1];
+  const RELAUNCHED = /[?&]relaunch=1/.test(location.search);   // 실행기가 '크롬이 뜻하지 않게 닫혀서' 다시 연 경우
   const DEFAULT_UPDATE_URL = 'https://raw.githubusercontent.com/doguri25/yaksoknekut/master/index.html';   // 이 저장소의 최신 앱 파일
   // 기기 종류 (음성·인쇄 방식을 기기에 맞게 고르는 데 씀)
   const UA = navigator.userAgent || '';

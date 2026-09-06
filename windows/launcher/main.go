@@ -288,7 +288,11 @@ func main() {
 	var cur *exec.Cmd
 	relaunch := false
 	nextMsg := startMsg
-	runNewExe := false // 실행기를 바꾼 뒤: 브라우저가 닫히면 새 실행기를 띄우고 이 프로세스는 끝냄
+	runNewExe := false  // 실행기를 바꾼 뒤: 브라우저가 닫히면 새 실행기를 띄우고 이 프로세스는 끝냄
+	quitWanted := false // 앱의 [종료]·교사 메뉴 [앱 종료]로 끝내는 중 — 이때만 브라우저가 닫혀도 다시 열지 않음
+	crashCount := 0     // 뜻하지 않게 닫혀 다시 연 횟수 (진단 정보)
+	startedAt := time.Now()
+	browserName := "edge"
 
 	launch := func(msg string) *exec.Cmd {
 		q := fmt.Sprintf("kiosk=1&quit=%d&monitors=%d&monitor=%d&lv=%s", port, len(mons), monIdx, launcherVer)
@@ -321,6 +325,7 @@ func main() {
 		var args []string
 		if chrome != "" {
 			exe = chrome
+			browserName = "chrome"
 			args = append([]string{"--kiosk", pageURL}, common...)
 		} else {
 			exe = edge
@@ -378,6 +383,7 @@ func main() {
 				page("약속네컷을 닫는 중…")
 				mu.Lock()
 				relaunch = false
+				quitWanted = true
 				c := cur
 				mu.Unlock()
 				go func() {
@@ -400,6 +406,31 @@ func main() {
 				st := printerStatus()
 				st.Fixed = printerFixed
 				jsonOut(st)
+			case "/printer/queue": // 인쇄 대기열 — 뽑은 뒤 사진이 실제로 나가는지 (작업 수·가장 오래된 작업의 나이·멈춤 이유)
+				jsonOut(printerQueue())
+			case "/printer/queue/clear": // 대기열 비우기 (멈춘 작업 지우기 · 일시 중지 풀기)
+				jsonOut(clearPrinterQueue())
+			case "/relaunch/auto": // 크롬이 뜻하지 않게 닫히면 다시 열기 (기본 켬)
+				mu.Lock()
+				if r.URL.Query().Get("on") == "0" {
+					cfg["auto_relaunch"] = "0"
+				} else {
+					delete(cfg, "auto_relaunch")
+				}
+				writeConfig(cfgPath, cfg)
+				mu.Unlock()
+				jsonOut(map[string]interface{}{"ok": true})
+			case "/diag": // 문제 정보 복사용 — 실행기 쪽 사정
+				mu.Lock()
+				cc := crashCount
+				cfgCopy := map[string]string{}
+				for k, v := range cfg {
+					if k != "update_url" || strings.TrimSpace(v) != "" {
+						cfgCopy[k] = v
+					}
+				}
+				mu.Unlock()
+				jsonOut(map[string]interface{}{"launcher": launcherVer, "dir": dir, "exe": exePath, "browser": browserName, "config": cfgCopy, "relaunches": cc, "uptimeSec": int(time.Since(startedAt) / time.Second), "monitors": len(mons), "monitor": monIdx, "embedded": embeddedVer, "current": curVer, "printer": printerStatus(), "queue": printerQueue()})
 			case "/settings/save": // 앱 설정 사본 — 크롬 저장소가 미처 못 쓴 채 꺼져도 다음 실행에 되살림
 				body, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 				if len(body) > 1 && body[0] == '{' {
@@ -436,7 +467,7 @@ func main() {
 				readyMu.Lock()
 				er, hr := exeReady, htmlReady
 				readyMu.Unlock()
-				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar, "exeReady": er, "htmlReady": hr})
+				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar, "exeReady": er, "htmlReady": hr, "relaunch": cfg["auto_relaunch"] != "0"})
 			case "/update/restart":
 				// 배경에서 바꿔 둔 새 실행기로 지금 다시 시작 (앱의 [다시 시작] 단추 / 첫 화면에서 3분 쉬면 자동)
 				readyMu.Lock()
@@ -538,6 +569,7 @@ func main() {
 		}))
 	}
 
+	var quickExits []time.Time // 켠 지 20초 안에 닫힌 시각들 — 계속 바로 닫히면(크롬 문제) 무한 반복하지 않고 멈춤
 	for {
 		mu.Lock()
 		msg := nextMsg
@@ -547,6 +579,7 @@ func main() {
 		if c == nil {
 			return
 		}
+		launchedAt := time.Now()
 		mu.Lock()
 		cur = c
 		relaunch = false
@@ -556,7 +589,28 @@ func main() {
 		again := relaunch
 		newExe := runNewExe
 		exeMsg := nextMsg
+		wantQuit := quitWanted
+		autoRelaunch := cfg["auto_relaunch"] != "0"
 		mu.Unlock()
+		// 앱의 [종료]가 아닌데 브라우저가 닫힘(아이가 Alt+F4 · 크롬이 튕김) → 다시 열어 부스가 멈춘 채 방치되지 않게
+		if !again && !newExe && !wantQuit && autoRelaunch {
+			now := time.Now()
+			if now.Sub(launchedAt) < 20*time.Second {
+				quickExits = append(quickExits, now)
+			} else {
+				quickExits = nil
+			}
+			if len(quickExits) >= 3 {
+				msgbox("크롬(엣지)이 켜자마자 계속 닫혀요.\n컴퓨터를 다시 시작한 뒤 약속네컷을 다시 실행해 주세요.\n계속되면 [문제 정보 복사]로 알려 주세요.", 0x30)
+				return
+			}
+			time.Sleep(2500 * time.Millisecond)
+			mu.Lock()
+			crashCount++
+			nextMsg = "relaunch=1"
+			mu.Unlock()
+			continue
+		}
 		if newExe {
 			time.Sleep(600 * time.Millisecond)
 			if exeMsg != "" {

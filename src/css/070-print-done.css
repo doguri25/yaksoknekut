@@ -18,6 +18,11 @@
   .arrow-big .ic { width: 110px; height: 110px; stroke-width: 4.5; }
   @keyframes nudge { from { transform: translateX(-10px); } to { transform: translateX(14px); } }
   .countdown { font-size: 60px; color: var(--muted); }
+  /* 완료 화면: 사진이 언제 나오는지 한 줄 (인쇄할 때만 · 대기열에 앞선 사진이 있으면 그만큼 더) */
+  .done-print { margin: -4px 0 0; display: inline-flex; align-items: center; gap: 12px; background: #fff; border-radius: 999px; padding: 10px 26px; font: 24px "Jua", var(--body-font), sans-serif; color: var(--ink); box-shadow: var(--shadow); }
+  .done-print .ic { width: 28px; height: 28px; color: var(--coral); flex: none; }
+  .done-print.more { color: #B85A1C; }
+  .done-print[hidden] { display: none; }
 
   /* 뽑은 뒤 프린터 문제 알림 */
   #printer-alert { z-index: 50; }

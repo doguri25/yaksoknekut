@@ -125,6 +125,7 @@
     toast(kind === 'ok' ? `약속네컷을 ${v} 버전으로 업데이트했어요` : kind === 'auto' ? `새 버전 ${v}으로 자동 업데이트했어요` : kind === 'exe' ? `실행기(약속네컷.exe)를 ${v}로 업데이트했어요` : kind === 'back' ? `이전 버전(${v})으로 되돌렸어요` : `업데이트하지 못했어요: ${v}`);
   }, 900);
   if (PMODE_MSG) setTimeout(() => toast(PMODE_MSG === 'dialog' ? '이제 [뽑기]를 누르면 프린터 선택창이 떠요' : '이제 기본 프린터로 바로 출력돼요'), 900);
+  if (RELAUNCHED) setTimeout(() => toast('앱이 갑자기 닫혀서 다시 열었어요 — 끝내려면 오른쪽 위 [종료]를 눌러요', 5000), 1200);
   if (QUIT_PORT && MONITORS > 1) {
     $('#app').classList.add('hasmon');
     $('#btn-mon-text').textContent = MONITORS === 2 ? `${nextMonitor()}번 모니터로 옮기기` : `다음 모니터로 (지금 ${MONITOR}번)`;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<!-- yaksok-necut app=1.12.2 launcher=1.9.12 -->
+<!-- yaksok-necut app=1.14.1 launcher=1.10.0 -->
 <!--
   약속네컷 ⓒ 2026 도구리(홍북초등학교) · raccoon@ai.cne.go.kr
   이 저작물은 크리에이티브 커먼즈 저작자표시-비영리-변경금지 4.0 국제 라이선스(CC BY-NC-ND 4.0)에 따라 이용할 수 있습니다.
@@ -390,6 +390,11 @@
   .arrow-big .ic { width: 110px; height: 110px; stroke-width: 4.5; }
   @keyframes nudge { from { transform: translateX(-10px); } to { transform: translateX(14px); } }
   .countdown { font-size: 60px; color: var(--muted); }
+  /* 완료 화면: 사진이 언제 나오는지 한 줄 (인쇄할 때만 · 대기열에 앞선 사진이 있으면 그만큼 더) */
+  .done-print { margin: -4px 0 0; display: inline-flex; align-items: center; gap: 12px; background: #fff; border-radius: 999px; padding: 10px 26px; font: 24px "Jua", var(--body-font), sans-serif; color: var(--ink); box-shadow: var(--shadow); }
+  .done-print .ic { width: 28px; height: 28px; color: var(--coral); flex: none; }
+  .done-print.more { color: #B85A1C; }
+  .done-print[hidden] { display: none; }
 
   /* 뽑은 뒤 프린터 문제 알림 */
   #printer-alert { z-index: 50; }
@@ -491,6 +496,8 @@
   .topbtns .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(39,64,58,.10); }
   #app.hasquit #btn-quit { display: inline-flex; }
   #btn-home { display: inline-flex; }
+  #pq-chip.on { display: inline-flex; pointer-events: none; color: var(--ink); }   /* 인쇄 대기열: 뽑은 뒤 "인쇄 중 ○장" (실행기 1.10.0+) */
+  #pq-chip.bad { color: #D6336C; border-color: rgba(214,51,108,.35); }
   #app[data-screen="s0"] #topleft { display: none; }   /* 첫 화면에는 [처음으로]가 필요 없음 */
   #app.fontwait .screen, #app.fontwait .topbtns { visibility: hidden; }   /* 고른 본문 글꼴 준비 전엔 글자를 잠깐 숨김 (배경만 보임) */
   #app.exeready[data-screen="s0"] #btn-restart { display: inline-flex; background: var(--coral); color: #fff; border-color: transparent; box-shadow: 0 3px 0 var(--coral-dark); }   /* 새 실행기를 받아 둔 뒤: [실행기 새 버전 · 다시 시작] */
@@ -771,6 +778,44 @@
   .toast { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 26px; border-radius: 999px; font-size: 22px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 70; }
   .toast.on { opacity: 1; }
 
+  /* ---------- 시작 도우미 (교사 메뉴에서 여는 3단계 안내) ---------- */
+  #wizard { z-index: 45; }
+  #wizard .wiz { width: 900px; max-width: calc(100% - 40px); max-height: calc(100% - 40px); overflow-y: auto; padding: 26px 34px 22px; gap: 14px; align-items: stretch; text-align: left; }
+  .wiz-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .wiz-head h2 { margin: 0; font-size: 32px; }
+  .wiz-steps { display: flex; gap: 6px; }
+  .wiz-steps b { display: inline-flex; align-items: center; gap: 7px; font: 400 17px "Jua", var(--body-font), sans-serif; color: var(--muted); background: var(--bg); border-radius: 999px; padding: 5px 14px 5px 6px; }
+  .wiz-steps b i { width: 24px; height: 24px; border-radius: 50%; background: #CBD9D3; color: #fff; display: inline-grid; place-items: center; font: 700 14px var(--body-font), sans-serif; }
+  .wiz-steps b.on { background: var(--coral); color: #fff; }
+  .wiz-steps b.on i { background: #fff; color: var(--coral); }
+  .wiz-steps b.done i { background: #3FA36B; }
+  .wiz-body { display: flex; flex-direction: column; gap: 12px; min-height: 300px; font-size: 18px; line-height: 1.5; color: var(--ink); }
+  .wiz-body h3 { margin: 0; font: 400 24px "Jua", var(--body-font), sans-serif; }
+  .wiz-body h3 small { display: block; font: 500 15px var(--body-font), sans-serif; color: var(--muted); margin-top: 2px; }
+  .wiz-stat { display: flex; align-items: center; gap: 12px; background: var(--bg); border-radius: 16px; padding: 12px 16px; }
+  .wiz-stat i { width: 34px; height: 34px; border-radius: 50%; flex: none; display: grid; place-items: center; color: #fff; font: 700 18px var(--body-font), sans-serif; background: #9BB0A9; }
+  .wiz-stat i::after { content: '…'; }
+  .wiz-stat.ok i { background: #3FA36B; } .wiz-stat.ok i::after { content: '✓'; }
+  .wiz-stat.warn i { background: var(--coral); } .wiz-stat.warn i::after { content: '!'; }
+  .wiz-stat.info i { background: #6FA8DC; } .wiz-stat.info i::after { content: 'i'; }
+  .wiz-stat > div { flex: 1; min-width: 0; }
+  .wiz-stat b { font: 400 19px "Jua", var(--body-font), sans-serif; display: block; }
+  .wiz-stat span { font-size: 16px; color: var(--muted); font-weight: 500; }
+  .wiz-list { margin: 0; padding-left: 26px; display: flex; flex-direction: column; gap: 8px; }
+  .wiz-list li::marker { color: var(--coral); font-weight: 700; }
+  .wiz-list b { color: var(--ink); font-weight: 700; }
+  .wiz-kbd { display: inline-block; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 1px 8px; font-size: 16px; }
+  .wiz .wiz-note { margin: 0; font-size: 16px; line-height: 1.5; color: var(--muted); font-weight: 500; background: #fff; border: 1px dashed var(--line); border-radius: 14px; padding: 10px 14px; }
+  .wiz-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .wiz-row .btn.small { min-width: 170px; }
+  .wiz-msg { font-size: 16px; color: var(--muted); font-weight: 500; flex: 1; min-width: 200px; }
+  .wiz-msg.ok { color: #2E8B57; } .wiz-msg.warn { color: #D6336C; }
+  .wiz-ps { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; margin: 0 4px; }
+  .wiz-ps .stat { font-size: 22px; min-width: 62px; text-align: center; }
+  .wiz-foot { display: flex; align-items: center; gap: 12px; }
+  .wiz-sp { flex: 1; }
+  .wiz-foot .btn.small { min-height: 0; padding: 10px 26px; font-size: 22px; }
+  #app.noanim #wizard .wiz { animation: none; }
   /* ---------- copies ---------- */
   .copies { display: none; align-items: center; gap: 18px; font-size: 34px; font-family: "Jua", "Gowun Dodum", sans-serif; }
   .copies.on { display: flex; }
@@ -1120,6 +1165,7 @@
       <path d="M176 128 C200 118 208 96 196 74" stroke="#7ED6BE" stroke-width="18" fill="none" stroke-linecap="round"/>
     </svg>
     <h2 id="done-title">약속을 적어서<br>게시판에 붙여 주세요!</h2>
+    <p class="done-print" id="done-print"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 18V8h20v10"/><rect x="6" y="18" width="36" height="16" rx="4"/><path d="M14 30h20v10H14z"/></svg><span>사진은 약 40초 뒤 프린터에서 나와요</span></p>
     <div class="countdown" id="done-count">4</div>
     <p class="muted" style="font-size:20px;margin-top:-6px">화면을 누르면 바로 처음으로</p>
     <button class="btn small sec" data-go="s0" style="margin-top:6px"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22L24 7l18 15"/><path d="M11 19v22h26V19"/><path d="M20 41V29h8v12"/></svg> 처음 화면으로</button>
@@ -1181,6 +1227,7 @@
   </div>
   <!-- 종료 단추 (윈도우 앱) — 촬영 중·교사 메뉴 빼고 모든 화면 오른쪽 위 -->
   <div class="topbtns" id="topbtns">
+    <span class="btn pq" id="pq-chip" aria-live="polite"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 18V8h20v10"/><rect x="6" y="18" width="36" height="16" rx="4"/><path d="M14 30h20v10H14z"/></svg><span>인쇄 중</span></span>
     <button class="btn" id="btn-mon" aria-label="다른 모니터로 옮기기"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="40" height="26" rx="4"/><path d="M18 42h12M24 34v8"/></svg><span id="btn-mon-text">2번 모니터로 옮기기</span></button>
     <button class="btn" id="btn-lock" aria-label="잠금 화면으로"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="21" width="30" height="21" rx="5"/><path d="M15 21v-6a9 9 0 0 1 18 0v6"/><circle cx="24" cy="31" r="2.6" fill="currentColor"/></svg>잠금</button>
     <button class="btn" id="btn-restart" aria-label="새 실행기로 다시 시작"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M40 24a16 16 0 1 1-4.7-11.3"/><path d="M40 6v10H30"/></svg><span id="btn-restart-text">실행기 새 버전 · 다시 시작</span></button>
@@ -1238,10 +1285,10 @@
   <div class="overlay" id="printer-alert">
     <div class="panel palert">
       <svg class="palert-ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 6 L44 40 H4 Z"/><path d="M24 19v10"/><circle cx="24" cy="34" r="1.6" fill="currentColor"/></svg>
-      <h2>프린터를 확인해 주세요</h2>
+      <h2 id="palert-title">프린터를 확인해 주세요</h2>
       <p class="palert-what" id="palert-what">용지 없음·부족</p>
       <p class="small" id="palert-hint">사진이 안 나오면 선생님께 알려 주세요 · 인화지를 채운 뒤 교사 메뉴 › 완성·인쇄 › [마지막 사진 다시 뽑기]로 다시 뽑을 수 있어요</p>
-      <div class="row"><button class="btn small" id="btn-palert-ok">확인</button></div>
+      <div class="row"><button class="btn sec small" id="btn-palert-clear" style="display:none">대기열 비우기</button><button class="btn small" id="btn-palert-ok">확인</button></div>
     </div>
   </div>
   <!-- 세로 모드 -->
@@ -1301,6 +1348,22 @@
       <p class="small" id="crash-sub"><b id="crash-n">20</b>초 뒤 스스로 다시 시작해요 · 설정과 기록은 그대로예요</p>
       <p class="crash-detail" id="crash-detail"></p>
       <div class="row"><button class="btn small" id="btn-crash-restart">지금 다시 시작</button></div>
+    </div>
+  </div>
+  <!-- 시작 도우미 — 교사 메뉴에서 열어 ① 기본 프린터 → ② 용지·인쇄 크기 → ③ 테스트 인쇄·카메라 순서로 처음 설정을 확인 -->
+  <div class="overlay" id="wizard">
+    <div class="panel wiz">
+      <div class="wiz-head">
+        <h2>시작 도우미</h2>
+        <div class="wiz-steps" id="wiz-steps"><b data-step="1" class="on"><i>1</i>프린터</b><b data-step="2"><i>2</i>용지·크기</b><b data-step="3"><i>3</i>테스트</b></div>
+      </div>
+      <div class="wiz-body" id="wiz-body"></div>
+      <div class="wiz-foot">
+        <button class="btn sec small" id="wiz-close">닫기</button>
+        <span class="wiz-sp"></span>
+        <button class="btn sec small" id="wiz-prev">이전</button>
+        <button class="btn small" id="wiz-next">다음</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1584,12 +1647,16 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.12.2';
-  const LAUNCHER_LATEST = '1.9.12';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
+  const APP_VERSION = '1.14.1';
+  const LAUNCHER_LATEST = '1.10.0';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
   const BUILD_DATE = '2026-09-06';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.14.1', d: '2026-09-06', items: ['완료 화면 인쇄 안내에서 "다음 친구 준비!" 문구 제거 — "사진은 약 40초 뒤 프린터에서 나와요"만'] },
+    { v: '1.14.0', d: '2026-09-06', items: ['완료 화면에 인쇄 안내 한 줄 — "사진은 약 40초 뒤 프린터에서 나와요 · 다음 친구 준비!" (매수만큼 더). 윈도우 앱에서 대기열에 앞선 사진이 있으면 "앞에 사진 ○장이 있어서 조금 더 걸려요 · 약 ○분 뒤" — 아이들이 프린터 앞에 몰려 서 있지 않게', '내부 정리: 테스트를 기능별 18묶음으로 다시 나누고 브라우저 3개로 나눠 돌려 9분 → 4분쯤'] },
+    { v: '1.13.1', d: '2026-09-06', items: ['인쇄 대기열 감시를 켜고 끌 수 있는 스위치 (완성·인쇄 › 프린터 점검 줄, 기본 켬) — 크롬 다시 열기(기본 켬)·문제 정보 복사(단추)와 함께 1.13.0 기능은 모두 처음부터 켜져 있어요'] },
+    { v: '1.13.0', d: '2026-09-06', items: ['윈도우 앱: 인쇄 대기열 감시 — [뽑기] 뒤 오른쪽 위에 "인쇄 중 ○장"이 보이고 다 나오면 알려 줘요. 프린터는 준비됨인데 작업이 한참 그대로면(스풀러 멈춤·일시 중지·오프라인) "인쇄가 멈춘 것 같아요" 알림 + [대기열 비우기] (실행기 1.10.0)', '윈도우 앱: 크롬(엣지)이 뜻하지 않게 닫히면(Alt+F4·튕김) 실행기가 2~3초 뒤 다시 열어요 — [종료] 단추·교사 메뉴 [앱 종료]로 끝낸 경우는 그대로 끝남. 학교·기록·앱 › 업데이트 줄에서 끌 수 있음', '교사 메뉴 › 학교·기록·앱 › [문제 정보 복사] — 앱·실행기 버전, 프린터·대기열·카메라 상태, 설정 요약, 최근 오류를 한 번에 복사해 만든 사람에게 보내기', '시작 도우미 (교사 메뉴 › 자주 쓰는 설정 위쪽 · 학교·기록·앱) — ① 기본 프린터 확인 → ② 용지 4×6·테두리 없음·인쇄 크기 → ③ 테스트 인쇄·카메라 확인을 순서대로 안내 (처음 설치할 때 한 번)'] },
     { v: '1.12.2', d: '2026-09-06', items: ['첫 화면 다음의 모든 화면 왼쪽 위에 [처음으로] 단추 — 오른쪽 위 [종료]와 같은 모양. 아직 사진을 안 찍었으면 바로, 찍은 뒤라면 "처음 화면으로 갈까요?" 한 번 물어봄 (촬영 중·교사 메뉴에서는 [종료]처럼 숨김)'] },
     { v: '1.12.1', d: '2026-09-06', items: ['액자 바탕색을 한 단계 진하게 — 미색·연한 파스텔이 인화하면 거의 흰색으로 나와서, 밝은 액자 33종과 꾸미기 종이색을 같은 색감의 진한 파스텔로 (글씨·장식·어두운 액자는 그대로)', '촬영 화면 추천 동작 약속이가 위아래로 통통 — 윈도우 \'애니메이션 효과 끄기\' 설정이나 교사 메뉴 \'화면 전환 움직임 끄기\' 때문에 멈춰 보이던 것을 항상 움직이게, 폭도 조금 크게'] },
     { v: '1.12.0', d: '2026-09-06', items: ['한 컷만 다시 찍기 (교사 메뉴 › 촬영, 기본 꺼짐) — 켜면 고르기 화면의 사진 카드마다 [다시 찍기]가 붙어, 눈 감은 그 컷 하나만 다시 찍고 고르던 순서 그대로 돌아와요 (4장을 다 다시 찍지 않아 줄이 밀리지 않음 · 한 팀 3번까지)', '날짜·학교 도장 (교사 메뉴 › 완성·인쇄, 기본 꺼짐) — 켜면 완성 사진 오른쪽 아래 여백에 "2026.09.06 · 홍북초등학교" 한 줄이 작게 들어가요 (미리보기와 인쇄물 모두)'] },
@@ -1710,11 +1777,16 @@
   const LOCAL = QUIT_PORT ? 'http://127.0.0.1:' + QUIT_PORT : '';
   // 실행기에 묻기 — 8초 안에 답이 없으면 실패로 (실행기가 멈춰도 앱이 기다리다 굳지 않게)
   const localJson = async (path, ms) => { const ac = new AbortController(); const t = setTimeout(() => ac.abort(), ms || 8000); try { const r = await fetch(LOCAL + path, { cache: 'no-store', signal: ac.signal }); return await r.json(); } finally { clearTimeout(t); } };
+  // 최근 오류 5개 (교사 메뉴 › [문제 정보 복사]에 들어감) — 사진·개인 정보 없음
+  const ERR_KEY = 'yaksok-errlog';
+  function logError(msg) { try { const a = JSON.parse(localStorage.getItem(ERR_KEY) || '[]'); a.push({ t: Date.now(), m: String(msg || '').slice(0, 200), v: APP_VERSION, s: typeof current === 'string' ? current : '' }); localStorage.setItem(ERR_KEY, JSON.stringify(a.slice(-5))); } catch (e) {} }
+  function recentErrors() { try { return JSON.parse(localStorage.getItem(ERR_KEY) || '[]'); } catch (e) { return []; } }
   // 실행기가 업데이트 결과를 주소에 실어 보내면 첫 화면에서 알려 줌 (upd=ok:1.8.1 / err:... / back:1.8.0 / auto:1.8.1)
   const UPD_MSG = (location.search.match(/[?&]upd=([^&]+)/) || [])[1];
   const PDLG = /[?&]pdlg=1/.test(location.search);   // 윈도우 앱 인쇄 방식: 프린터 선택창 (없으면 기본 프린터로 바로 출력)
   const LV = (location.search.match(/[?&]lv=([^&]+)/) || [])[1] || '';   // 실행기(exe) 버전 — 없으면 인쇄 방식 바꾸기가 안 되는 옛 실행기
   const PMODE_MSG = (location.search.match(/[?&]pmode=([^&]+)/) || [])[1];
+  const RELAUNCHED = /[?&]relaunch=1/.test(location.search);   // 실행기가 '크롬이 뜻하지 않게 닫혀서' 다시 연 경우
   const DEFAULT_UPDATE_URL = 'https://raw.githubusercontent.com/doguri25/yaksoknekut/master/index.html';   // 이 저장소의 최신 앱 파일
   // 기기 종류 (음성·인쇄 방식을 기기에 맞게 고르는 데 씀)
   const UA = navigator.userAgent || '';
@@ -1734,7 +1806,7 @@
   const MAX_STICKERS = 12;
 
   /* ===================== 설정 (사진은 저장하지 않음) ===================== */
-  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', autoRestart: true, showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, retakeOne: false, stamp: false, hero: {}, promises: {}, promiseLabels: {} };
+  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', autoRestart: true, showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, retakeOne: false, stamp: false, queueWatch: true, hero: {}, promises: {}, promiseLabels: {} };
   /* 저장 위치 — 브라우저 저장소(localStorage) + 윈도우 앱이면 실행기 파일(settings.json).
      학교 컴퓨터는 크롬이 닫힐 때 사이트 데이터를 지우는 정책이 걸려 있거나 저장소 쓰기가 막힌 경우가 있어,
      윈도우 앱에서는 실행기에 둔 사본을 먼저 믿고 켤 때 되살린다. */
@@ -2781,6 +2853,7 @@
     toast(kind === 'ok' ? `약속네컷을 ${v} 버전으로 업데이트했어요` : kind === 'auto' ? `새 버전 ${v}으로 자동 업데이트했어요` : kind === 'exe' ? `실행기(약속네컷.exe)를 ${v}로 업데이트했어요` : kind === 'back' ? `이전 버전(${v})으로 되돌렸어요` : `업데이트하지 못했어요: ${v}`);
   }, 900);
   if (PMODE_MSG) setTimeout(() => toast(PMODE_MSG === 'dialog' ? '이제 [뽑기]를 누르면 프린터 선택창이 떠요' : '이제 기본 프린터로 바로 출력돼요'), 900);
+  if (RELAUNCHED) setTimeout(() => toast('앱이 갑자기 닫혀서 다시 열었어요 — 끝내려면 오른쪽 위 [종료]를 눌러요', 5000), 1200);
   if (QUIT_PORT && MONITORS > 1) {
     $('#app').classList.add('hasmon');
     $('#btn-mon-text').textContent = MONITORS === 2 ? `${nextMonitor()}번 모니터로 옮기기` : `다음 모니터로 (지금 ${MONITOR}번)`;
@@ -3498,7 +3571,7 @@
     speak(doP ? VOICE.printed : VOICE.board);
     armIdle(null);
     if (doP) {
-      await wait(300); doPrint(); watchPrinterAfterPrint();
+      await wait(300); doPrint(); watchPrinterAfterPrint(); watchQueueAfterPrint();
       // 인쇄창 때문에 전체 화면이 풀리며 창 크기가 바뀐 경우: 화면 배율을 바로 다시 맞추고 전체 화면 복귀를 시도
       fitApp(); refitSoon();
       if (fullWanted && settings.autoFull) enterFull();
@@ -3554,26 +3627,203 @@
       localJson('/printer/status').then(j => { if (j && (j.error || PRINTER_BAD.includes(j.status))) showPrinterAlert(j); }).catch(() => {});
     }, ms)));
   }
+  const PALERT_HINT = $('#palert-hint').textContent;
   function showPrinterAlert(j) {
+    $('#palert-title').textContent = '프린터를 확인해 주세요'; $('#palert-hint').textContent = PALERT_HINT; $('#btn-palert-clear').style.display = 'none';
     $('#palert-what').textContent = j.error ? j.error : (j.detail || '프린터 오류') + (j.name ? ` (${j.name.slice(0, 24)})` : '');
     $('#printer-alert').classList.add('on'); buzz();
     clearInterval(palertPoll);
     palertPoll = setInterval(() => localJson('/printer/status').then(k => { if (k && !k.error && !PRINTER_BAD.includes(k.status)) { hidePrinterAlert(); toast('프린터가 준비됐어요'); } }).catch(() => {}), 10000);   // 고쳐지면 저절로 닫힘
   }
-  function hidePrinterAlert() { $('#printer-alert').classList.remove('on'); clearInterval(palertPoll); palertPoll = null; }
+  function hidePrinterAlert() { $('#printer-alert').classList.remove('on'); clearInterval(palertPoll); palertPoll = null; pqAlert = false; }
   $('#btn-palert-ok').addEventListener('click', () => { pop(); hidePrinterAlert(); });
+
+  // ---------- 인쇄 대기열 지켜보기 (실행기 1.10.0+) ----------
+  // 뽑은 뒤 4초마다 윈도우 인쇄 대기열을 물어 오른쪽 위에 "인쇄 중 ○장"을 보이고 다 나오면 알려 줌.
+  // 프린터는 '준비됨'인데 작업이 한참 그대로면(스풀러 멈춤·일시 중지·오프라인 — 행사장에서 가장 흔한 사고) "인쇄가 멈춘 것 같아요" + [대기열 비우기]
+  const QUEUE_OK = !!(QUIT_PORT && LV && cmpVer(LV, '1.10.0') >= 0);
+  let pqT = null, pqSeen = 0, pqUntil = 0, pqAlert = false, pqLast = null, pqAt = 0;
+  const fmtSec = s => s < 60 ? `${s}초` : `${Math.floor(s / 60)}분${s % 60 ? ' ' + (s % 60) + '초' : ''}`;
+  const stuckLimit = q => 90 + 50 * Math.max(0, (q.pages || 1) - 1);   // 셀피 CP1500 기준 한 장 40~60초 · 쪽수만큼 여유
+  function watchQueueAfterPrint() {
+    if (!QUEUE_OK || settings.queueWatch === false) return;   // 완성·인쇄 › 프린터 점검 › 대기열 감시 (기본 켬)
+    pqUntil = Date.now() + 4 * 60000; pqSeen = 0;
+    if (!pqT) { setTimeout(pollQueue, 1500); pqT = setInterval(pollQueue, 4000); }
+  }
+  async function pollQueue() {
+    if (settings.queueWatch === false) { clearInterval(pqT); pqT = null; $('#pq-chip').classList.remove('on', 'bad'); if (pqAlert) hidePrinterAlert(); return; }   // 감시를 끄면 바로 멈춤
+    let q; try { q = await localJson('/printer/queue', 3000); } catch (e) { return; }
+    if (!q || q.error) return; pqLast = q; pqAt = Date.now();
+    if (current === 's9') donePrintLine();   // 완료 화면의 '약 ○초 뒤 나와요' 줄을 대기열에 맞춰 갱신
+    const chip = $('#pq-chip'), stuck = q.jobs > 0 && (!!q.problem || q.oldestSec > stuckLimit(q));
+    if (q.jobs > 0) { pqSeen = Math.max(pqSeen, q.jobs); chip.querySelector('span').textContent = `인쇄 중 ${q.jobs}장`; chip.classList.add('on'); chip.classList.toggle('bad', stuck); }
+    else if (chip.classList.contains('on')) { chip.classList.remove('on', 'bad'); if (pqSeen) toast('사진이 다 나왔어요'); pqSeen = 0; if (pqAlert) hidePrinterAlert(); }
+    if (stuck && !$('#printer-alert').classList.contains('on')) showQueueAlert(q);
+    else if (pqAlert && q.jobs > 0) $('#palert-what').textContent = queueWhat(q);   // 열려 있는 알림의 시간 표시 갱신
+    if (q.jobs === 0 && Date.now() > pqUntil && pqT) { clearInterval(pqT); pqT = null; }
+  }
+  const queueWhat = q => (q.problem ? q.detail : `대기열에 ${q.jobs}장이 ${fmtSec(q.oldestSec)}째 그대로예요`) + (q.name ? ` (${q.name.slice(0, 24)})` : '');
+  function showQueueAlert(q) {
+    pqAlert = true;
+    $('#palert-title').textContent = '인쇄가 멈춘 것 같아요'; $('#palert-what').textContent = queueWhat(q);
+    $('#palert-hint').textContent = '프린터 전원·USB 선·용지를 확인해 주세요. 프린터는 멀쩡한데 안 나오면 [대기열 비우기]를 누른 뒤 교사 메뉴 › 완성·인쇄 › [한 장 더 뽑기]로 다시 뽑을 수 있어요';
+    $('#btn-palert-clear').style.display = ''; $('#btn-palert-clear').textContent = '대기열 비우기';
+    $('#printer-alert').classList.add('on'); buzz();
+  }
+  $('#btn-palert-clear').addEventListener('click', () => {
+    pop(); const b = $('#btn-palert-clear'); b.textContent = '비우는 중…';
+    localJson('/printer/queue/clear', 8000).then(q => { pqSeen = 0; toast(q.error ? q.error : q.jobs === 0 ? `대기열을 비웠어요${q.removed ? ` (${q.removed}장)` : ''}${q.resumed ? ' · 일시 중지도 풀었어요' : ''}` : q.detail, 4000); hidePrinterAlert(); pollQueue(); }).catch(() => { toast('실행기와 연결되지 않아요'); b.textContent = '대기열 비우기'; });
+  });
   /* ===================== S9 완료 ===================== */
   const DONE_TEXT = { welcome: '입학을 축하해요!', grad: '졸업을 축하해요!', sports: '우리 팀 파이팅!', birthday: '생일 축하해!', chuseok: '풍성한 한가위 보내요!', reading: '책과 함께 자라요!', xmas: '메리 크리스마스!', children: '어린이날 축하해!' };   // 세트별 완료 인사 (학교폭력예방·일상은 그대로)
   ENTER.s9 = () => {
     const greet = DONE_TEXT[settings.frameSet || 'promise'];
     const base = (settings.output || 'print') === 'board' ? '다음 친구도<br>찍어 봐요!' : '약속을 적어서<br>게시판에 붙여 주세요!';
     $('#done-title').innerHTML = greet ? `<span style="color:var(--coral)">${greet}</span><br>${(settings.output || 'print') === 'board' ? '다음 친구도 찍어 봐요!' : '약속을 적어서 게시판에 붙여 주세요!'}` : base;
+    donePrintLine();
     let n = T.done; const el = $('#done-count'); el.textContent = n;
     every(() => { n--; el.textContent = n; if (n <= 0) go('s0'); }, 1000);
   };
+  // 완료 화면의 인쇄 안내 한 줄 — "약 40초 뒤 나와요". 대기열 감시가 켜져 있어 앞선 사진이 보이면 "앞에 ○장이 있어서 조금 더" (대기열 결과가 뒤늦게 오면 pollQueue가 다시 부름)
+  const PRINT_SEC = 40;   // 셀피 CP1500 기준 한 장 40초쯤
+  function donePrintLine() {
+    const el = $('#done-print'); if (!el) return;
+    if ((settings.output || 'print') === 'board') { el.hidden = true; return; }
+    const mine = clamp(S.copies || 1, 1, 4);
+    const q = (typeof pqLast !== 'undefined' && pqLast && Date.now() - pqAt < 20000) ? pqLast : null;
+    const ahead = q && q.jobs > 1 ? q.jobs - 1 : 0;   // 내 사진(작업 1개) 말고 앞에 남은 작업
+    const sec = (ahead + mine) * PRINT_SEC;
+    el.hidden = false; el.classList.toggle('more', ahead > 0);
+    el.querySelector('span').textContent = ahead > 0
+      ? `앞에 사진 ${ahead}장이 있어서 조금 더 걸려요 · 약 ${sec >= 60 ? Math.round(sec / 60) + '분' : sec + '초'} 뒤에 나와요`
+      : `사진은 약 ${sec >= 60 ? Math.round(sec / 60) + '분' : sec + '초'} 뒤 프린터에서 나와요`;
+  }
   // 인쇄 후 화면·완료 화면은 아무 데나 눌러도 바로 넘어감
   $('#after').addEventListener('click', () => { if (current === 's8') { pop(); go('s9'); } });
   $('#s9').addEventListener('click', e => { if (!e.target.closest('button')) { pop(); go('s0'); } });
+
+  /* ===================== 시작 도우미 · 문제 정보 복사 ===================== */
+  // 시작 도우미: 교사 메뉴에서 열어 ① 기본 프린터 → ② 용지·인쇄 크기 → ③ 테스트 인쇄·카메라 를 순서대로 확인 (처음 설치할 때 한 번)
+  let wizStep = 1, wizQT = null;
+  const wizEsc = v => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  function openWizard(step) { wizStep = step || 1; $('#wizard').classList.add('on'); renderWizard(); }
+  function closeWizard() { $('#wizard').classList.remove('on'); clearInterval(wizQT); wizQT = null; }
+  // 테스트 인쇄: 지금 세트의 첫 액자 예시 한 장을 기본 프린터로 (교사 메뉴 [테스트 인쇄]와 시작 도우미가 같이 씀)
+  function testPrint() {
+    const set = settings.frameSet || 'promise', f = FRAMES.find(x => x.set === set) || FRAMES[0];
+    const c = document.createElement('canvas'); c.width = PW; c.height = PH;
+    compose(c, { frame: f, placeholder: true, print: true });
+    const area = $('#print-area'); area.innerHTML = '<div class="pg"><img alt="테스트 인쇄"></div>';
+    const img = area.querySelector('img'); img.src = c.toDataURL('image/jpeg', .92);
+    img.decode().catch(() => {}).then(() => { doPrint(); fitApp(); refitSoon(); }); usePaper(1); saveSettings();
+    const pp = document.getElementById('paper-n'); if (pp) pp.textContent = settings.paper == null ? '' : settings.paper;
+  }
+  function renderWizard() {
+    const body = $('#wiz-body'), win = !!(QUIT_PORT && LV);
+    $$('#wiz-steps b').forEach(b => { const n = +b.dataset.step; b.classList.toggle('on', n === wizStep); b.classList.toggle('done', n < wizStep); });
+    $('#wiz-prev').style.display = wizStep > 1 ? '' : 'none';
+    $('#wiz-next').textContent = wizStep < 3 ? '다음' : '완료';
+    const ps = `<span class="wiz-ps"><button class="tround" data-w="ps-" aria-label="작게">−</button><span class="stat" id="wiz-psv">${clamp(+settings.printScale || 100, 90, 110)}%</span><button class="tround" data-w="ps+" aria-label="크게">+</button></span>`;
+    if (wizStep === 1) {
+      body.innerHTML = `
+        <h3>① 프린터 연결<small>${win ? (PDLG ? '지금 인쇄 방식: 프린터 선택창 — [뽑기]마다 프린터를 고르는 창이 떠요' : '지금 인쇄 방식: 기본 프린터로 바로 출력 — 윈도우 기본 프린터가 포토프린터여야 해요') : BRIDGE ? '안드로이드 앱 — [뽑기]를 누르면 인쇄창에서 프린터를 고릅니다' : '브라우저 — [뽑기]를 누르면 인쇄창에서 프린터를 고릅니다'}</small></h3>
+        ${win ? `<div class="wiz-stat" id="wiz-pr"><i></i><div><b>기본 프린터</b><span>확인 중…</span></div><button class="btn sec tiny" data-w="recheck">다시 확인</button></div>` : `<div class="wiz-stat info"><i></i><div><b>확인창 없이 바로 뽑으려면 윈도우 앱</b><span>약속네컷.exe로 실행하면 [뽑기]에서 윈도우 기본 프린터로 바로 출력돼요. 브라우저에서는 처음 한 번 인쇄창에서 프린터·용지를 고르면 다음부터 같은 설정이 유지돼요.</span></div></div>`}
+        <ol class="wiz-list">
+          <li>포토프린터(예: <b>Canon SELPHY CP1500</b>)를 컴퓨터에 <b>USB로 연결</b>하고 전원을 켜요. (Wi-Fi 연결은 끊기기 쉬워요)</li>
+          <li>윈도우 <span class="wiz-kbd">설정</span> › <span class="wiz-kbd">Bluetooth 및 장치</span> › <span class="wiz-kbd">프린터 및 스캐너</span>에서 그 프린터를 눌러 <b>[기본값으로 설정]</b>. 단추가 없으면 목록 아래 '<b>Windows에서 기본 프린터를 관리</b>'를 먼저 꺼요.</li>
+          <li>${win ? '[다시 확인]을 눌러 위 줄에 그 프린터가 <b>준비됨</b>으로 나오면 [다음].' : '프린터가 켜져 있고 컴퓨터에 보이면 [다음].'}</li>
+        </ol>
+        ${win && !PDLG ? `<p class="wiz-note">프린터가 여러 대라 [뽑기]마다 고르고 싶으면 교사 메뉴 › 완성·인쇄 › 인쇄 방식을 '프린터 선택창 뜨기'로 바꿔요. 실행기가 켤 때마다 크롬이 기억한 다른 프린터(알PDF 등)를 지우고 기본 프린터로 맞추니, 기본 프린터만 맞으면 돼요.</p>` : ''}`;
+      if (win) wizPrinter();
+    } else if (wizStep === 2) {
+      body.innerHTML = `
+        <h3>② 용지와 인쇄 크기<small>인화지는 4×6인치(엽서 크기) · 사진은 테두리 없이 가로로 꽉 차게</small></h3>
+        <ol class="wiz-list">
+          <li>윈도우 <span class="wiz-kbd">설정</span> › <span class="wiz-kbd">프린터 및 스캐너</span> › (프린터) › <b>인쇄 기본 설정</b>에서 용지 크기 <b>4×6 in (엽서·KG)</b>, <b>테두리 없음</b>, 방향 <b>가로</b>로 맞춰요. 셀피(SELPHY)는 용지 '<b>엽서 크기</b>' + '<b>테두리 없음 인쇄</b>' 켬.</li>
+          <li>앱의 <b>인쇄 크기</b> ${ps} — 테스트 인쇄에서 사진 <b>가장자리가 잘리면 −</b>, <b>흰 테두리가 남으면 +</b> (2%씩). 보통은 100% 그대로.</li>
+          <li>인화지 팩(36장 등)을 넣었다면 교사 메뉴 › 완성·인쇄 › <b>인화지 잔량</b>에 [+36장]을 눌러 두면 인쇄마다 줄고 5장 이하일 때 첫 화면에 표시돼요. (선택)</li>
+        </ol>
+        <p class="wiz-note">용지 설정이 A4로 남아 있으면 사진이 아주 작게 나오거나 잘려요. 프린터 드라이버의 기본 설정과 앱 인쇄 크기는 이 컴퓨터에 저장되니 한 번만 맞추면 돼요.</p>`;
+    } else {
+      body.innerHTML = `
+        <h3>③ 테스트 인쇄와 카메라<small>실제로 한 장 뽑아 보고, 카메라가 켜지는지 확인해요</small></h3>
+        <div class="wiz-row"><button class="btn small" data-w="testprint">테스트 인쇄</button><span class="wiz-msg" id="wiz-tp">액자 예시 한 장을 ${win && !PDLG ? '기본 프린터로 바로 보내요' : '인쇄창으로 보내요 — 프린터와 용지(4×6)를 고르고 [인쇄]'} (인화지 1장)</span></div>
+        <div class="wiz-row"><button class="btn sec small" data-w="camcheck">카메라 확인</button><span class="wiz-msg" id="wiz-cam">${camInfo.label ? `${wizEsc(camInfo.label)} ${camInfo.w}×${camInfo.h}${camInfo.note ? ' · ' + wizEsc(camInfo.note) : ''}` : '카메라를 켜서 이름과 해상도를 확인해요 (다른 앱이 카메라를 쓰고 있으면 안 켜져요)'}</span></div>
+        <div class="wiz-row"><button class="btn sec small" data-w="diag">문제 정보 복사</button><span class="wiz-msg">안 될 때 이걸 눌러 복사한 내용을 만든 사람(${AUTHOR.email})에게 보내 주세요 — 버전·프린터·카메라·설정이 한 번에 들어가요</span></div>
+        <p class="wiz-note">사진이 잘 나왔으면 끝! [완료]를 누르면 첫 화면에서 학생이 바로 쓸 수 있어요. 가장자리가 잘리거나 흰 테두리가 남으면 [이전]에서 인쇄 크기를 조정해요. 잠금 비밀번호(교사 메뉴 › 잠금)를 정해 두면 학생이 설정을 못 건드려요.</p>`;
+    }
+    body.querySelectorAll('[data-w]').forEach(b => b.addEventListener('click', () => wizAction(b)));
+  }
+  function wizPrinter() {
+    const st = $('#wiz-pr'); if (!st) return;
+    st.className = 'wiz-stat'; st.querySelector('span').textContent = '확인 중…';
+    localJson('/printer/status', 9000).then(j => {
+      if (!st.isConnected) return;
+      const ok = !j.error && (j.status === 'ready' || j.status === 'printing');
+      st.className = 'wiz-stat ' + (ok ? 'ok' : 'warn');
+      st.querySelector('b').textContent = j.name ? j.name : '기본 프린터';
+      st.querySelector('span').textContent = j.error ? j.error : `${j.detail || j.status}${ok ? ' — 이 프린터로 나가요' : ''}${j.fixed ? ' · 크롬이 기억한 다른 프린터 대신 이 프린터로 맞췄어요' : ''}`;
+    }).catch(() => { if (st.isConnected) { st.className = 'wiz-stat warn'; st.querySelector('span').textContent = '실행기와 연결되지 않아요 — 약속네컷.exe로 다시 실행해 보세요'; } });
+  }
+  function wizAction(b) {
+    const a = b.dataset.w;
+    if (a === 'recheck') { pop(); wizPrinter(); }
+    else if (a === 'ps+' || a === 'ps-') { settings.printScale = clamp((+settings.printScale || 100) + (a === 'ps+' ? 2 : -2), 90, 110); saveSettings(); $('#wiz-psv').textContent = settings.printScale + '%'; const ps = document.getElementById('ps'); if (ps) ps.textContent = settings.printScale + '%'; }
+    else if (a === 'testprint') {
+      pop(); testPrint(); const m = $('#wiz-tp'); m.className = 'wiz-msg'; m.textContent = '프린터로 보냈어요 — 30~60초 뒤 나와요. 안 나오면 프린터 전원·용지를 확인하세요';
+      if (typeof QUEUE_OK !== 'undefined' && QUEUE_OK) {   // 대기열을 60초 동안 지켜보며 상태를 보여 줌
+        clearInterval(wizQT); const t0 = Date.now(); let seen = false;
+        wizQT = setInterval(() => localJson('/printer/queue', 3000).then(q => {
+          if (!m.isConnected) { clearInterval(wizQT); return; }
+          if (q.error) return;
+          if (q.jobs > 0) { seen = true; m.textContent = `대기열 ${q.jobs}장 · ${q.detail}${q.problem ? ' — 프린터를 확인하세요' : ''}`; m.className = 'wiz-msg' + (q.problem ? ' warn' : ''); }
+          else if (seen) { m.textContent = '프린터로 다 보냈어요 — 사진이 나왔나요? 잘리거나 흰 테두리가 남으면 [이전]에서 인쇄 크기를 조정해요'; m.className = 'wiz-msg ok'; clearInterval(wizQT); }
+          if (Date.now() - t0 > 90000) clearInterval(wizQT);
+        }).catch(() => {}), 3000);
+      }
+    }
+    else if (a === 'camcheck') { pop(); const m = $('#wiz-cam'); m.textContent = '카메라를 켜는 중…'; m.className = 'wiz-msg'; ensureCamera().then(ok => { stopCamera(); if (!m.isConnected) return; m.className = 'wiz-msg ' + (ok ? 'ok' : 'warn'); m.textContent = ok ? `카메라 OK — ${camInfo.label || '자동'} ${camInfo.w}×${camInfo.h}${camInfo.note ? ' · ' + camInfo.note : ''}` : '카메라를 켤 수 없어요 — USB 연결, 다른 앱(줌·카메라)이 쓰고 있는지 확인'; }); }
+    else if (a === 'diag') { copyDiag(b); }
+  }
+  $('#wiz-close').addEventListener('click', () => { pop(); closeWizard(); });
+  $('#wiz-prev').addEventListener('click', () => { pop(); if (wizStep > 1) { wizStep--; renderWizard(); } });
+  $('#wiz-next').addEventListener('click', () => { pop(); if (wizStep < 3) { wizStep++; renderWizard(); } else { closeWizard(); toast('준비 끝! 첫 화면에서 학생이 바로 쓸 수 있어요'); } });
+  $('#wizard').addEventListener('click', e => { if (e.target === e.currentTarget) closeWizard(); });
+
+  // 문제 정보: 앱·실행기 버전, 기기, 프린터·대기열·카메라 상태, 설정 요약, 최근 오류 — 사진·이름 같은 개인 정보는 없음
+  async function diagText() {
+    const L = [], s = settings, now = new Date(), pad = n => String(n).padStart(2, '0');
+    L.push(`약속네컷 문제 정보 · ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`);
+    L.push(`앱 ${APP_VERSION} (${BUILD_DATE}) · 실행기 ${LV || (QUIT_PORT ? '옛 버전(버전 모름)' : '없음')} · ${BRIDGE ? '안드로이드 앱' : KIOSK ? (PDLG ? '윈도우 앱 · 프린터 선택창' : '윈도우 앱 · 기본 프린터 자동 출력') : '브라우저'} · ${DEV.label}`);
+    L.push(`화면 ${screen.width}×${screen.height} · 창 ${innerWidth}×${innerHeight} · 배율 ${devicePixelRatio} · 모니터 ${MONITOR}/${MONITORS} · 앱 켠 지 ${Math.round(performance.now() / 60000)}분 · 화면 ${typeof current === 'string' ? current : '?'}`);
+    L.push(`브라우저: ${UA.replace(/^Mozilla\/5\.0\s*/, '').slice(0, 140)}`);
+    L.push(`카메라: ${camInfo.label ? `${camInfo.label} ${camInfo.w}×${camInfo.h}` : '아직 안 켬'}${camInfo.note ? ' · ' + camInfo.note : ''}${s.cameraId ? ' · 교사가 고른 카메라' : ' · 자동'} · 거울 ${s.mirror === false ? '끔' : '켬'} · 밝기 ${s.brightness || 0}`);
+    const q = [s.hiRes !== false && '고화질', s.burst && '연속3장', s.autoLevel !== false && '자동보정', s.printSharpen !== false && '인쇄선명'].filter(Boolean).join('/');
+    L.push(`설정: 세트 ${s.frameSet} · 완성 ${s.output || 'print'} · 최대 ${s.maxCopies}장 · 인쇄 크기 ${s.printScale || 100}% · 컷 수 화면 ${s.showCutSelect ? '켬' : `끔(${s.defaultCuts}컷)`} · 카운트 ${s.countdown}초 · 소리 ${s.volume} · 음성 ${s.voice ? '켬' : '끔'}${s.voiceName ? `(${s.voiceName})` : ''} · 잠금 ${s.lockPin ? '있음' : '없음'} · 자동잠금 ${s.lockAfter || 0}분 · 테마 ${s.theme} · 글꼴 ${s.bodyFont} · 품질 ${q} · 한컷다시 ${s.retakeOne ? '켬' : '끔'} · 도장 ${s.stamp ? '켬' : '끔'} · 인화지 ${s.paper == null ? '안 씀' : s.paper + '장'} · 대기화면 ${s.attract || 0} · 자동재시작 ${s.autoRestart === false ? '끔' : '켬'} · 움직임 ${s.anim === false ? '끔' : '켬'}`);
+    L.push(`설정 보관: ${storeText()} · 누적 인쇄 ${s.printCount || 0}장`);
+    try { const st = loadStats(), td = st.days[todayKey()] || { done: 0, prints: 0, board: 0 }; L.push(`오늘 기록: 완성 ${td.done} · 인쇄 ${td.prints} · 칠판 ${td.board || 0}`); } catch (e) {}
+    const errs = recentErrors();
+    L.push(errs.length ? `최근 오류 ${errs.length}건: ` + errs.map(e => `[${new Date(e.t).toLocaleString('ko-KR', { hour12: false })} v${e.v} ${e.s}] ${e.m}`).join(' | ') : '최근 오류: 없음');
+    if (QUIT_PORT) {
+      try {
+        const d = await localJson('/diag', 5000);
+        L.push(`실행기: ${d.launcher} · ${d.browser} · 뜻하지 않게 닫혀 다시 연 횟수 ${d.relaunches} · 켠 지 ${Math.round(d.uptimeSec / 60)}분 · 앱 파일 ${d.current}(내장 ${d.embedded}) · 폴더 ${d.dir} · 설정 ${JSON.stringify(d.config || {})}`);
+        if (d.printer) L.push(`프린터: ${d.printer.name || '-'} · ${d.printer.error || d.printer.detail || d.printer.status}${d.printer.fixed ? ' · 크롬 기억 프린터를 기본 프린터로 맞춤' : ''}`);
+        if (d.queue) L.push(`대기열: ${d.queue.error || `${d.queue.jobs}장 · ${d.queue.detail}${d.queue.oldestSec ? ` · 가장 오래된 작업 ${d.queue.oldestSec}초` : ''}${d.queue.paused ? ' · 일시 중지' : ''}`}`);
+      } catch (e) {   // 옛 실행기: /diag 가 없음
+        try { const p = await localJson('/printer/status', 5000); L.push(`프린터: ${p.name || '-'} · ${p.error || p.detail || p.status}`); } catch (e2) { L.push('실행기: 연결 안 됨 (/printer/status 실패)'); }
+        try { const u = await localJson('/update/status', 4000); L.push(`업데이트: 자동 ${u.auto ? '켬' : '끔'} · 기본 주소 ${u.isDefault ? '예' : '아니오'} · 실행기 ${u.launcher}`); } catch (e3) {}
+      }
+    }
+    return L.join('\n');
+  }
+  function copyDiag(b) {
+    const old = b.textContent; b.textContent = '모으는 중…'; b.disabled = true;
+    diagText().then(t => {
+      const done = ok => { b.textContent = old; b.disabled = false; toast(ok ? '문제 정보를 복사했어요 — 메일·카톡에 붙여 넣어 보내 주세요' : '복사가 안 돼요 — 교사 메뉴 › 기록 복사처럼 직접 복사해 주세요', 4000); };
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => done(true), () => { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} ta.remove(); done(ok); });
+    }).catch(() => { b.textContent = old; b.disabled = false; toast('문제 정보를 모으지 못했어요'); });
+  }
 
   /* ===================== S10 교사 메뉴 ===================== */
   let settingsBackup = null;   // 메뉴에 들어올 때의 설정 (취소하면 이대로 되돌림)
@@ -3661,7 +3911,7 @@
       <div class="tmain" id="tmain">
 
         <div class="tpage" data-pane="quick">
-          <div class="thead"><h3>자주 쓰는 설정</h3><span class="tdesc">행사 당일에 만지는 것만 모았어요 · 나머지는 왼쪽 메뉴에서</span></div>
+          <div class="thead"><h3>자주 쓰는 설정</h3><span class="tdesc">행사 당일에 만지는 것만 모았어요 · 나머지는 왼쪽 메뉴에서 <button class="tlink2" data-act="wizard">처음 설치라면 → 시작 도우미</button></span></div>
           <div class="tcheck" id="tcheck">
             <span class="tchk ${camInfo.label ? 'ok' : 'ask'}"><i></i><b>카메라</b><span>${camInfo.label ? esc(camInfo.label.replace(/\s*\(.*\)$/, '').slice(0, 22)) : '아직 확인 안 됨'}</span>${camInfo.label ? '' : '<button class="tlink2" data-act="camcheck">지금 확인</button>'}</span>
             <span class="tchk ${QUIT_PORT && LV ? (PDLG ? 'ok' : 'wait') : 'info'}" id="chk-printer"><i></i><b>프린터</b><span>${BRIDGE ? '앱 인쇄창' : QUIT_PORT && LV ? (PDLG ? '뽑을 때 선택창에서 고름' : '확인 중…') : QUIT_PORT ? '옛 실행기 — 확인 불가' : '인쇄창에서 고름'}</span></span>
@@ -3726,12 +3976,13 @@
           ${row('칠판에 보여 주는 시간', seg('boardSeconds', [[5, '5초'], [8, '8초'], [12, '12초']]))}
           ${row('최대 인쇄 매수', `${seg('maxCopies', [[1, '1장'], [2, '2장'], [3, '3장'], [4, '4장']])}<span class="thint">1장이면 매수 선택 화면이 안 떠요</span>`)}
           ${row('인쇄 크기', `<button class="tround" data-act="ps-" aria-label="작게">−</button><span class="stat" id="ps">${clamp(+settings.printScale || 100, 90, 110)}%</span><button class="tround" data-act="ps+" aria-label="크게">+</button><span class="thint">가장자리가 잘리면 −, 흰 테두리가 남으면 + (2%씩)</span>`)}
-          ${row('프린터 점검', `<button class="btn sec tiny" data-act="testprint">테스트 인쇄</button><span class="thint">오늘 인쇄 <b id="pc">${settings.printCount || 0}</b>장</span><button class="btn sec tiny" data-act="resetcount">0으로</button>${info('h-print')}<span class="thint">용지 4×6(엽서) · 테두리 없음</span>`, help('h-print', printNote))}
-          ${row(sub('인화지 잔량', settings.paper == null ? '안 씀' : '5장 이하면 첫 화면에 표시'), settings.paper == null
-            ? `<button class="btn sec tiny" data-act="paper36">+36장 넣었어요</button><button class="btn sec tiny" data-act="paper54">+54장</button><button class="btn sec tiny" data-act="paper18">+18장</button><span class="thint">인화지 팩을 넣을 때 눌러 두면 인쇄마다 하나씩 줄어요</span>`
+          ${row('프린터 점검', `<button class="btn sec tiny" data-act="testprint">테스트 인쇄</button><span class="thint">오늘 인쇄 <b id="pc">${settings.printCount || 0}</b>장</span><button class="btn sec tiny" data-act="resetcount">0으로</button>${info('h-print')}${QUIT_PORT && LV && cmpVer(LV, '1.10.0') >= 0 ? `<span class="tsep"></span><span class="tsub">대기열 감시</span>${sw('queueWatch', settings.queueWatch !== false)}` : '<span class="thint">용지 4×6(엽서) · 테두리 없음</span>'}`,
+            help('h-print', printNote + (QUIT_PORT && LV && cmpVer(LV, '1.10.0') >= 0 ? " <b>대기열 감시</b>(기본 켬): [뽑기] 뒤 윈도우 인쇄 대기열을 지켜봐 오른쪽 위에 '인쇄 중 ○장'을 보이고 다 나오면 알려 줘요. 프린터는 준비됨인데 작업이 한참 그대로면(대기열 멈춤·일시 중지·오프라인) '인쇄가 멈춘 것 같아요' 알림과 [대기열 비우기]가 떠요. 알림이 번거로우면 끄세요." : '')))}
+          ${row(sub('인화지 잔량', settings.paper == null ? '안 씀 · 팩을 넣을 때 눌러 두면 인쇄마다 하나씩 줄어요' : '5장 이하면 첫 화면에 표시'), settings.paper == null
+            ? `<button class="btn sec tiny" data-act="paper36">+36장 넣었어요</button><button class="btn sec tiny" data-act="paper54">+54장</button><button class="btn sec tiny" data-act="paper18">+18장</button><span class="thint">5장 이하면 첫 화면에 표시돼요</span>`
             : `<button class="tround" data-act="paper-" aria-label="하나 빼기">−</button><span class="stat" id="paper-n">${settings.paper}</span><button class="tround" data-act="paper+" aria-label="하나 더하기">+</button><span class="thint">장</span><button class="btn sec tiny" data-act="paper36">+36</button><button class="btn sec tiny" data-act="paper54">+54</button><button class="btn sec tiny" data-act="paper18">+18</button><button class="btn sec tiny" data-act="paperoff">안 씀</button>`)}
           ${row(sub('마지막 사진', lastPrint ? `${lastPrint.when.toTimeString().slice(0, 5)} · ${esc(lastPrint.frame)}` : '아직 없어요'), lastPrint
-            ? `<img src="${lastPrint.url}" alt="" style="height:72px;border-radius:8px;box-shadow:0 2px 6px rgba(39,64,58,.2)"><button class="btn sec tiny" data-act="reprint">${ic('printer')} 한 장 더 뽑기</button><span class="thint">종이 걸림·잉크 번짐 때 · 앱을 끄면 사라져요</span>`
+            ? `<img src="${lastPrint.url}" alt="" style="height:58px;border-radius:8px;box-shadow:0 2px 6px rgba(39,64,58,.2)"><button class="btn sec tiny" data-act="reprint">${ic('printer')} 한 장 더 뽑기</button><span class="thint">종이 걸림·잉크 번짐 때 · 앱을 끄면 사라져요</span>`
             : `<span class="thint">사진을 인쇄하면 여기서 한 장 더 뽑을 수 있어요 (앱을 끄면 사라져요)</span>`)}
         </div>
 
@@ -3778,8 +4029,10 @@
               <span class="thint">설정 코드 한 줄로 다른 컴퓨터나 초기화 뒤에 복구할 수 있어요 (비밀번호·카메라는 빼고)</span>
               <div id="bk-box" style="display:none"><textarea id="bk-text" class="tinput" style="width:100%;max-width:none;height:84px;font:400 14px/1.4 var(--body-font),sans-serif;resize:none" spellcheck="false" placeholder="여기에 설정 코드를 붙여 넣으세요 (YK2.… 로 시작)"></textarea><div class="tctl" style="margin-top:6px"><button class="btn tiny" data-act="bkapply" id="bk-apply" style="display:none">이 코드로 복구</button><button class="btn sec tiny" data-act="bkclose">닫기</button><span class="thint" id="bk-msg"></span></div></div>
             </div></div>
-          ${QUIT_PORT ? row(sub('업데이트', `앱 v${APP_VERSION} · 실행기 ${LV || '옛 버전'}`), `<div class="tctl" style="flex-direction:column;align-items:stretch;gap:4px"><div class="tctl"><button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span>${exeReady ? `<button class="btn tiny" data-act="exerestart">${updKind === 'app' ? '앱' : '실행기'} ${exeReady} 준비됨 · 지금 다시 시작</button>` : ''}<button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button></div><div class="tctl"><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 자동 업데이트</span>${sw('autoRestart', settings.autoRestart !== false)}<span class="thint">새 실행기가 준비되면 첫 화면에서 3분 쉬는 동안 알아서 다시 시작 (만지면 취소)</span></div></div>`) : ''}
-          ${row('초기화', `<button class="btn sec tiny" data-act="reset" id="btn-reset">${ic('undo')} 기본 설정으로 되돌리기</button><span class="thint">문구·세트·소리·테마 등 모든 설정이 처음 값으로 · 두 번 눌러요 · 인쇄 매수는 유지</span>`)}
+          ${QUIT_PORT ? row(sub('업데이트', `앱 v${APP_VERSION} · 실행기 ${LV || '옛 버전'}`), `<div class="tctl" style="flex-direction:column;align-items:stretch;gap:4px"><div class="tctl"><button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span>${exeReady ? `<button class="btn tiny" data-act="exerestart">${updKind === 'app' ? '앱' : '실행기'} ${exeReady} 준비됨 · 지금 다시 시작</button>` : ''}<button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button></div><div class="tctl"><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 자동 업데이트</span>${sw('autoRestart', settings.autoRestart !== false)}<span class="thint">새 실행기 오면 3분 쉴 때 다시 시작</span>${LV && cmpVer(LV, '1.10.0') >= 0 ? `<label class="tsw"><input type="checkbox" id="relaunch-auto" checked><i></i></label><span class="thint">닫히면 다시 열기</span>${info('h-relaunch')}` : ''}</div></div>`,
+            help('h-relaunch', "<b>닫히면 다시 열기</b>: 크롬(엣지)이 뜻하지 않게 닫히면(아이가 Alt+F4를 누름 · 브라우저가 튕김) 실행기가 2~3초 뒤 앱을 다시 열어 부스가 멈춘 채 방치되지 않게 해요. 오른쪽 위 [종료]나 이 메뉴의 [앱 종료]로 끝낸 경우는 다시 열지 않아요. <b>자동 재시작</b>: 새 실행기를 받아 두면 첫 화면에서 3분 동안 아무도 안 만질 때 10초 카운트다운 뒤 새 실행기로 켜요(만지면 취소).")) : ''}
+          ${row(sub('초기화 · 도움', '초기화는 두 번 눌러요 · 인쇄 매수는 유지'), `<button class="btn sec tiny" data-act="reset" id="btn-reset">${ic('undo')} 기본 설정으로 되돌리기</button><span class="tsep"></span><button class="btn sec tiny" data-act="wizard">시작 도우미</button><button class="btn sec tiny" data-act="diag">문제 정보 복사</button>${info('h-help')}`,
+            help('h-help', `<b>시작 도우미</b>: 처음 설치할 때 ① 기본 프린터 → ② 용지 4×6·테두리 없음·인쇄 크기 → ③ 테스트 인쇄·카메라를 순서대로 확인해요. <b>문제 정보 복사</b>: 앱·실행기 버전, 프린터·대기열·카메라 상태, 설정 요약, 최근 오류를 한 번에 복사해요 — 안 될 때 이 내용을 ${AUTHOR.email} 로 보내 주시면 원인을 바로 찾을 수 있어요 (사진·이름 같은 개인 정보는 들어가지 않아요).`))}
         </div>
       </div>
       <div class="tbar"><span class="tbar-left" id="tbar-count"></span><button class="btn sec tiny" data-act="cancel">취소</button><button class="btn tiny" data-act="save">${ic('check')} 저장하고 첫 화면으로</button></div>`;
@@ -3815,6 +4068,7 @@
       const au = el.querySelector('#upd-auto'), bk = el.querySelector('#upd-back');
       if (!j.url) localJson('/update/seturl?u=' + encodeURIComponent(DEFAULT_UPDATE_URL)).catch(() => {});   // 실행기에 주소가 없으면 기본 주소(GitHub 저장소)를 저장
       if (au) { au.checked = !!j.auto; au.addEventListener('change', () => localJson('/update/auto?on=' + (au.checked ? 1 : 0)).catch(() => {})); }
+      const ra = el.querySelector('#relaunch-auto'); if (ra) { ra.checked = j.relaunch !== false; ra.addEventListener('change', () => localJson('/relaunch/auto?on=' + (ra.checked ? 1 : 0)).then(() => toast(ra.checked ? '크롬이 닫히면 다시 열어요' : '이제 크롬이 닫혀도 다시 열지 않아요')).catch(() => {})); }
       if (bk && j.canRollback) bk.style.display = '';
     }).catch(() => {});
     if (QUIT_PORT && LV && !PDLG) localJson('/printer/status').then(j => {   // 행사 준비 점검: 기본 프린터 상태
@@ -3865,13 +4119,9 @@
       else if (a === 'shuttertest') { if (!vol()) toast('소리가 꺼져 있어요'); else if ((settings.shutterSound || 'classic') === 'none') toast('셔터 소리가 없음으로 되어 있어요'); else shutter(); }
       else if (a === 'counttest') { if (!vol()) toast('소리가 꺼져 있어요'); else if ((settings.countSound || 'beep') === 'none') toast('카운트다운 소리가 없음으로 되어 있어요'); else { beep(); setTimeout(beep, 350); setTimeout(beepGo, 700); } }
       else if (a === 'promises-reset') { settings.promises = settings.promises || {}; delete settings.promises[set]; saveSettings(); const y = main.scrollTop; ENTER.s10(); el.querySelector('#tmain').scrollTop = y; toast('기본 문장으로 되돌렸어요'); }
-      else if (a === 'testprint') {
-        const c = document.createElement('canvas'); c.width = PW; c.height = PH;
-        compose(c, { frame: setFrames[0] || FRAMES[0], placeholder: true, print: true });
-        const area = $('#print-area'); area.innerHTML = '<div class="pg"><img alt="테스트 인쇄"></div>';
-        const img = area.querySelector('img'); img.src = c.toDataURL('image/jpeg', .92);
-        img.decode().catch(() => {}).then(() => { doPrint(); fitApp(); refitSoon(); }); usePaper(1); saveSettings(); const pp = el.querySelector('#paper-n'); if (pp) pp.textContent = settings.paper == null ? '' : settings.paper;
-      }
+      else if (a === 'testprint') { testPrint(); }
+      else if (a === 'wizard') { pop(); openWizard(1); }
+      else if (a === 'diag') { pop(); copyDiag(b); }
       else if (a === 'reprint') { pop(); if (reprintLast()) { toast('마지막 사진을 한 장 더 뽑아요'); const pp = el.querySelector('#paper-n'); if (pp) pp.textContent = settings.paper == null ? '' : settings.paper; $('#pc').textContent = settings.printCount; } else toast('다시 뽑을 사진이 없어요'); }
       else if (a.startsWith('paper')) {
         pop(); const v = a.slice(5);
@@ -3884,7 +4134,7 @@
       else if (a === 'exerestart') { restartNow(); }
       else if (a === 'close') { quitApp(); if (!QUIT_PORT) setTimeout(() => toast('창이 닫히지 않으면 태블릿 홈 버튼으로 나가세요'), 300); }
       else if (a === 'reset') {
-        if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '정말 초기화할까요? 한 번 더 누르면 초기화'; b.classList.remove('sec'); setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.innerHTML = ic('undo') + ' 기본 설정으로 되돌리기'; b.classList.add('sec'); } }, 4000); return; }
+        if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '정말 초기화? 한 번 더 누르면 초기화'; b.classList.remove('sec'); setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.innerHTML = ic('undo') + ' 기본 설정으로 되돌리기'; b.classList.add('sec'); } }, 4000); return; }
         const keep = settings.printCount || 0; settings = JSON.parse(JSON.stringify(DEFAULTS)); settings.printCount = keep; saveSettings(); applyTexts(); applyTheme();
         settingsBackup = null; ENTER.s10(); toast('기본 설정으로 되돌렸어요');
       }
@@ -3915,6 +4165,7 @@
     function showCrash(msg) {
       if (shown) return; shown = true;
       const log = crashLog(); log.push(Date.now()); try { sessionStorage.setItem('yaksok-crashes', JSON.stringify(log)); } catch (e) {}
+      logError(msg);
       $('#crash-detail').textContent = String(msg || '').slice(0, 160) + ` · v${APP_VERSION}`;
       $('#crash').classList.add('on');
       if (log.length >= 3) { $('#crash-sub').textContent = '같은 문제가 반복되고 있어요 — [지금 다시 시작]을 누르거나, 계속되면 앱을 끄고 다시 켜 주세요'; return; }
@@ -3926,7 +4177,7 @@
     window.addEventListener('unhandledrejection', e => { const r = e.reason; if (!(r instanceof Error)) return; if (BENIGN.test(r.name + ' ' + r.message)) return; showCrash(r.message); });
     window.__yaksokCrash = showCrash;   // 점검용
   })();
-  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
+  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, pollQueue, watchQueue: watchQueueAfterPrint, get queue() { return pqLast; }, diagText, openWizard, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
   go('s0');
   $('#app').classList.toggle('haslock', !!settings.lockPin);
   if (settings.lockPin) showLock('unlock');   // 잠금 비밀번호가 있으면 켤 때 번호판부터
