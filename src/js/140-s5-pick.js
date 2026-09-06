@@ -1,8 +1,11 @@
   /* ===================== S5 고르기 ===================== */
   ENTER.s5 = () => {
-    S.picked = []; pickDone = false;   // 2컷이든 4컷이든 0장에서 시작해 누르는 순서대로 ①②③④
+    // 2컷이든 4컷이든 0장에서 시작해 누르는 순서대로 ①②③④ — 한 컷만 다시 찍고 돌아왔으면 고르던 순서를 그대로 이어감
+    S.picked = S.retakeKeep ? S.retakeKeep.filter(k => k < S.shots.length) : []; S.retakeKeep = null; pickDone = false;
     speak(VOICE.pick);
     const sl = S.frame.slots[0]; $('#cards').style.setProperty('--ar', (sl.w / sl.h).toFixed(3));
+    const retakeOne = !!settings.retakeOne && (S.retakeOneN || 0) < RETAKE_MAX;   // 촬영 › 한 컷만 다시 찍기 (기본 꺼짐)
+    $('#s5').classList.toggle('retake1on', retakeOne);
     const wrap = $('#cards'); wrap.innerHTML = '';
     S.shots.forEach((shot, i) => {
       const card = document.createElement('button'); card.className = 'card';
@@ -10,6 +13,12 @@
       drawCover(c.getContext('2d'), shot, { x: 0, y: 0, w: c.width, h: c.height });
       card.appendChild(c); card.insertAdjacentHTML('beforeend', '<span class="num"></span>');
       card.addEventListener('click', () => onCard(i));
+      if (retakeOne) {   // 카드 오른쪽 위 [다시 찍기] — 이 컷 하나만 다시 찍고 돌아옴 (카드가 button이라 span으로)
+        const rt = document.createElement('span'); rt.className = 'retake1'; rt.setAttribute('role', 'button'); rt.setAttribute('aria-label', CUT_WORDS[i] + ' 사진만 다시 찍기');
+        rt.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>다시 찍기';
+        rt.addEventListener('click', e => { e.stopPropagation(); if (pickDone) return; pop(); S.retakeIdx = i; S.retakeKeep = S.picked.slice(); S.retakeOneN = (S.retakeOneN || 0) + 1; go('s4'); });
+        card.appendChild(rt);
+      }
       wrap.appendChild(card);
     });
     $('#btn-pick-ok').style.display = 'none';   // 필요한 장수를 다 고르면 저절로 넘어감

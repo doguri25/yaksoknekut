@@ -129,7 +129,8 @@
           <div class="thead"><h3>촬영</h3><span class="tdesc">카메라와 찍는 흐름</span></div>
           ${row('컷 수 고르기 화면', `${sw('showCutSelect', settings.showCutSelect)}<span class="thint">끄면 바로</span>${seg('defaultCuts', [[2, '2컷'], [4, '4컷']])}<span class="thint">으로 시작</span>`)}
           ${row('카운트다운', `${seg('countdown', [[3, '3초'], [5, '5초']])}<span class="thint">저학년은 5초가 여유 있어요</span>`)}
-          ${row('추천 동작 카드', `${sw('showPoses', settings.showPoses !== false)}<span class="thint">끄면 카메라 화면이 그 자리까지 커져요</span>`)}
+          ${row('추천 동작 카드', `${sw('showPoses', settings.showPoses !== false)}<span class="thint">끄면 카메라 화면이 그 자리까지 커져요</span><span class="tsep"></span><span class="tsub">한 컷만 다시 찍기</span>${sw('retakeOne', !!settings.retakeOne)}${info('h-retake')}`,
+            help('h-retake', `<b>한 컷만 다시 찍기</b>: 켜면 고르기 화면의 사진 카드마다 [다시 찍기]가 붙어요. 눈 감은 그 컷 하나만 다시 찍고 고르던 순서 그대로 돌아오니, 4장을 다 다시 찍지 않아 줄이 밀리지 않아요 (한 팀 ${RETAKE_MAX}번까지 · 기본 꺼짐). 4장 전부 다시 찍는 [다시 찍을래요]는 그대로 있어요.`))}
           ${row(sub('사용할 카메라', camInfo.label ? `지금: ${esc(camInfo.label)} ${camInfo.w}×${camInfo.h}${camInfo.note ? ' · ' + esc(camInfo.note) : ''}` : '촬영 화면에 한 번 들어가면 목록이 채워져요'),
             `<select id="cam-sel" class="tinput" style="width:460px"><option value="">자동 (앞면 카메라, 이상하면 다른 카메라로)</option>${camDevices.map((d, i) => `<option value="${esc(d.deviceId)}" ${settings.cameraId === d.deviceId ? 'selected' : ''}>${esc(d.label || ('카메라 ' + (i + 1)))}</option>`).join('')}</select>`)}
           ${row('미리보기 좌우', `${seg('mirror', [[true, '거울처럼'], [false, '남이 보는 대로']])}<span class="thint">사진은 화면에 보이는 그대로 인쇄돼요</span>`)}
@@ -143,7 +144,8 @@
           <div class="thead"><h3>완성·인쇄</h3><span class="tdesc">${BRIDGE ? '앱 모드 · 안드로이드 인쇄창으로 출력' : KIOSK ? (PDLG ? '프린터 선택창 모드 · [뽑기]마다 프린터를 고르는 창이 떠요' : '자동 인쇄 모드 · 윈도우 기본 프린터로 확인창 없이 출력') : '브라우저 인쇄창에서 프린터·용지(4×6)를 고른 뒤 출력'}</span></div>
           ${QUIT_PORT ? row(sub('인쇄 방식', '윈도우 앱'), `<span class="seg" id="pmode"><button data-pmode="auto" class="${PDLG ? '' : 'on'}">기본 프린터로 바로 출력</button><button data-pmode="dialog" class="${PDLG ? 'on' : ''}">프린터 선택창 뜨기</button></span>${info('h-pmode')}<span class="thint">바꾸면 앱이 잠깐 닫혔다 다시 열려요</span>`,
             help('h-pmode', "'기본 프린터로 바로 출력'은 [뽑기]를 누르면 윈도우 기본 프린터로 확인창 없이 나와요. '프린터 선택창 뜨기'는 [뽑기]마다 크롬 인쇄창이 떠서 프린터와 용지를 고를 수 있어요 — 프린터가 여러 대이거나 기본 프린터가 아닌 프린터를 쓸 때. 이 설정은 이 컴퓨터의 실행기에 저장돼 다음 실행부터도 유지돼요.")) : ''}
-          ${row('완성 사진은', `${seg('output', OUT)}${info('h-out2')}`, help('h-out2', outHelp))}
+          ${row('완성 사진은', `${seg('output', OUT)}${info('h-out2')}<span class="tsep"></span><span class="tsub">날짜·학교 도장</span>${sw('stamp', !!settings.stamp)}${info('h-stamp')}`,
+            help('h-out2', outHelp) + help('h-stamp', `<b>날짜·학교 도장</b>: 켜면 완성 사진 오른쪽 아래 여백에 「${esc(stampText())}」 한 줄이 작게 들어가요 — 고르기·꾸미기 미리보기와 인쇄물 모두 (기본 꺼짐). 학교 이름은 학교·기록·앱에서 바꿔요.`))}
           ${row('칠판에 보여 주는 시간', seg('boardSeconds', [[5, '5초'], [8, '8초'], [12, '12초']]))}
           ${row('최대 인쇄 매수', `${seg('maxCopies', [[1, '1장'], [2, '2장'], [3, '3장'], [4, '4장']])}<span class="thint">1장이면 매수 선택 화면이 안 떠요</span>`)}
           ${row('인쇄 크기', `<button class="tround" data-act="ps-" aria-label="작게">−</button><span class="stat" id="ps">${clamp(+settings.printScale || 100, 90, 110)}%</span><button class="tround" data-act="ps+" aria-label="크게">+</button><span class="thint">가장자리가 잘리면 −, 흰 테두리가 남으면 + (2%씩)</span>`)}

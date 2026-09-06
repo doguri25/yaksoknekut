@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<!-- yaksok-necut app=1.11.1 launcher=1.9.12 -->
+<!-- yaksok-necut app=1.12.2 launcher=1.9.12 -->
 <!--
   약속네컷 ⓒ 2026 도구리(홍북초등학교) · raccoon@ai.cne.go.kr
   이 저작물은 크리에이티브 커먼즈 저작자표시-비영리-변경금지 4.0 국제 라이선스(CC BY-NC-ND 4.0)에 따라 이용할 수 있습니다.
@@ -246,11 +246,13 @@
   .pose-badge small { font-size: 28px; color: var(--coral-dark); font-family: inherit; }
   .pose-card { background: #fff; border-radius: 30px; box-shadow: var(--shadow); padding: 22px 18px 20px; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .pose-emoji { width: 176px; height: 176px; }
-  .pose-emoji svg { width: 100%; height: 100%; display: block; transform-origin: 50% 88%; animation: pose-pop .5s cubic-bezier(.3,1.5,.5,1), pose-sway 1.6s ease-in-out .5s infinite; }
+  /* 추천 동작 약속이: 나타날 때 팡 → 위아래로 통통 (좌우 흔들림 없음). 아이들이 보는 카드라 윈도우 '애니메이션 효과 끄기'나
+     교사 메뉴 '화면 전환 움직임 끄기'와 상관없이 항상 움직임 (1.12.1 — 그 설정들 때문에 멈춰 보이던 것) */
+  .pose-emoji svg { width: 100%; height: 100%; display: block; transform-origin: 50% 88%; animation: pose-pop .5s cubic-bezier(.3,1.5,.5,1), pose-sway 1.4s ease-in-out .5s infinite; }
   .pose-emoji .peye { animation: blink 4s infinite; transform-box: fill-box; transform-origin: center; }
-  #app.noanim .pose-emoji svg, #app.noanim .pose-emoji .peye { animation: none; }
+  #app.noanim .pose-emoji svg { animation: pose-sway 1.4s ease-in-out infinite; }   /* 움직임 끔이어도 통통은 유지 (팡 효과만 생략) */
   @keyframes pose-pop { 0% { transform: scale(.55); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-  @keyframes pose-sway { 0%,100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-10px) scale(.985, 1.03); } }   /* 위아래로 통통 (좌우 흔들림 없음) */
+  @keyframes pose-sway { 0%,100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-16px) scale(.975, 1.04); } }
   .pose-text { font-size: 50px; color: var(--coral); }
   .pose-sub { font-size: 30px; color: var(--muted); }
   .pose-note { font-size: 22px; color: var(--muted); min-height: 1.4em; }
@@ -284,6 +286,16 @@
     box-shadow: 0 3px 0 var(--coral-dark);
   }
   .card.sel .num { display: grid; }
+  /* 한 컷만 다시 찍기 (촬영 › 켰을 때만) — 카드 오른쪽 위 작은 알약 단추 */
+  .card .retake1 {
+    position: absolute; top: 10px; right: 10px; display: none; align-items: center; gap: 6px;
+    height: 46px; padding: 0 16px 0 12px; border-radius: 23px;
+    background: rgba(255,255,255,.92); color: var(--coral-dark); font: 24px "Jua", var(--body-font), sans-serif;
+    box-shadow: 0 2px 8px rgba(39,64,58,.25); cursor: pointer; touch-action: manipulation; transition: transform .15s, background .15s;
+  }
+  .card .retake1 svg { width: 24px; height: 24px; }
+  .card .retake1:active { transform: scale(.94); background: #fff; }
+  #s5.retake1on .card .retake1 { display: inline-flex; }
   .row { display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; }
 
   /* ---------- preview ---------- */
@@ -470,13 +482,17 @@
   @keyframes tap { 0%,100% { transform: translateY(0); } 50% { transform: translateY(14px); } }
   .campaign { font-size: 28px; color: var(--muted); background: #fff; padding: 10px 30px; border-radius: 999px; box-shadow: var(--shadow); }
   #hot { position: absolute; top: 0; right: 0; width: 150px; height: 150px; z-index: 9; }
-  /* 윈도우 앱(exe)에서만 보이는 작은 종료 단추 — 오른쪽 위. 교사 메뉴 5초 누르기 영역은 그 아래로 내려감 */
-  #topbtns { position: absolute; top: 16px; right: 16px; z-index: 10; display: flex; gap: 8px; }
-  #topbtns .btn { display: none; align-items: center; gap: 6px; min-height: 0; padding: 7px 14px 7px 11px; border-radius: 999px; background: rgba(255,255,255,.75); color: var(--muted); font: 18px "Jua", var(--body-font), sans-serif; box-shadow: 0 3px 0 rgba(39,64,58,.10); border: 1px solid rgba(39,64,58,.10); }
-  #topbtns .ic { width: 18px; height: 18px; }
-  #topbtns .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(39,64,58,.10); }
+  /* 위쪽 작은 알약 단추들 — 오른쪽 위 종료(윈도우 앱)·잠금·모니터·다시 시작, 왼쪽 위 [처음으로]. 교사 메뉴 5초 누르기 영역은 그 아래로 내려감 */
+  .topbtns { position: absolute; top: 16px; z-index: 10; display: flex; gap: 8px; }
+  #topbtns { right: 16px; }
+  #topleft { left: 16px; }
+  .topbtns .btn { display: none; align-items: center; gap: 6px; min-height: 0; padding: 7px 14px 7px 11px; border-radius: 999px; background: rgba(255,255,255,.75); color: var(--muted); font: 18px "Jua", var(--body-font), sans-serif; box-shadow: 0 3px 0 rgba(39,64,58,.10); border: 1px solid rgba(39,64,58,.10); }
+  .topbtns .ic { width: 18px; height: 18px; }
+  .topbtns .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(39,64,58,.10); }
   #app.hasquit #btn-quit { display: inline-flex; }
-  #app.fontwait .screen, #app.fontwait #topbtns { visibility: hidden; }   /* 고른 본문 글꼴 준비 전엔 글자를 잠깐 숨김 (배경만 보임) */
+  #btn-home { display: inline-flex; }
+  #app[data-screen="s0"] #topleft { display: none; }   /* 첫 화면에는 [처음으로]가 필요 없음 */
+  #app.fontwait .screen, #app.fontwait .topbtns { visibility: hidden; }   /* 고른 본문 글꼴 준비 전엔 글자를 잠깐 숨김 (배경만 보임) */
   #app.exeready[data-screen="s0"] #btn-restart { display: inline-flex; background: var(--coral); color: #fff; border-color: transparent; box-shadow: 0 3px 0 var(--coral-dark); }   /* 새 실행기를 받아 둔 뒤: [실행기 새 버전 · 다시 시작] */
   #restart-ask { z-index: 67; }   /* 잠금 화면(66) 위에도 */
   #restart-ask .panel { max-width: 640px; }
@@ -485,7 +501,7 @@
   #app.haslock #hot { top: 56px; }
   #app.hasquit.hasmon[data-screen="s0"] #btn-mon { display: inline-flex; }   /* 모니터 옮기기는 첫 화면에서만 */
   #app.hasquit #hot { top: 56px; }
-  #app[data-screen="s4"] #topbtns, #app[data-screen="s10"] #topbtns { display: none !important; }   /* 촬영 중·교사 메뉴에서는 숨김 */
+  #app[data-screen="s4"] .topbtns, #app[data-screen="s10"] .topbtns { display: none !important; }   /* 촬영 중·교사 메뉴에서는 숨김 (종료·처음으로 모두) */
   #hot .hot-ring { position: absolute; top: 22px; right: 22px; width: 64px; height: 64px; opacity: 0; transition: opacity .3s; }
   #hot.arming .hot-ring { opacity: 1; }
   #hot .hot-ring circle { fill: none; stroke-width: 8; }
@@ -686,6 +702,8 @@
   .tsw i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: left .15s; }
   .tsw input:checked + i { background: var(--coral); }
   .tsw input:checked + i::after { left: 25px; }
+  .tsep { width: 1.5px; height: 26px; background: var(--line); margin: 0 4px; flex: none; }   /* 한 줄에 설정 둘을 놓을 때 사이 금 */
+  .tsub { font-size: 18px; }   /* 한 줄 안의 둘째 설정 이름 */
   .tchip { display: inline-flex; align-items: center; gap: 8px; background: var(--bg); border-radius: 12px; padding: 7px 13px; font-size: 18px; cursor: pointer; }
   .tchip input { width: 20px; height: 20px; accent-color: var(--coral); margin: 0; }
   .tround { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--line); background: #fff; display: grid; place-items: center; font: 22px "Jua", sans-serif; color: var(--ink); cursor: pointer; padding: 0; touch-action: manipulation; }
@@ -790,7 +808,7 @@
     @page { size: 6in 4in; margin: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .mascot.bounce, .tap-hint .finger, .arrow-big, .mascot .eye, .screen.on, .pose-emoji svg, .pose-emoji .peye, .buddy .mascot { animation: none; }
+    .mascot.bounce, .tap-hint .finger, .arrow-big, .mascot .eye, .screen.on, .buddy .mascot { animation: none; }   /* 추천 동작 약속이(.pose-emoji)는 예외 — 항상 통통 */
   }
 </style>
 
@@ -1157,8 +1175,12 @@
     <img id="board-img" alt="완성 사진">
     <p class="board-hint">화면을 누르면 넘어가요</p>
   </div>
+  <!-- 왼쪽 위 [처음으로] — 첫 화면·촬영 중·교사 메뉴 빼고 모든 화면 (사진을 찍은 뒤라면 한 번 물음) -->
+  <div class="topbtns" id="topleft">
+    <button class="btn" id="btn-home" aria-label="처음 화면으로"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22L24 7l18 15"/><path d="M11 20v20h26V20"/><path d="M20 40V28h8v12"/></svg>처음으로</button>
+  </div>
   <!-- 종료 단추 (윈도우 앱) — 촬영 중·교사 메뉴 빼고 모든 화면 오른쪽 위 -->
-  <div id="topbtns">
+  <div class="topbtns" id="topbtns">
     <button class="btn" id="btn-mon" aria-label="다른 모니터로 옮기기"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="40" height="26" rx="4"/><path d="M18 42h12M24 34v8"/></svg><span id="btn-mon-text">2번 모니터로 옮기기</span></button>
     <button class="btn" id="btn-lock" aria-label="잠금 화면으로"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="21" width="30" height="21" rx="5"/><path d="M15 21v-6a9 9 0 0 1 18 0v6"/><circle cx="24" cy="31" r="2.6" fill="currentColor"/></svg>잠금</button>
     <button class="btn" id="btn-restart" aria-label="새 실행기로 다시 시작"><svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M40 24a16 16 0 1 1-4.7-11.3"/><path d="M40 6v10H30"/></svg><span id="btn-restart-text">실행기 새 버전 · 다시 시작</span></button>
@@ -1198,6 +1220,17 @@
       <div class="row">
         <button class="btn small" id="btn-quit-yes">종료</button>
         <button class="btn sec small" id="btn-quit-no">계속 쓰기</button>
+      </div>
+    </div>
+  </div>
+  <!-- 처음으로 확인 — 사진을 찍은 뒤 [처음으로]를 눌렀을 때만 -->
+  <div class="overlay" id="home-ask">
+    <div class="panel">
+      <h2>처음 화면으로 갈까요?</h2>
+      <p class="small">지금까지 찍은 사진과 꾸민 것은 사라져요.</p>
+      <div class="row">
+        <button class="btn small" id="btn-home-yes">처음으로</button>
+        <button class="btn sec small" id="btn-home-no">계속 하기</button>
       </div>
     </div>
   </div>
@@ -1306,7 +1339,7 @@
   const FRAMES = [
     // ── 일상 (행사 없이 평소에 쓰는 기본 세트)
     { set: 'daily', id: 'd4-grid', cuts: 4, name: '오늘의 네컷', sub: '네 칸 + 한마디 카드',
-      bg: '#F1FAF5', decor: 'dots', radius: 28, slots: G4,
+      bg: '#C9EEDC', decor: 'dots', radius: 28, slots: G4,
       caption: { text: '오늘도 좋은 하루', x: 625, y: 1010, size: 72, color: '#0B7D6E' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '오늘의 한마디', lines: 6 } },
     { set: 'daily', id: 'd4-film', cuts: 4, name: '우리 반 필름', sub: '필름 테두리 + 한마디 카드',
@@ -1315,14 +1348,14 @@
       caption: { text: '우리 반 이야기', x: 625, y: 1000, size: 64, color: '#FFE66D' },
       promise: { x: 1220, y: 110, w: 510, h: 980, label: '친구에게 한마디', lines: 5 } },
     { set: 'daily', id: 'd2-card', cuts: 2, name: '오늘 카드', sub: '두 칸 + 한마디 쓰기',
-      bg: '#FFF6E5', decor: 'stars', radius: 30, slots: S2,
+      bg: '#FFE4B8', decor: 'stars', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '오늘의 한마디', lines: 3 } },
     { set: 'daily', id: 'd2-bubble', cuts: 2, name: '수다 말풍선', sub: '안녕! · 반가워!',
-      bg: '#E3F1FF', decor: 'bubbles', bubbles: ['안녕!', '반가워!'], radius: 30, slots: S2B,
+      bg: '#BFDCFF', decor: 'bubbles', bubbles: ['안녕!', '반가워!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '친구에게 한마디', lines: 3 } },
     // ── 학교폭력예방 (caption '{campaign}'은 교사 메뉴의 캠페인 문구로 바뀜)
     { set: 'promise', id: 'f4-grid', cuts: 4, name: '네컷 액자', sub: '네 칸 + 약속 카드',
-      bg: '#FFF6E5', decor: 'dots', radius: 28, slots: G4,
+      bg: '#FFE4B8', decor: 'dots', radius: 28, slots: G4,
       caption: { text: '{campaign}', x: 625, y: 1010, size: 72, color: '#FF7A59' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '나의 약속', lines: 6 } },
     { set: 'promise', id: 'f4-film', cuts: 4, name: '필름 네컷', sub: '필름 테두리 + 약속 카드',
@@ -1331,33 +1364,33 @@
       caption: { text: '함께라서 좋아', x: 625, y: 1000, size: 64, color: '#FFE66D' },
       promise: { x: 1220, y: 110, w: 510, h: 980, label: '나의 약속', lines: 5 } },
     { set: 'promise', id: 'f4-ribbon', cuts: 4, name: '노란 리본', sub: '네 칸 + 약속 카드',
-      bg: '#FFFBE3', decor: 'ribbon', radius: 34, slotBorder: '#FFD54A', slots: G4,
+      bg: '#FFEFA6', decor: 'ribbon', radius: 34, slotBorder: '#FFD54A', slots: G4,
       caption: { text: '약속해요, 함께해요', x: 625, y: 1010, size: 72, color: '#D9A400' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '약속해요', lines: 6 } },
     { set: 'promise', id: 'f2-card', cuts: 2, name: '약속 카드', sub: '두 칸 + 약속 쓰기',
-      bg: '#E9F7F0', decor: 'dots', radius: 30, slots: S2,
+      bg: '#C4EBD6', decor: 'dots', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '나의 약속', lines: 3 } },
     { set: 'promise', id: 'f2-bubble', cuts: 2, name: '말풍선 둘', sub: '고마워 · 같이 놀자',
-      bg: '#FFE9F1', decor: 'bubbles', bubbles: ['고마워!', '같이 놀자!'], radius: 30, slots: S2B,
+      bg: '#FFC9DA', decor: 'bubbles', bubbles: ['고마워!', '같이 놀자!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '나의 약속', lines: 3 } },
     { set: 'promise', id: 'f2-hands', cuts: 2, name: '손 하트 카드', sub: '얼굴 대신 손으로', faceless: true,
-      bg: '#EEEAFF', decor: 'hearts', radius: 30,
+      bg: '#D3CBFF', decor: 'hearts', radius: 30,
       slots: [ {x:220,y:90,w:640,h:427}, {x:940,y:90,w:640,h:427} ],
       promise: { x: 120, y: 590, w: 1560, h: 550, label: '얼굴 대신 손으로 마음을 보여요 · 나의 약속', lines: 3 } },
     // ── 입학·환영
     { set: 'welcome', id: 'w4-grid', cuts: 4, name: '환영 네컷', sub: '네 칸 + 다짐 카드',
-      bg: '#E3F1FF', decor: 'stars', radius: 28, slots: G4,
+      bg: '#BFDCFF', decor: 'stars', radius: 28, slots: G4,
       caption: { text: '입학을 축하해요', x: 625, y: 1010, size: 72, color: '#2B8CFF' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '나의 다짐', lines: 6 } },
     { set: 'welcome', id: 'w4-ribbon', cuts: 4, name: '반가워 액자', sub: '네 칸 + 인사 카드',
-      bg: '#FFF2BF', decor: 'dots', radius: 34, slotBorder: '#FFB347', slots: G4,
+      bg: '#FFE27F', decor: 'dots', radius: 34, slotBorder: '#FFB347', slots: G4,
       caption: { text: '{school}에 온 걸 환영해요', x: 625, y: 1010, size: 58, color: '#D9770F' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '앞으로 잘 부탁해', lines: 6 } },
     { set: 'welcome', id: 'w2-card', cuts: 2, name: '새 친구 카드', sub: '두 칸 + 인사 쓰기',
-      bg: '#E9F7F0', decor: 'hearts', radius: 30, slots: S2,
+      bg: '#C4EBD6', decor: 'hearts', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '새 친구에게 한마디', lines: 3 } },
     { set: 'welcome', id: 'w2-bubble', cuts: 2, name: '인사 말풍선', sub: '안녕! · 친구하자!',
-      bg: '#FFE9F1', decor: 'bubbles', bubbles: ['안녕!', '친구하자!'], radius: 30, slots: S2B,
+      bg: '#FFC9DA', decor: 'bubbles', bubbles: ['안녕!', '친구하자!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '나의 다짐', lines: 3 } },
     // ── 졸업·축하
     { set: 'grad', id: 'g4-film', cuts: 4, name: '졸업 필름', sub: '필름 테두리 + 추억 카드',
@@ -1366,18 +1399,18 @@
       caption: { text: '졸업을 축하해요', x: 625, y: 1000, size: 64, color: '#FFE66D' },
       promise: { x: 1220, y: 110, w: 510, h: 980, label: '잊지 못할 순간', lines: 5 } },
     { set: 'grad', id: 'g4-grid', cuts: 4, name: '축하 네컷', sub: '네 칸 + 감사 카드',
-      bg: '#EEEAFF', decor: 'confetti', radius: 28, slots: G4,
+      bg: '#D3CBFF', decor: 'confetti', radius: 28, slots: G4,
       caption: { text: '고마웠어, 친구야', x: 625, y: 1010, size: 72, color: '#7A5CD6' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '친구에게 한마디', lines: 6 } },
     { set: 'grad', id: 'g2-card', cuts: 2, name: '추억 카드', sub: '두 칸 + 추억 쓰기',
-      bg: '#FFF6E5', decor: 'stars', radius: 30, slots: S2,
+      bg: '#FFE4B8', decor: 'stars', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '우리의 추억', lines: 3 } },
     { set: 'grad', id: 'g2-bubble', cuts: 2, name: '작별 말풍선', sub: '고마워! · 또 만나!',
-      bg: '#E3F1FF', decor: 'bubbles', bubbles: ['고마워!', '또 만나!'], radius: 30, slots: S2B,
+      bg: '#BFDCFF', decor: 'bubbles', bubbles: ['고마워!', '또 만나!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '친구에게 한마디', lines: 3 } },
     // ── 운동회
     { set: 'sports', id: 's4-grid', cuts: 4, name: '운동회 네컷', sub: '네 칸 + 응원 카드',
-      bg: '#FFF6E5', decor: 'stars', radius: 28, slotBorder: '#FF7A59', slots: G4,
+      bg: '#FFE4B8', decor: 'stars', radius: 28, slotBorder: '#FF7A59', slots: G4,
       caption: { text: '힘차게 달려요!', x: 625, y: 1010, size: 72, color: '#FF7A59' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '오늘의 한마디', lines: 6 } },
     { set: 'sports', id: 's4-film', cuts: 4, name: '우승 필름', sub: '필름 테두리 + 응원 카드',
@@ -1386,25 +1419,25 @@
       caption: { text: '우리 팀 파이팅', x: 625, y: 1000, size: 64, color: '#FFE66D' },
       promise: { x: 1220, y: 110, w: 510, h: 980, label: '응원 한마디', lines: 5 } },
     { set: 'sports', id: 's2-card', cuts: 2, name: '파이팅 카드', sub: '두 칸 + 응원 쓰기',
-      bg: '#E3F1FF', decor: 'confetti', radius: 30, slots: S2,
+      bg: '#BFDCFF', decor: 'confetti', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '우리 팀 파이팅!', lines: 3 } },
     { set: 'sports', id: 's2-bubble', cuts: 2, name: '응원 말풍선', sub: '파이팅! · 최고야!',
-      bg: '#FFF2BF', decor: 'bubbles', bubbles: ['파이팅!', '최고야!'], radius: 30, slots: S2B,
+      bg: '#FFE27F', decor: 'bubbles', bubbles: ['파이팅!', '최고야!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '오늘의 한마디', lines: 3 } },
     // ── 생일
     { set: 'birthday', id: 'b4-grid', cuts: 4, name: '생일 네컷', sub: '네 칸 + 축하 카드',
-      bg: '#FFE9F1', decor: 'confetti', radius: 28, slots: G4,
+      bg: '#FFC9DA', decor: 'confetti', radius: 28, slots: G4,
       caption: { text: '생일 축하해요', x: 625, y: 1010, size: 72, color: '#E5487A' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '축하 한마디', lines: 6 } },
     { set: 'birthday', id: 'b4-ribbon', cuts: 4, name: '케이크 액자', sub: '네 칸 + 소원 카드',
-      bg: '#FFF2BF', decor: 'stars', radius: 34, slotBorder: '#FF9ECF', slots: G4,
+      bg: '#FFE27F', decor: 'stars', radius: 34, slotBorder: '#FF9ECF', slots: G4,
       caption: { text: '소원을 빌어요', x: 625, y: 1010, size: 72, color: '#D9770F' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '올해의 소원', lines: 6 } },
     { set: 'birthday', id: 'b2-card', cuts: 2, name: '축하 카드', sub: '두 칸 + 축하 쓰기',
-      bg: '#EEEAFF', decor: 'confetti', radius: 30, slots: S2,
+      bg: '#D3CBFF', decor: 'confetti', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '생일 축하해!', lines: 3 } },
     { set: 'birthday', id: 'b2-bubble', cuts: 2, name: '축하 말풍선', sub: '축하해! · 사랑해!',
-      bg: '#E9F7F0', decor: 'bubbles', bubbles: ['축하해!', '사랑해!'], radius: 30, slots: S2B,
+      bg: '#C4EBD6', decor: 'bubbles', bubbles: ['축하해!', '사랑해!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '축하 한마디', lines: 3 } },
     // ── 추석·명절
     { set: 'chuseok', id: 'c4-moon', cuts: 4, name: '보름달 네컷', sub: '밤하늘 + 고마운 마음 카드',
@@ -1412,18 +1445,18 @@
       caption: { text: '풍성한 한가위', x: 625, y: 1010, size: 72, color: '#FFE066' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '고마운 마음 한마디', lines: 6 } },
     { set: 'chuseok', id: 'c4-hanji', cuts: 4, name: '한지 네컷', sub: '가을 잎 + 인사 카드',
-      bg: '#FBF3E4', decor: 'leaves', radius: 28, slots: G4,
+      bg: '#F5DFB8', decor: 'leaves', radius: 28, slots: G4,
       caption: { text: '고마운 마음을 전해요', x: 625, y: 1010, size: 64, color: '#B8541F' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '한가위 인사', lines: 6 } },
     { set: 'chuseok', id: 'c2-card', cuts: 2, name: '한가위 카드', sub: '두 칸 + 인사 쓰기',
-      bg: '#FFF1DE', decor: 'leaves', radius: 30, slots: S2,
+      bg: '#FFDAAE', decor: 'leaves', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '한가위 인사', lines: 3 } },
     { set: 'chuseok', id: 'c2-bubble', cuts: 2, name: '명절 말풍선', sub: '풍성한 한가위! · 고마워요!',
       bg: '#243B6B', decor: 'bubbles', bubbles: ['풍성한 한가위!', '고마워요!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '고마운 마음 한마디', lines: 3 } },
     // ── 독서의 달
     { set: 'reading', id: 'r4-book', cuts: 4, name: '책 읽는 네컷', sub: '네 칸 + 책 소감 카드',
-      bg: '#FFF9EC', decor: 'books', radius: 28, slots: G4,
+      bg: '#FCE6BE', decor: 'books', radius: 28, slots: G4,
       caption: { text: '책 읽는 우리 반', x: 625, y: 1010, size: 72, color: '#3F6B4F' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '내가 좋아하는 책', lines: 6 } },
     { set: 'reading', id: 'r4-board', cuts: 4, name: '칠판 네컷', sub: '초록 칠판 + 소감 카드',
@@ -1431,10 +1464,10 @@
       caption: { text: '책과 함께 자라요', x: 625, y: 1010, size: 68, color: '#FFE66D' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '책 한 줄 소감', lines: 6 } },
     { set: 'reading', id: 'r2-card', cuts: 2, name: '독서 카드', sub: '두 칸 + 소감 쓰기',
-      bg: '#E8F3E1', decor: 'books', radius: 30, slots: S2,
+      bg: '#CBE6BC', decor: 'books', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '책 한 줄 소감', lines: 3 } },
     { set: 'reading', id: 'r2-bubble', cuts: 2, name: '책 말풍선', sub: '이 책 재밌어! · 같이 읽자!',
-      bg: '#FFF9EC', decor: 'bubbles', bubbles: ['이 책 재밌어!', '같이 읽자!'], radius: 30, slots: S2B,
+      bg: '#FCE6BE', decor: 'bubbles', bubbles: ['이 책 재밌어!', '같이 읽자!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '책 한 줄 소감', lines: 3 } },
     // ── 크리스마스·새해
     { set: 'xmas', id: 'x4-snow', cuts: 4, name: '눈 내리는 네컷', sub: '밤하늘 눈송이 + 소원 카드',
@@ -1442,29 +1475,29 @@
       caption: { text: '메리 크리스마스', x: 625, y: 1010, size: 72, color: '#FFE066' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '새해 소원', lines: 6 } },
     { set: 'xmas', id: 'x4-holly', cuts: 4, name: '트리 네컷', sub: '트리·호랑가시 + 감사 카드',
-      bg: '#FFF7EC', decor: 'holly', radius: 28, slotBorder: '#D94A4A', slots: G4,
+      bg: '#FBE1C0', decor: 'holly', radius: 28, slotBorder: '#D94A4A', slots: G4,
       caption: { text: '따뜻한 연말 보내요', x: 625, y: 1010, size: 68, color: '#2F7D4F' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '고마운 사람에게', lines: 6 } },
     { set: 'xmas', id: 'x2-card', cuts: 2, name: '새해 카드', sub: '두 칸 + 소원 쓰기',
-      bg: '#EAF3FF', decor: 'snow', radius: 30, slots: S2,
+      bg: '#CCE1FF', decor: 'snow', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '새해 소원', lines: 3 } },
     { set: 'xmas', id: 'x2-bubble', cuts: 2, name: '연말 말풍선', sub: '메리 크리스마스 · 새해 복 많이!',
       bg: '#1E3A5F', decor: 'bubbles', bubbles: ['메리 크리스마스', '새해 복 많이!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '새해 다짐', lines: 3 } },
     // ── 어린이날
     { set: 'children', id: 'k4-balloon', cuts: 4, name: '풍선 네컷', sub: '풍선 + 꿈 카드',
-      bg: '#E3F1FF', decor: 'balloons', radius: 28, slots: G4,
+      bg: '#BFDCFF', decor: 'balloons', radius: 28, slots: G4,
       caption: { text: '어린이날 축하해요', x: 625, y: 1010, size: 72, color: '#2B8CFF' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '나의 꿈', lines: 6 } },
     { set: 'children', id: 'k4-rainbow', cuts: 4, name: '무지개 네컷', sub: '무지개 + 칭찬 카드',
-      bg: '#FFFBE3', decor: 'rainbow', radius: 34, slotBorder: '#FFB347', slots: G4,
+      bg: '#FFEFA6', decor: 'rainbow', radius: 34, slotBorder: '#FFB347', slots: G4,
       caption: { text: '자라나는 꿈나무', x: 625, y: 1010, size: 72, color: '#E08A1E' },
       promise: { x: 1220, y: 70, w: 510, h: 1060, label: '나에게 칭찬 한마디', lines: 6 } },
     { set: 'children', id: 'k2-card', cuts: 2, name: '꿈 카드', sub: '두 칸 + 꿈 쓰기',
-      bg: '#FFE9F1', decor: 'balloons', radius: 30, slots: S2,
+      bg: '#FFC9DA', decor: 'balloons', radius: 30, slots: S2,
       promise: { x: 70, y: 680, w: 1660, h: 460, label: '나의 꿈', lines: 3 } },
     { set: 'children', id: 'k2-bubble', cuts: 2, name: '신나는 말풍선', sub: '신난다! · 우리 최고!',
-      bg: '#E9F7F0', decor: 'bubbles', bubbles: ['신난다!', '우리 최고!'], radius: 30, slots: S2B,
+      bg: '#C4EBD6', decor: 'bubbles', bubbles: ['신난다!', '우리 최고!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '오늘의 한마디', lines: 3 } }
   ];
 
@@ -1537,7 +1570,7 @@
     { id: 'promise', name: '약속' }
   ];
   // 꾸미기에서 고를 수 있는 액자(포토용지) 바탕색
-  const PAPER_COLORS = ['#FFF6E5', '#E9F7F0', '#FFE9F1', '#EEEAFF', '#E3F1FF', '#FFFBE3', '#FFD9C2', '#2F3E63'];
+  const PAPER_COLORS = ['#FFE4B8', '#C4EBD6', '#FFC9DA', '#D3CBFF', '#BFDCFF', '#FFEFA6', '#FFC3A1', '#2F3E63'];
   const BUBBLE_TEXTS = ['고마워', '미안해', '같이 놀자', '괜찮아?', '사랑해', '최고야!', '친구야', '힘내!', '멋져!', '우리 반 최고', '약속할게', '안녕?'];
 
   // 필터 (값은 CSS filter와 같은 의미. 브라우저가 캔버스 필터를 지원하지 않으면 픽셀 계산으로 같은 효과를 냄)
@@ -1551,12 +1584,15 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.11.1';
+  const APP_VERSION = '1.12.2';
   const LAUNCHER_LATEST = '1.9.12';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
-  const BUILD_DATE = '2026-09-05';
+  const BUILD_DATE = '2026-09-06';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.12.2', d: '2026-09-06', items: ['첫 화면 다음의 모든 화면 왼쪽 위에 [처음으로] 단추 — 오른쪽 위 [종료]와 같은 모양. 아직 사진을 안 찍었으면 바로, 찍은 뒤라면 "처음 화면으로 갈까요?" 한 번 물어봄 (촬영 중·교사 메뉴에서는 [종료]처럼 숨김)'] },
+    { v: '1.12.1', d: '2026-09-06', items: ['액자 바탕색을 한 단계 진하게 — 미색·연한 파스텔이 인화하면 거의 흰색으로 나와서, 밝은 액자 33종과 꾸미기 종이색을 같은 색감의 진한 파스텔로 (글씨·장식·어두운 액자는 그대로)', '촬영 화면 추천 동작 약속이가 위아래로 통통 — 윈도우 \'애니메이션 효과 끄기\' 설정이나 교사 메뉴 \'화면 전환 움직임 끄기\' 때문에 멈춰 보이던 것을 항상 움직이게, 폭도 조금 크게'] },
+    { v: '1.12.0', d: '2026-09-06', items: ['한 컷만 다시 찍기 (교사 메뉴 › 촬영, 기본 꺼짐) — 켜면 고르기 화면의 사진 카드마다 [다시 찍기]가 붙어, 눈 감은 그 컷 하나만 다시 찍고 고르던 순서 그대로 돌아와요 (4장을 다 다시 찍지 않아 줄이 밀리지 않음 · 한 팀 3번까지)', '날짜·학교 도장 (교사 메뉴 › 완성·인쇄, 기본 꺼짐) — 켜면 완성 사진 오른쪽 아래 여백에 "2026.09.06 · 홍북초등학교" 한 줄이 작게 들어가요 (미리보기와 인쇄물 모두)'] },
     { v: '1.11.1', d: '2026-09-05', items: ['윈도우 앱: 인터넷이 안 되는 컴퓨터(특히 Wi-Fi는 붙었는데 인터넷만 안 될 때)에서 켤 때 업데이트 확인을 두 번 기다리던 것을 한 번(최대 3초)으로 — 서버에 닿지 못하면 바로 켜요 (실행기 1.9.12)'] },
     { v: '1.11.0', d: '2026-09-05', items: ['윈도우 앱: [뽑기] 뒤 프린터를 확인해 용지 없음·걸림·오프라인이면 화면에 크게 알림 — 고쳐지면 저절로 닫힘 (기본 프린터 자동 출력일 때)', '윈도우 앱: 켤 때 3MB 앱 파일을 매번 내려받아 비교하던 것을 첫 4KB 버전 표시만 읽도록 — 켜는 시간이 1~3초 줄고, 느린 망에서 업데이트가 조용히 실패하던 문제도 없어짐. 새 앱 파일을 뒤늦게 받은 경우도 [새 버전 준비됨 · 다시 시작]으로 안내 (실행기 1.9.11)', '내부 정리: 소스를 src/ 조각으로 나누고 build.py로 합침(사용자에게는 변화 없음), 안 쓰는 코드·중복 스타일 정리, 테스트 한 묶음으로, 켤 때 하는 일 줄임, 문제가 나면 [다시 시작] 화면'] },
     { v: '1.10.4', d: '2026-09-05', items: ['켤 때 흰 화면이 길어진 것 수정 — 내장 글꼴 9종을 전부 읽던 것을 고른 글꼴만 먼저 읽고 나머지는 교사 메뉴를 열 때 읽도록 (느린 컴퓨터에서 첫 화면이 0.3~0.5초 빨라짐, 배경도 먼저 보임)'] },
@@ -1698,7 +1734,7 @@
   const MAX_STICKERS = 12;
 
   /* ===================== 설정 (사진은 저장하지 않음) ===================== */
-  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', autoRestart: true, showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, hero: {}, promises: {}, promiseLabels: {} };
+  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', autoRestart: true, showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, retakeOne: false, stamp: false, hero: {}, promises: {}, promiseLabels: {} };
   /* 저장 위치 — 브라우저 저장소(localStorage) + 윈도우 앱이면 실행기 파일(settings.json).
      학교 컴퓨터는 크롬이 닫힐 때 사이트 데이터를 지우는 정책이 걸려 있거나 저장소 쓰기가 막힌 경우가 있어,
      윈도우 앱에서는 실행기에 둔 사본을 먼저 믿고 켤 때 되살린다. */
@@ -1758,7 +1794,7 @@
   const catOn = c => settings.cats[c.id] !== false;
 
   /* ===================== 상태 ===================== */
-  function fresh(demo) { return { cuts: 4, frame: null, shots: [], picked: [], filter: 'none', stickers: [], paperBg: null, copies: 1, promiseText: '', promiseInk: null, inkStrokes: [], retakeUsed: false, demo: !!demo }; }
+  function fresh(demo) { return { cuts: 4, frame: null, shots: [], picked: [], filter: 'none', stickers: [], paperBg: null, copies: 1, promiseText: '', promiseInk: null, inkStrokes: [], retakeUsed: false, retakeIdx: null, retakeKeep: null, retakeOneN: 0, demo: !!demo }; }   // retakeIdx: 한 컷만 다시 찍을 때 그 컷 번호 · retakeKeep: 그동안 고른 순서 · retakeOneN: 이 팀이 한 컷 다시 찍은 횟수(최대 3)
   let S = fresh(false);
   function resetSession() {
     if (S.shots) S.shots.forEach(c => { c.width = 0; c.height = 0; });
@@ -1916,6 +1952,7 @@
   const VOICE = {
     ready: '카메라를 봐요. 준비되면 준비됐어요 버튼을 눌러요.',
     shoot: '카메라를 보고 웃어요!',
+    retake: '이 사진만 다시 찍어요. 카메라를 봐요!',
     pick: '마음에 드는 사진을 골라요.',
     decorate: '스티커로 예쁘게 꾸며요.',
     printed: '사진을 선생님께 받아 가세요.',
@@ -2224,6 +2261,19 @@
       drawPromise(ctx, Object.assign({}, frame.promise, { label: lbl }), o.promiseText || '', o.promiseInk || null);
     }
     if (o.stickers) o.stickers.forEach(st => drawSticker(ctx, st));
+    if (settings.stamp && (!o.placeholder || o.print)) drawStamp(ctx, o.bg || frame.bg);   // 완성·인쇄 › 날짜·학교 도장 (기본 꺼짐) — 액자 고르기 그림에는 안 그리고, 테스트 인쇄에는 그림
+    ctx.restore();
+  }
+  // 날짜·학교 도장: 오른쪽 아래 여백에 "2026.09.05 · 홍북초등학교" 한 줄 (작게 · 모든 액자의 사진·약속 칸 아래 60px 여백 안).
+  // 귀퉁이 장식(필름 구멍·낙엽·책 더미)이 있는 액자에서도 읽히게 반투명 알약 바탕 위에 씀
+  function stampText() { return todayKey().replace(/-/g, '.') + ' · ' + (settings.schoolName || '우리 학교'); }
+  function drawStamp(ctx, bg) {
+    const light = isLight(bg), t = stampText(), h = 40, cy = PH - 36, right = PW - 66;
+    ctx.save();
+    ctx.font = FONT(26); ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    const w = Math.ceil(ctx.measureText(t).width) + 40;
+    ctx.fillStyle = light ? 'rgba(255,255,255,.82)' : 'rgba(0,0,0,.42)'; rr(ctx, right - w, cy - h / 2, w, h, h / 2); ctx.fill();
+    ctx.fillStyle = light ? 'rgba(39,64,58,.72)' : 'rgba(255,255,255,.9)'; ctx.fillText(t, right - 20, cy + 1);
     ctx.restore();
   }
   // 고르기 화면용: 아직 안 채운 칸은 연한 바탕에 번호만
@@ -2740,6 +2790,11 @@
   $('#btn-quit-no').addEventListener('click', () => { pop(); $('#quit-ask').classList.remove('on'); });
   $('#btn-quit-yes').addEventListener('click', () => { pop(); quitApp(); });
   $('#quit-ask').addEventListener('click', e => { if (e.target === e.currentTarget) $('#quit-ask').classList.remove('on'); });
+  // 왼쪽 위 [처음으로] — 아직 사진을 안 찍었으면 바로, 찍은 뒤라면 한 번 물어봄 (실수로 눌러 사진이 사라지지 않게)
+  $('#btn-home').addEventListener('click', e => { e.stopPropagation(); pop(); if (S.shots && S.shots.length) $('#home-ask').classList.add('on'); else go('s0'); });
+  $('#btn-home-yes').addEventListener('click', () => { pop(); $('#home-ask').classList.remove('on'); go('s0'); });
+  $('#btn-home-no').addEventListener('click', () => { pop(); $('#home-ask').classList.remove('on'); });
+  $('#home-ask').addEventListener('click', e => { if (e.target === e.currentTarget) $('#home-ask').classList.remove('on'); });
 
   /* ---------- 잠금 화면 · 번호판 (숫자 4자리) ----------
      mode: 'unlock' 앱을 켤 때·[지금 잠그기] (취소 없음) / 'teacher' 교사 메뉴 들어갈 때 / 'set' 새 비밀번호(두 번 입력) */
@@ -2893,7 +2948,7 @@
     };
     ps.forEach(p => p.t = 0); requestAnimationFrame(frame);
   }
-  ENTER.s0 = () => { resetSession(); $('#cambox').classList.toggle('demo', S.demo); seasonStart(); };
+  ENTER.s0 = () => { resetSession(); $('#home-ask').classList.remove('on'); $('#cambox').classList.toggle('demo', S.demo); seasonStart(); };   // 처음으로 확인창이 열린 채 시간이 지나 첫 화면으로 왔으면 닫음
   $('#s0').addEventListener('click', e => {
     if (e.target.closest('#hot')) return;
     audio(); pop(); primeSpeech();
@@ -3057,45 +3112,61 @@
     later(() => go('s4'), T.ready * 1000);
   };
   $('#btn-ready').addEventListener('click', () => { pop(); go('s4'); });
-  // 촬영 화면 뒤로가기: 준비 화면에서는 액자 고르기로, 찍는 중에는 촬영을 멈추고 준비 화면으로
-  $('#btn-cam-back').addEventListener('click', () => { pop(); if (current === 's4') { S.shots = []; go('s3'); } else go('s2'); });
+  // 촬영 화면 뒤로가기: 준비 화면에서는 액자 고르기로, 찍는 중에는 촬영을 멈추고 준비 화면으로 (한 컷만 다시 찍는 중이면 고르기 화면으로, 사진은 그대로)
+  $('#btn-cam-back').addEventListener('click', () => {
+    pop();
+    if (current === 's4' && S.retakeIdx != null) { S.retakeIdx = null; S.retakeOneN = Math.max(0, (S.retakeOneN || 0) - 1); go('s5'); }   // 안 찍고 돌아가면 횟수도 돌려줌
+    else if (current === 's4') { S.shots = []; go('s3'); }
+    else go('s2');
+  });
 
   /* ===================== S4 촬영 ===================== */
   let shootRun = 0;
   const CUT_WORDS = ['첫 번째', '두 번째', '세 번째', '네 번째'];
+  const RETAKE_MAX = 3;   // 한 컷만 다시 찍기 — 한 팀이 쓸 수 있는 횟수 (줄이 밀리지 않게)
   ENTER.s4 = async () => {
     const run = ++shootRun; const alive = () => run === shootRun && current === 's4';
-    S.shots = []; const poses = pickPoses(S.frame && S.frame.faceless);
+    const one = S.retakeIdx;   // 한 컷만 다시 찍기: 고르기 화면에서 고른 컷 번호 (null이면 4장 전부 새로)
+    if (one == null) S.shots = [];
+    const poses = pickPoses(S.frame && S.frame.faceless);
     const dots = $$('#dots span'), count = $('#count'), review = $('#review'), flash = $('#flash');
     $('#pose-note').textContent = S.frame && S.frame.faceless ? '얼굴은 안 나와도 돼요' : '';
     const voiceOn = settings.voice && vol() && HAS_TTS;
-    for (let i = 0; i < 4; i++) {
-      dots.forEach((d, k) => d.classList.toggle('done', k <= i));
-      $('#cut-label').textContent = CUT_WORDS[i] + ' 사진';
+    if (one != null) { await ensureCamera(); if (!alive()) return; }   // 고르기 화면에서 바로 왔으니 카메라가 켜져 있는지 확인 (보통은 켜진 채)
+    const list = one == null ? [0, 1, 2, 3] : [one];
+    for (const i of list) {
+      dots.forEach((d, k) => d.classList.toggle('done', one == null ? k <= i : k !== i));
+      $('#cut-label').textContent = CUT_WORDS[i] + (one == null ? ' 사진' : ' 사진 다시 찍어요');
       $('#pose-emoji').innerHTML = POSE_ART[poses[i][0]] || ''; $('#pose-text').textContent = poses[i][1];
       count.textContent = '';
-      if (i === 0) { speak(VOICE.shoot); await wait(voiceOn ? 1200 : 400); if (!alive()) return; }   // 동작 설명은 말하지 않음(화면 카드로만)
+      if (i === list[0]) { speak(one == null ? VOICE.shoot : VOICE.retake); await wait(voiceOn ? 1200 : 400); if (!alive()) return; }   // 동작 설명은 말하지 않음(화면 카드로만)
       for (const n of (settings.countdown === 5 ? [5, 4, 3, 2, 1] : [3, 2, 1])) {
         count.textContent = n; count.classList.remove('pop'); void count.offsetWidth; count.classList.add('pop'); beep();
         await wait(1000); if (!alive()) return;
       }
       count.textContent = ''; beepGo();
       flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go'); shutter();
-      const shot = await capture(i); if (!alive()) return; S.shots.push(shot);
+      const shot = await capture(i); if (!alive()) return;
+      if (one == null) S.shots.push(shot);
+      else { const old = S.shots[i]; S.shots[i] = shot; if (old && old !== shot) { old.width = 0; old.height = 0; } }   // 그 컷만 바꾸고 옛 사진 메모리는 비움
       review.width = shot.width; review.height = shot.height; review.getContext('2d').drawImage(shot, 0, 0); review.classList.add('on');
-      dots.forEach((d, k) => d.classList.toggle('done', k <= i));
+      dots.forEach((d, k) => d.classList.toggle('done', one == null ? k <= i : true));
       await wait(T.review); if (!alive()) return;
       review.classList.remove('on');
       await wait(T.gap); if (!alive()) return;
     }
+    S.retakeIdx = null;
     chime(); go('s5');
   };
 
   /* ===================== S5 고르기 ===================== */
   ENTER.s5 = () => {
-    S.picked = []; pickDone = false;   // 2컷이든 4컷이든 0장에서 시작해 누르는 순서대로 ①②③④
+    // 2컷이든 4컷이든 0장에서 시작해 누르는 순서대로 ①②③④ — 한 컷만 다시 찍고 돌아왔으면 고르던 순서를 그대로 이어감
+    S.picked = S.retakeKeep ? S.retakeKeep.filter(k => k < S.shots.length) : []; S.retakeKeep = null; pickDone = false;
     speak(VOICE.pick);
     const sl = S.frame.slots[0]; $('#cards').style.setProperty('--ar', (sl.w / sl.h).toFixed(3));
+    const retakeOne = !!settings.retakeOne && (S.retakeOneN || 0) < RETAKE_MAX;   // 촬영 › 한 컷만 다시 찍기 (기본 꺼짐)
+    $('#s5').classList.toggle('retake1on', retakeOne);
     const wrap = $('#cards'); wrap.innerHTML = '';
     S.shots.forEach((shot, i) => {
       const card = document.createElement('button'); card.className = 'card';
@@ -3103,6 +3174,12 @@
       drawCover(c.getContext('2d'), shot, { x: 0, y: 0, w: c.width, h: c.height });
       card.appendChild(c); card.insertAdjacentHTML('beforeend', '<span class="num"></span>');
       card.addEventListener('click', () => onCard(i));
+      if (retakeOne) {   // 카드 오른쪽 위 [다시 찍기] — 이 컷 하나만 다시 찍고 돌아옴 (카드가 button이라 span으로)
+        const rt = document.createElement('span'); rt.className = 'retake1'; rt.setAttribute('role', 'button'); rt.setAttribute('aria-label', CUT_WORDS[i] + ' 사진만 다시 찍기');
+        rt.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>다시 찍기';
+        rt.addEventListener('click', e => { e.stopPropagation(); if (pickDone) return; pop(); S.retakeIdx = i; S.retakeKeep = S.picked.slice(); S.retakeOneN = (S.retakeOneN || 0) + 1; go('s4'); });
+        card.appendChild(rt);
+      }
       wrap.appendChild(card);
     });
     $('#btn-pick-ok').style.display = 'none';   // 필요한 장수를 다 고르면 저절로 넘어감
@@ -3629,7 +3706,8 @@
           <div class="thead"><h3>촬영</h3><span class="tdesc">카메라와 찍는 흐름</span></div>
           ${row('컷 수 고르기 화면', `${sw('showCutSelect', settings.showCutSelect)}<span class="thint">끄면 바로</span>${seg('defaultCuts', [[2, '2컷'], [4, '4컷']])}<span class="thint">으로 시작</span>`)}
           ${row('카운트다운', `${seg('countdown', [[3, '3초'], [5, '5초']])}<span class="thint">저학년은 5초가 여유 있어요</span>`)}
-          ${row('추천 동작 카드', `${sw('showPoses', settings.showPoses !== false)}<span class="thint">끄면 카메라 화면이 그 자리까지 커져요</span>`)}
+          ${row('추천 동작 카드', `${sw('showPoses', settings.showPoses !== false)}<span class="thint">끄면 카메라 화면이 그 자리까지 커져요</span><span class="tsep"></span><span class="tsub">한 컷만 다시 찍기</span>${sw('retakeOne', !!settings.retakeOne)}${info('h-retake')}`,
+            help('h-retake', `<b>한 컷만 다시 찍기</b>: 켜면 고르기 화면의 사진 카드마다 [다시 찍기]가 붙어요. 눈 감은 그 컷 하나만 다시 찍고 고르던 순서 그대로 돌아오니, 4장을 다 다시 찍지 않아 줄이 밀리지 않아요 (한 팀 ${RETAKE_MAX}번까지 · 기본 꺼짐). 4장 전부 다시 찍는 [다시 찍을래요]는 그대로 있어요.`))}
           ${row(sub('사용할 카메라', camInfo.label ? `지금: ${esc(camInfo.label)} ${camInfo.w}×${camInfo.h}${camInfo.note ? ' · ' + esc(camInfo.note) : ''}` : '촬영 화면에 한 번 들어가면 목록이 채워져요'),
             `<select id="cam-sel" class="tinput" style="width:460px"><option value="">자동 (앞면 카메라, 이상하면 다른 카메라로)</option>${camDevices.map((d, i) => `<option value="${esc(d.deviceId)}" ${settings.cameraId === d.deviceId ? 'selected' : ''}>${esc(d.label || ('카메라 ' + (i + 1)))}</option>`).join('')}</select>`)}
           ${row('미리보기 좌우', `${seg('mirror', [[true, '거울처럼'], [false, '남이 보는 대로']])}<span class="thint">사진은 화면에 보이는 그대로 인쇄돼요</span>`)}
@@ -3643,7 +3721,8 @@
           <div class="thead"><h3>완성·인쇄</h3><span class="tdesc">${BRIDGE ? '앱 모드 · 안드로이드 인쇄창으로 출력' : KIOSK ? (PDLG ? '프린터 선택창 모드 · [뽑기]마다 프린터를 고르는 창이 떠요' : '자동 인쇄 모드 · 윈도우 기본 프린터로 확인창 없이 출력') : '브라우저 인쇄창에서 프린터·용지(4×6)를 고른 뒤 출력'}</span></div>
           ${QUIT_PORT ? row(sub('인쇄 방식', '윈도우 앱'), `<span class="seg" id="pmode"><button data-pmode="auto" class="${PDLG ? '' : 'on'}">기본 프린터로 바로 출력</button><button data-pmode="dialog" class="${PDLG ? 'on' : ''}">프린터 선택창 뜨기</button></span>${info('h-pmode')}<span class="thint">바꾸면 앱이 잠깐 닫혔다 다시 열려요</span>`,
             help('h-pmode', "'기본 프린터로 바로 출력'은 [뽑기]를 누르면 윈도우 기본 프린터로 확인창 없이 나와요. '프린터 선택창 뜨기'는 [뽑기]마다 크롬 인쇄창이 떠서 프린터와 용지를 고를 수 있어요 — 프린터가 여러 대이거나 기본 프린터가 아닌 프린터를 쓸 때. 이 설정은 이 컴퓨터의 실행기에 저장돼 다음 실행부터도 유지돼요.")) : ''}
-          ${row('완성 사진은', `${seg('output', OUT)}${info('h-out2')}`, help('h-out2', outHelp))}
+          ${row('완성 사진은', `${seg('output', OUT)}${info('h-out2')}<span class="tsep"></span><span class="tsub">날짜·학교 도장</span>${sw('stamp', !!settings.stamp)}${info('h-stamp')}`,
+            help('h-out2', outHelp) + help('h-stamp', `<b>날짜·학교 도장</b>: 켜면 완성 사진 오른쪽 아래 여백에 「${esc(stampText())}」 한 줄이 작게 들어가요 — 고르기·꾸미기 미리보기와 인쇄물 모두 (기본 꺼짐). 학교 이름은 학교·기록·앱에서 바꿔요.`))}
           ${row('칠판에 보여 주는 시간', seg('boardSeconds', [[5, '5초'], [8, '8초'], [12, '12초']]))}
           ${row('최대 인쇄 매수', `${seg('maxCopies', [[1, '1장'], [2, '2장'], [3, '3장'], [4, '4장']])}<span class="thint">1장이면 매수 선택 화면이 안 떠요</span>`)}
           ${row('인쇄 크기', `<button class="tround" data-act="ps-" aria-label="작게">−</button><span class="stat" id="ps">${clamp(+settings.printScale || 100, 90, 110)}%</span><button class="tround" data-act="ps+" aria-label="크게">+</button><span class="thint">가장자리가 잘리면 −, 흰 테두리가 남으면 + (2%씩)</span>`)}

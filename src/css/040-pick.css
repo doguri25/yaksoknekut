@@ -27,5 +27,15 @@
     box-shadow: 0 3px 0 var(--coral-dark);
   }
   .card.sel .num { display: grid; }
+  /* 한 컷만 다시 찍기 (촬영 › 켰을 때만) — 카드 오른쪽 위 작은 알약 단추 */
+  .card .retake1 {
+    position: absolute; top: 10px; right: 10px; display: none; align-items: center; gap: 6px;
+    height: 46px; padding: 0 16px 0 12px; border-radius: 23px;
+    background: rgba(255,255,255,.92); color: var(--coral-dark); font: 24px "Jua", var(--body-font), sans-serif;
+    box-shadow: 0 2px 8px rgba(39,64,58,.25); cursor: pointer; touch-action: manipulation; transition: transform .15s, background .15s;
+  }
+  .card .retake1 svg { width: 24px; height: 24px; }
+  .card .retake1:active { transform: scale(.94); background: #fff; }
+  #s5.retake1on .card .retake1 { display: inline-flex; }
   .row { display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap; }
 

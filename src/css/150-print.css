@@ -10,5 +10,5 @@
     @page { size: 6in 4in; margin: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .mascot.bounce, .tap-hint .finger, .arrow-big, .mascot .eye, .screen.on, .pose-emoji svg, .pose-emoji .peye, .buddy .mascot { animation: none; }
+    .mascot.bounce, .tap-hint .finger, .arrow-big, .mascot .eye, .screen.on, .buddy .mascot { animation: none; }   /* 추천 동작 약속이(.pose-emoji)는 예외 — 항상 통통 */
   }

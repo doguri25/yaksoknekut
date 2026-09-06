@@ -47,7 +47,7 @@
     };
     ps.forEach(p => p.t = 0); requestAnimationFrame(frame);
   }
-  ENTER.s0 = () => { resetSession(); $('#cambox').classList.toggle('demo', S.demo); seasonStart(); };
+  ENTER.s0 = () => { resetSession(); $('#home-ask').classList.remove('on'); $('#cambox').classList.toggle('demo', S.demo); seasonStart(); };   // 처음으로 확인창이 열린 채 시간이 지나 첫 화면으로 왔으면 닫음
   $('#s0').addEventListener('click', e => {
     if (e.target.closest('#hot')) return;
     audio(); pop(); primeSpeech();

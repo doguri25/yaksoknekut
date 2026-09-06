@@ -280,6 +280,19 @@
       drawPromise(ctx, Object.assign({}, frame.promise, { label: lbl }), o.promiseText || '', o.promiseInk || null);
     }
     if (o.stickers) o.stickers.forEach(st => drawSticker(ctx, st));
+    if (settings.stamp && (!o.placeholder || o.print)) drawStamp(ctx, o.bg || frame.bg);   // 완성·인쇄 › 날짜·학교 도장 (기본 꺼짐) — 액자 고르기 그림에는 안 그리고, 테스트 인쇄에는 그림
+    ctx.restore();
+  }
+  // 날짜·학교 도장: 오른쪽 아래 여백에 "2026.09.05 · 홍북초등학교" 한 줄 (작게 · 모든 액자의 사진·약속 칸 아래 60px 여백 안).
+  // 귀퉁이 장식(필름 구멍·낙엽·책 더미)이 있는 액자에서도 읽히게 반투명 알약 바탕 위에 씀
+  function stampText() { return todayKey().replace(/-/g, '.') + ' · ' + (settings.schoolName || '우리 학교'); }
+  function drawStamp(ctx, bg) {
+    const light = isLight(bg), t = stampText(), h = 40, cy = PH - 36, right = PW - 66;
+    ctx.save();
+    ctx.font = FONT(26); ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    const w = Math.ceil(ctx.measureText(t).width) + 40;
+    ctx.fillStyle = light ? 'rgba(255,255,255,.82)' : 'rgba(0,0,0,.42)'; rr(ctx, right - w, cy - h / 2, w, h, h / 2); ctx.fill();
+    ctx.fillStyle = light ? 'rgba(39,64,58,.72)' : 'rgba(255,255,255,.9)'; ctx.fillText(t, right - 20, cy + 1);
     ctx.restore();
   }
   // 고르기 화면용: 아직 안 채운 칸은 연한 바탕에 번호만

@@ -134,6 +134,11 @@
   $('#btn-quit-no').addEventListener('click', () => { pop(); $('#quit-ask').classList.remove('on'); });
   $('#btn-quit-yes').addEventListener('click', () => { pop(); quitApp(); });
   $('#quit-ask').addEventListener('click', e => { if (e.target === e.currentTarget) $('#quit-ask').classList.remove('on'); });
+  // 왼쪽 위 [처음으로] — 아직 사진을 안 찍었으면 바로, 찍은 뒤라면 한 번 물어봄 (실수로 눌러 사진이 사라지지 않게)
+  $('#btn-home').addEventListener('click', e => { e.stopPropagation(); pop(); if (S.shots && S.shots.length) $('#home-ask').classList.add('on'); else go('s0'); });
+  $('#btn-home-yes').addEventListener('click', () => { pop(); $('#home-ask').classList.remove('on'); go('s0'); });
+  $('#btn-home-no').addEventListener('click', () => { pop(); $('#home-ask').classList.remove('on'); });
+  $('#home-ask').addEventListener('click', e => { if (e.target === e.currentTarget) $('#home-ask').classList.remove('on'); });
 
   /* ---------- 잠금 화면 · 번호판 (숫자 4자리) ----------
      mode: 'unlock' 앱을 켤 때·[지금 잠그기] (취소 없음) / 'teacher' 교사 메뉴 들어갈 때 / 'set' 새 비밀번호(두 번 입력) */
