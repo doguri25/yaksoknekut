@@ -190,6 +190,9 @@ func main() {
 
 	exePath, _ := os.Executable()
 	cleanOldExe(exePath)
+	if autostartOn() {
+		go setAutostart(true, exePath) // 윈도우 켤 때 자동 실행이 켜져 있으면 바로가기를 지금 exe 위치로 다시 맞춤
+	}
 	pendingPath := filepath.Join(dir, "pending-msg.txt") // 조용히 바꾼 실행기가 다음 실행 때 앱에 알려 줄 말
 	cfg := readConfig(cfgPath)
 	printerFixed := false // 이번 실행에서 크롬의 프린터 기억을 기본 프린터로 맞췄는지 (/printer/status 에 알려 줌)
@@ -406,6 +409,16 @@ func main() {
 				st := printerStatus()
 				st.Fixed = printerFixed
 				jsonOut(st)
+			case "/printer/paper": // 기본 프린터의 기본 용지 (A4로 남아 있으면 사진이 작게·잘려 나옴)
+				jsonOut(printerPaper())
+			case "/autostart": // 윈도우 켤 때 자동 실행 — on=1 켬 · on=0 끔 · 없으면 상태만
+				if v := r.URL.Query().Get("on"); v != "" {
+					if err := setAutostart(v == "1", exePath); err != nil {
+						jsonOut(map[string]interface{}{"ok": false, "on": autostartOn(), "error": "시작 프로그램 폴더에 쓰지 못했어요"})
+						return
+					}
+				}
+				jsonOut(map[string]interface{}{"ok": true, "on": autostartOn()})
 			case "/printer/queue": // 인쇄 대기열 — 뽑은 뒤 사진이 실제로 나가는지 (작업 수·가장 오래된 작업의 나이·멈춤 이유)
 				jsonOut(printerQueue())
 			case "/printer/queue/clear": // 대기열 비우기 (멈춘 작업 지우기 · 일시 중지 풀기)
@@ -430,7 +443,7 @@ func main() {
 					}
 				}
 				mu.Unlock()
-				jsonOut(map[string]interface{}{"launcher": launcherVer, "dir": dir, "exe": exePath, "browser": browserName, "config": cfgCopy, "relaunches": cc, "uptimeSec": int(time.Since(startedAt) / time.Second), "monitors": len(mons), "monitor": monIdx, "embedded": embeddedVer, "current": curVer, "printer": printerStatus(), "queue": printerQueue()})
+				jsonOut(map[string]interface{}{"launcher": launcherVer, "dir": dir, "exe": exePath, "browser": browserName, "config": cfgCopy, "relaunches": cc, "uptimeSec": int(time.Since(startedAt) / time.Second), "monitors": len(mons), "monitor": monIdx, "embedded": embeddedVer, "current": curVer, "printer": printerStatus(), "queue": printerQueue(), "paper": printerPaper(), "autostart": autostartOn()})
 			case "/settings/save": // 앱 설정 사본 — 크롬 저장소가 미처 못 쓴 채 꺼져도 다음 실행에 되살림
 				body, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 				if len(body) > 1 && body[0] == '{' {
@@ -467,7 +480,7 @@ func main() {
 				readyMu.Lock()
 				er, hr := exeReady, htmlReady
 				readyMu.Unlock()
-				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar, "exeReady": er, "htmlReady": hr, "relaunch": cfg["auto_relaunch"] != "0"})
+				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar, "exeReady": er, "htmlReady": hr, "relaunch": cfg["auto_relaunch"] != "0", "autostart": autostartOn()})
 			case "/update/restart":
 				// 배경에서 바꿔 둔 새 실행기로 지금 다시 시작 (앱의 [다시 시작] 단추 / 첫 화면에서 3분 쉬면 자동)
 				readyMu.Lock()

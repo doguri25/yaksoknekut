@@ -126,6 +126,8 @@
   }, 900);
   if (PMODE_MSG) setTimeout(() => toast(PMODE_MSG === 'dialog' ? '이제 [뽑기]를 누르면 프린터 선택창이 떠요' : '이제 기본 프린터로 바로 출력돼요'), 900);
   if (RELAUNCHED) setTimeout(() => toast('앱이 갑자기 닫혀서 다시 열었어요 — 끝내려면 오른쪽 위 [종료]를 눌러요', 5000), 1200);
+  // 용지 확인(완성·인쇄 › 프린터 점검, 기본 꺼짐): 켤 때 프린터 기본 용지가 4×6이 아니면 알림
+  if (KIOSK && !PDLG && LV && cmpVer(LV, '1.11.0') >= 0 && settings.paperCheck) setTimeout(() => localJson('/printer/paper', 9000).then(pp => { if (!pp.error && pp.verdict !== 'ok' && pp.verdict !== 'unknown') { toast(`프린터 기본 용지가 ${pp.detail.split(' — ')[0]}예요 — 교사 메뉴 › 시작 도우미 2단계에서 4×6(엽서)로 바꾸는 방법`, 7000); buzz(); } }).catch(() => {}), 3500);
   if (QUIT_PORT && MONITORS > 1) {
     $('#app').classList.add('hasmon');
     $('#btn-mon-text').textContent = MONITORS === 2 ? `${nextMonitor()}번 모니터로 옮기기` : `다음 모니터로 (지금 ${MONITOR}번)`;

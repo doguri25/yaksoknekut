@@ -14,8 +14,22 @@
     await new Promise(r => { if (video.videoWidth) r(); else { video.onloadeddata = () => r(); setTimeout(r, 2500); } });
     const tr = st.getVideoTracks()[0], se = tr ? tr.getSettings() : {};
     camInfo = { label: tr ? tr.label : '', w: se.width || video.videoWidth, h: se.height || video.videoHeight, note: '', id: se.deviceId || '' };
+    if (tr) tr.addEventListener('ended', () => { if (stream === st) onCamLost(); });   // USB 선이 빠지면 트랙이 끝남
     return st;
   }
+  // 카메라 선이 빠짐 (촬영 › 끊기면 알림, 기본 켬): 찍는 중이면 준비 화면으로 돌아가 카메라 안내를 띄우고, 다른 화면이면 알림만. 다시 꽂히면(devicechange) 저절로 이어짐
+  let camLost = false;
+  function onCamLost() {
+    if (settings.camWatch === false) return;
+    stopCamera(); camLost = true; camInfo = { label: '', w: 0, h: 0, note: '카메라 연결이 끊겼어요' }; buzz();
+    if (current === 's4' || current === 's3') { go('s3'); }   // ENTER.s3 → ensureCamera 실패 → "카메라를 확인해 주세요" (찍던 사진은 처음부터)
+    else toast('카메라 연결이 끊겼어요 — 선을 다시 꽂으면 저절로 켜져요', 5000);
+  }
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) navigator.mediaDevices.addEventListener('devicechange', () => {
+    if (!camLost || stream) return;
+    if (current === 's3') ensureCamera().then(ok => { if (ok && current === 's3') { camLost = false; toast('카메라가 다시 연결됐어요'); ENTER.s3(); } });
+    else listCameras().then(() => { if (camDevices.length) { camLost = false; toast('카메라가 다시 연결됐어요'); } });
+  });
   // 화면이 한 가지 색으로만 나오는지(녹색 화면 등 카메라 드라이버 문제) 검사
   async function frameLooksFlat() {
     await wait(900); if (!video.videoWidth) return true;
@@ -52,8 +66,12 @@
       hideCamErr(); return true;
     } catch (e) { stopCamera(); showCamErr(); return false; }
   }
-  function showCamErr() { $('#camerr').classList.add('on'); clearTimeout(camRetryT); camRetryT = setTimeout(() => { if ($('#camerr').classList.contains('on')) ensureCamera(); }, 30000); }
-  function hideCamErr() { $('#camerr').classList.remove('on'); clearTimeout(camRetryT); }
+  const CAMERR_HINT = $('#camerr-hint').textContent;
+  function showCamErr() {
+    $('#camerr-title').textContent = camLost ? '카메라 연결이 끊겼어요' : '카메라를 켤 수 없어요';   // 선이 빠진 경우엔 그에 맞는 안내
+    $('#camerr-hint').textContent = camLost ? 'USB 카메라 선이 빠진 것 같아요. 선을 다시 꽂으면 저절로 켜져요 — 안 되면 [다시 시도]를 눌러 주세요.' : CAMERR_HINT;
+    $('#camerr').classList.add('on'); clearTimeout(camRetryT); camRetryT = setTimeout(() => { if ($('#camerr').classList.contains('on')) ensureCamera().then(ok => { if (ok && current === 's3') ENTER.s3(); }); }, 30000); }   // 30초마다 다시 시도 · 되면 준비 화면 카운트다운도 다시
+  function hideCamErr() { $('#camerr').classList.remove('on'); clearTimeout(camRetryT); camLost = false; }
   $('#btn-cam-retry').addEventListener('click', () => { pop(); ensureCamera(); });
   $('#btn-demo').addEventListener('click', () => { pop(); S.demo = true; $('#cambox').classList.add('demo'); hideCamErr(); if (current === 's3') ENTER.s3(); });
   function grabFrame() {

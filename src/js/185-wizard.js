@@ -32,14 +32,17 @@
         ${win && !PDLG ? `<p class="wiz-note">프린터가 여러 대라 [뽑기]마다 고르고 싶으면 교사 메뉴 › 완성·인쇄 › 인쇄 방식을 '프린터 선택창 뜨기'로 바꿔요. 실행기가 켤 때마다 크롬이 기억한 다른 프린터(알PDF 등)를 지우고 기본 프린터로 맞추니, 기본 프린터만 맞으면 돼요.</p>` : ''}`;
       if (win) wizPrinter();
     } else if (wizStep === 2) {
+      const canPaper = win && cmpVer(LV, '1.11.0') >= 0;
       body.innerHTML = `
         <h3>② 용지와 인쇄 크기<small>인화지는 4×6인치(엽서 크기) · 사진은 테두리 없이 가로로 꽉 차게</small></h3>
+        ${canPaper ? `<div class="wiz-stat" id="wiz-paper"><i></i><div><b>프린터 기본 용지</b><span>확인 중…</span></div><button class="btn sec tiny" data-w="repaper">다시 확인</button></div>` : ''}
         <ol class="wiz-list">
           <li>윈도우 <span class="wiz-kbd">설정</span> › <span class="wiz-kbd">프린터 및 스캐너</span> › (프린터) › <b>인쇄 기본 설정</b>에서 용지 크기 <b>4×6 in (엽서·KG)</b>, <b>테두리 없음</b>, 방향 <b>가로</b>로 맞춰요. 셀피(SELPHY)는 용지 '<b>엽서 크기</b>' + '<b>테두리 없음 인쇄</b>' 켬.</li>
           <li>앱의 <b>인쇄 크기</b> ${ps} — 테스트 인쇄에서 사진 <b>가장자리가 잘리면 −</b>, <b>흰 테두리가 남으면 +</b> (2%씩). 보통은 100% 그대로.</li>
           <li>인화지 팩(36장 등)을 넣었다면 교사 메뉴 › 완성·인쇄 › <b>인화지 잔량</b>에 [+36장]을 눌러 두면 인쇄마다 줄고 5장 이하일 때 첫 화면에 표시돼요. (선택)</li>
         </ol>
         <p class="wiz-note">용지 설정이 A4로 남아 있으면 사진이 아주 작게 나오거나 잘려요. 프린터 드라이버의 기본 설정과 앱 인쇄 크기는 이 컴퓨터에 저장되니 한 번만 맞추면 돼요.</p>`;
+      if (canPaper) wizPaper();
     } else {
       body.innerHTML = `
         <h3>③ 테스트 인쇄와 카메라<small>실제로 한 장 뽑아 보고, 카메라가 켜지는지 확인해요</small></h3>
@@ -61,9 +64,21 @@
       st.querySelector('span').textContent = j.error ? j.error : `${j.detail || j.status}${ok ? ' — 이 프린터로 나가요' : ''}${j.fixed ? ' · 크롬이 기억한 다른 프린터 대신 이 프린터로 맞췄어요' : ''}`;
     }).catch(() => { if (st.isConnected) { st.className = 'wiz-stat warn'; st.querySelector('span').textContent = '실행기와 연결되지 않아요 — 약속네컷.exe로 다시 실행해 보세요'; } });
   }
+  function wizPaper() {
+    const st = $('#wiz-paper'); if (!st) return;
+    st.className = 'wiz-stat'; st.querySelector('span').textContent = '확인 중…';
+    localJson('/printer/paper', 9000).then(pp => {
+      if (!st.isConnected) return;
+      const ok = pp.verdict === 'ok';
+      st.className = 'wiz-stat ' + (pp.error || pp.verdict === 'unknown' ? 'info' : ok ? 'ok' : 'warn');
+      st.querySelector('b').textContent = '프린터 기본 용지' + (pp.name ? ` — ${pp.name}` : '');
+      st.querySelector('span').textContent = pp.error ? pp.error : ok ? `${pp.detail} — 이대로 좋아요${pp.form ? ` (${pp.form})` : ''}` : `${pp.detail}${pp.verdict === 'unknown' ? ' — 아래 1번대로 직접 확인하세요' : ' — 아래 1번대로 바꾼 뒤 [다시 확인]'}`;
+    }).catch(() => { if (st.isConnected) { st.className = 'wiz-stat info'; st.querySelector('span').textContent = '실행기와 연결되지 않아요'; } });
+  }
   function wizAction(b) {
     const a = b.dataset.w;
     if (a === 'recheck') { pop(); wizPrinter(); }
+    else if (a === 'repaper') { pop(); wizPaper(); }
     else if (a === 'ps+' || a === 'ps-') { settings.printScale = clamp((+settings.printScale || 100) + (a === 'ps+' ? 2 : -2), 90, 110); saveSettings(); $('#wiz-psv').textContent = settings.printScale + '%'; const ps = document.getElementById('ps'); if (ps) ps.textContent = settings.printScale + '%'; }
     else if (a === 'testprint') {
       pop(); testPrint(); const m = $('#wiz-tp'); m.className = 'wiz-msg'; m.textContent = '프린터로 보냈어요 — 30~60초 뒤 나와요. 안 나오면 프린터 전원·용지를 확인하세요';
@@ -106,6 +121,7 @@
         L.push(`실행기: ${d.launcher} · ${d.browser} · 뜻하지 않게 닫혀 다시 연 횟수 ${d.relaunches} · 켠 지 ${Math.round(d.uptimeSec / 60)}분 · 앱 파일 ${d.current}(내장 ${d.embedded}) · 폴더 ${d.dir} · 설정 ${JSON.stringify(d.config || {})}`);
         if (d.printer) L.push(`프린터: ${d.printer.name || '-'} · ${d.printer.error || d.printer.detail || d.printer.status}${d.printer.fixed ? ' · 크롬 기억 프린터를 기본 프린터로 맞춤' : ''}`);
         if (d.queue) L.push(`대기열: ${d.queue.error || `${d.queue.jobs}장 · ${d.queue.detail}${d.queue.oldestSec ? ` · 가장 오래된 작업 ${d.queue.oldestSec}초` : ''}${d.queue.paused ? ' · 일시 중지' : ''}`}`);
+        if (d.paper) L.push(`기본 용지: ${d.paper.error || `${d.paper.detail}${d.paper.form ? ` (${d.paper.form}` + (d.paper.paperId ? ` #${d.paper.paperId}` : '') + ')' : ''}`} · 자동 실행 ${d.autostart ? '켬' : '끔'} · 용지 확인 ${s.paperCheck ? '켬' : '끔'} · 카메라 끊김 알림 ${s.camWatch === false ? '끔' : '켬'}`);
       } catch (e) {   // 옛 실행기: /diag 가 없음
         try { const p = await localJson('/printer/status', 5000); L.push(`프린터: ${p.name || '-'} · ${p.error || p.detail || p.status}`); } catch (e2) { L.push('실행기: 연결 안 됨 (/printer/status 실패)'); }
         try { const u = await localJson('/update/status', 4000); L.push(`업데이트: 자동 ${u.auto ? '켬' : '끔'} · 기본 주소 ${u.isDefault ? '예' : '아니오'} · 실행기 ${u.launcher}`); } catch (e3) {}
