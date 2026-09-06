@@ -87,28 +87,38 @@ func parseStamp(b []byte) (app, launcher string, ok bool) {
 	return string(m[1]), string(m[2]), true
 }
 
-func fetchStamp(url string, timeout time.Duration) (app, launcher string, ok bool) {
+// 결과 구분: stampOK(버전 표시 읽음) · stampNone(서버에는 닿았지만 표시가 없는 옛 파일 → 전체를 받아 확인) · stampOffline(서버에 닿지 못함 → 이번엔 업데이트 확인을 건너뛰고 바로 켬)
+const (
+	stampOK = iota
+	stampNone
+	stampOffline
+)
+
+func fetchStamp(url string, timeout time.Duration) (app, launcher string, status int) {
 	if strings.TrimSpace(url) == "" {
-		return "", "", false
+		return "", "", stampOffline
 	}
 	c := &http.Client{Timeout: timeout}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return "", "", false
+		return "", "", stampOffline
 	}
 	req.Header.Set("User-Agent", "YaksokNecut-Updater")
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Range", "bytes=0-4095")
 	res, err := c.Do(req)
 	if err != nil {
-		return "", "", false
+		return "", "", stampOffline // 인터넷 없음·시간 초과 — 더 시도하지 않는다
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 && res.StatusCode != 206 {
-		return "", "", false
+		return "", "", stampOffline
 	}
 	b, _ := io.ReadAll(io.LimitReader(res.Body, 4096)) // 서버가 Range를 무시해도 앞 4KB만 읽고 끊는다
-	return parseStamp(b)
+	if a, l, ok := parseStamp(b); ok {
+		return a, l, stampOK
+	}
+	return "", "", stampNone
 }
 
 func isTimeout(err error) bool {

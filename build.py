@@ -44,12 +44,6 @@ def version_of(html):
 def main():
     html = assemble()
     src_path = os.path.join(ROOT, 'yaksok-necut.html')
-    if '--check' in sys.argv:
-        cur = rd(src_path)
-        print('same' if cur == html else f'DIFFERENT (built {len(html)} vs current {len(cur)})')
-        return
-    open(src_path, 'w', encoding='utf-8').write(html)
-    # 단독 HTML (예전 wrap.py)
     # 작업 폴더(winapp/…)와 저장소 폴더(windows/…) 어느 쪽 배치에서도 돌아가게
     first = lambda *cands: next((c for c in cands if os.path.exists(os.path.join(ROOT, c))), cands[0])
     icon = first('winapp/icon/favicon-64.png', 'windows/icon/favicon-64.png'); fonts_dir = first('winapp/launcher/fonts', 'windows/launcher/fonts')
@@ -57,7 +51,14 @@ def main():
     src = html.replace('<title>약속네컷</title>\n', '<link rel="icon" type="image/png" href="data:image/png;base64,' + fav + '">\n<title>약속네컷</title>\n', 1)
     wrapped = ('<!doctype html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">\n'
                + src.replace('<title>약속네컷</title>\n', '<title>약속네컷</title>\n</head>\n<body>\n', 1) + '\n</body>\n</html>\n')
+    if '--check' in sys.argv:   # 작업 폴더에선 yaksok-necut.html 과, 저장소에선 index.html 과 비교
+        if os.path.exists(src_path): cur, built, what = rd(src_path), html, 'yaksok-necut.html'
+        else: cur, built, what = rd(os.path.join(ROOT, 'index.html')), wrapped, 'index.html'
+        print(f'same as {what}' if cur == built else f'DIFFERENT from {what} (built {len(built)} vs current {len(cur)})')
+        return
+    open(src_path, 'w', encoding='utf-8').write(html)
     open(os.path.join(ROOT, '약속네컷.html'), 'w', encoding='utf-8').write(wrapped)
+    if os.path.exists(os.path.join(ROOT, 'index.html')): open(os.path.join(ROOT, 'index.html'), 'w', encoding='utf-8').write(wrapped)   # 저장소 배치: index.html 도 갱신
     local = re.sub(r'<link rel="stylesheet" href="https://fonts\.googleapis\.com/[^"]*">', '<link rel="stylesheet" href="fonts/fonts.css">', wrapped, count=1)
     assert 'fonts/fonts.css' in local
     win_dir = os.path.join(ROOT, 'win/약속네컷-윈도우'); os.makedirs(os.path.join(win_dir, 'fonts'), exist_ok=True)

@@ -191,9 +191,23 @@ func TestStamp(t *testing.T) {
 		w.Write(big)
 	}))
 	defer srv.Close()
-	app, lv, ok = fetchStamp(srv.URL, 3*time.Second)
-	if !ok || app != "2.0.0" || lv != "1.9.11" || gotRange != "bytes=0-4095" {
-		t.Fatalf("fetchStamp %v %v %v range=%q", app, lv, ok, gotRange)
+	app, lv, st := fetchStamp(srv.URL, 3*time.Second)
+	if st != stampOK || app != "2.0.0" || lv != "1.9.11" || gotRange != "bytes=0-4095" {
+		t.Fatalf("fetchStamp %v %v %v range=%q", app, lv, st, gotRange)
+	}
+	// 서버엔 닿았지만 표시가 없는 옛 파일 → stampNone
+	old := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("<!doctype html><html>old")) }))
+	defer old.Close()
+	if _, _, st := fetchStamp(old.URL, 3*time.Second); st != stampNone {
+		t.Fatalf("old file should be stampNone, got %v", st)
+	}
+	// 서버에 닿지 못함(인터넷 없음) → stampOffline, 빨리 끝남
+	t0 := time.Now()
+	if _, _, st := fetchStamp("http://127.0.0.1:9/index.html", 3*time.Second); st != stampOffline {
+		t.Fatalf("unreachable should be stampOffline, got %v", st)
+	}
+	if time.Since(t0) > 3500*time.Millisecond {
+		t.Fatal("offline check took too long")
 	}
 	if cmpVer("1.9.11", "1.9.9") <= 0 || cmpVer("1.11.0", "1.10.4") <= 0 {
 		t.Fatal("cmpVer")

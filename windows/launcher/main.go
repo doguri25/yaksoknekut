@@ -214,8 +214,9 @@ func main() {
 	if u := updateURL(); u != "" && cfg["auto_update"] != "0" {
 		cur, _ := os.ReadFile(htmlPath)
 		curV := htmlVersion(cur)
-		stampApp, stampLv, stampOK := fetchStamp(u, 3*time.Second)
-		needApp := !stampOK || cmpVer(stampApp, curV) > 0 // 스탬프가 없는 옛 파일이면 예전처럼 통째로 받아 확인
+		stampApp, stampLv, st := fetchStamp(u, 3*time.Second)
+		stampOK := st == stampOK
+		needApp := st == stampNone || (stampOK && cmpVer(stampApp, curV) > 0) // 서버에 닿지 못했으면(인터넷 없음) 이번엔 건너뛰고 바로 켠다
 		lv := stampLv
 		if needApp {
 			body, v, err := fetchLatest(u, 6*time.Second)
