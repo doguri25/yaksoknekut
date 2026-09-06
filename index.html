@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<!-- yaksok-necut app=1.17.0 launcher=1.13.0 -->
+<!-- yaksok-necut app=1.17.1 launcher=1.13.0 -->
 <!--
   약속네컷 ⓒ 2026 도구리(홍북초등학교) · raccoon@ai.cne.go.kr
   이 저작물은 크리에이티브 커먼즈 저작자표시-비영리-변경금지 4.0 국제 라이선스(CC BY-NC-ND 4.0)에 따라 이용할 수 있습니다.
@@ -847,7 +847,8 @@
   .ink-colors button.on { box-shadow: 0 0 0 3px var(--coral); }
   .ink-tools .btn.small { min-height: 52px; font-size: 22px; }
   .pbtn.on { border-color: var(--coral); background: var(--peach); }
-  .pbtn.empty { grid-column: 1 / -1; color: var(--muted); }
+  .pbtn.empty { color: var(--muted); }   /* [손글씨로 쓸래요]와 한 줄에 (한 줄을 다 차지하면 문장 줄이 아래 안내와 겹침) */
+  .sgrid.plist { overflow-y: auto; align-content: start; padding-right: 4px; }   /* 약속 문장이 많으면(최대 12) 서랍 안에서 스크롤 — 아래 안내 글과 겹치지 않게 */
   .pbtn:active { transform: scale(.96); }
   .cbtn { border: 6px solid transparent; border-radius: 20px; cursor: pointer; min-width: 0; min-height: 0; box-shadow: inset 0 0 0 2px rgba(39,64,58,.12); touch-action: manipulation; padding: 0; }
   .cbtn.on { border-color: var(--coral); }
@@ -1663,12 +1664,13 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.17.0';
+  const APP_VERSION = '1.17.1';
   const LAUNCHER_LATEST = '1.13.0';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
   const BUILD_DATE = '2026-09-06';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.17.1', d: '2026-09-06', items: ['꾸미기 › 약속 탭: [손글씨로 쓸래요]와 [나중에 펜으로 쓸게요]를 한 줄에 놓아 문장 줄이 아래 안내 글과 겹치던 것 수정 · 문장이 많으면(최대 12개) 서랍 안에서 스크롤'] },
     { v: '1.17.0', d: '2026-09-06', items: ['윈도우 앱: 실행기(또는 앱 파일)를 뒤에서 받는 동안 첫 화면 오른쪽 위에 "실행기 업데이트 중 37%"가 차오르며 보이고, 다 받으면 그 자리가 [실행기 새 버전 · 다시 시작] 단추로 바뀌어요. 준비 점검 칩과 업데이트 줄에도 (실행기 1.13.0)', '앱 정보 창의 브라우저 주소 설명을 짧게 (잘리지 않게)'] },
     { v: '1.16.0', d: '2026-09-06', items: ['윈도우 앱: 실행기 기록 — 켜짐·업데이트 확인 결과·다시 연 이유(종료 코드)·대기열 비우기·설정 변경·오류를 launcher.log 에 한 줄씩 남기고, [문제 정보 복사]에 마지막 20줄이 들어가요 (실행기 1.12.0)', '앱 정보 창에 브라우저 버전 주소와 QR — 태블릿·크롬북은 doguri25.github.io/yaksoknekut 로 설치 없이 열어요 (인쇄는 인쇄창)'] },
     { v: '1.15.0', d: '2026-09-06', items: ['윈도우 앱: 프린터 기본 용지 확인 — 실행기가 드라이버 기본 용지(크기·방향)를 읽어 시작 도우미 2단계에 "4×6(엽서) 100×148mm ✓ / A4 — 바꿔야 해요"로 보여 줘요. 완성·인쇄 › 프린터 점검의 \'용지 확인\'을 켜면 준비 점검과 켤 때 알림에도 (기본 꺼짐 · 실행기 1.11.0)', '윈도우 앱: 윈도우 켤 때 자동 실행 — 학교·기록·앱 › 업데이트 줄 스위치. 시작 프로그램에 바로가기를 넣어 부스 PC를 켜기만 하면 약속네컷이 열려요 (기본 꺼짐)', '카메라 선이 빠지면 바로 알림 — 찍는 중이면 준비 화면으로 돌아가 "카메라를 확인해 주세요", 다시 꽂으면 저절로 이어져요. 촬영 › 사용할 카메라 줄의 \'끊기면 알림\' (기본 켬)'] },
@@ -3492,15 +3494,15 @@
     const grid = $('#sgrid'); grid.innerHTML = '';
     if (activeCat === 'promise') {
       const list = promisesFor(S.frame.set || 'promise');
-      grid.style.gridTemplateColumns = '1fr 1fr'; grid.style.gridTemplateRows = 'none'; grid.style.gridAutoRows = 'auto'; grid.style.alignContent = 'start';
-      const mk = (t, on) => { const b = document.createElement('button'); b.className = 'pbtn' + (on ? ' on' : ''); b.textContent = t || '빈칸으로 (나중에 펜으로)'; if (!t) b.classList.add('empty');
+      grid.style.gridTemplateColumns = '1fr 1fr'; grid.style.gridTemplateRows = 'none'; grid.style.gridAutoRows = 'auto'; grid.style.alignContent = 'start'; grid.classList.add('plist');
+      const mk = (t, on) => { const b = document.createElement('button'); b.className = 'pbtn' + (on ? ' on' : ''); b.textContent = t || '나중에 펜으로 쓸게요'; if (!t) b.classList.add('empty');
         b.addEventListener('click', () => { pop(); S.promiseText = t || ''; S.promiseInk = null; S.inkStrokes = []; rebuildBase(); renderDecor(); renderDrawer(); if (t) buddySay('promise'); }); return b; };
       const ib = document.createElement('button'); ib.className = 'pbtn ink' + (S.promiseInk ? ' on' : ''); ib.innerHTML = S.promiseInk ? '✎ 손글씨 다시 쓰기' : '✎ 손글씨로 쓸래요'; ib.addEventListener('click', () => { pop(); openInk(); });
       grid.appendChild(ib); grid.appendChild(mk('', !S.promiseText && !S.promiseInk)); list.forEach(t => grid.appendChild(mk(t, S.promiseText === t)));
       $('#full-note').textContent = S.promiseInk ? '손으로 쓴 약속이 약속 칸에 인쇄돼요' : '고른 문장이 약속 칸에 인쇄돼요 · 손가락으로 직접 써도 돼요'; $('#full-note').style.color = '';
       return;
     }
-    grid.style.gridTemplateColumns = ''; grid.style.gridTemplateRows = ''; grid.style.gridAutoRows = ''; grid.style.alignContent = '';
+    grid.style.gridTemplateColumns = ''; grid.style.gridTemplateRows = ''; grid.style.gridAutoRows = ''; grid.style.alignContent = ''; grid.classList.remove('plist');
     if (activeCat === 'paper') {
       const colors = [S.frame.bg].concat(PAPER_COLORS.filter(c => c.toLowerCase() !== S.frame.bg.toLowerCase()));
       colors.forEach((col, i) => {
