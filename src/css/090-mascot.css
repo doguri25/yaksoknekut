@@ -23,6 +23,11 @@
   #app[data-screen="s0"] #topleft { display: none; }   /* 첫 화면에는 [처음으로]가 필요 없음 */
   #app.fontwait .screen, #app.fontwait .topbtns { visibility: hidden; }   /* 고른 본문 글꼴 준비 전엔 글자를 잠깐 숨김 (배경만 보임) */
   #app.exeready[data-screen="s0"] #btn-restart { display: inline-flex; background: var(--coral); color: #fff; border-color: transparent; box-shadow: 0 3px 0 var(--coral-dark); }   /* 새 실행기를 받아 둔 뒤: [실행기 새 버전 · 다시 시작] */
+  /* 받는 중: 같은 자리에 "실행기 업데이트 중 37%" — 왼쪽부터 차오르는 띠, 누를 수 없음 */
+  #app.exebusy:not(.exeready)[data-screen="s0"] #btn-restart { display: inline-flex; pointer-events: none; color: var(--ink); border-color: rgba(255,127,80,.35); background: linear-gradient(90deg, var(--peach) var(--pct, 0%), rgba(255,255,255,.75) var(--pct, 0%)); transition: background .4s; }
+  #app.exebusy:not(.exeready) #btn-restart .ic { animation: spin 1.2s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #app.noanim #btn-restart .ic { animation: none; }
   #restart-ask { z-index: 67; }   /* 잠금 화면(66) 위에도 */
   #restart-ask .panel { max-width: 640px; }
   #restart-ask .small b { color: var(--coral); font-size: 30px; }

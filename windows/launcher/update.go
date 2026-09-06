@@ -132,26 +132,57 @@ func isTimeout(err error) bool {
 	return strings.Contains(err.Error(), "Timeout") || strings.Contains(err.Error(), "deadline")
 }
 
-func fetchLatest(url string, timeout time.Duration) ([]byte, string, error) {
-	if strings.TrimSpace(url) == "" {
-		return nil, "", errors.New("업데이트 주소가 비어 있어요")
-	}
+// 내려받기 — 받은 바이트/전체 크기를 onProg 로 알려 줌 (앱이 "실행기 업데이트 중 37%" 를 보여 줄 수 있게). onProg 는 nil 이어도 됨
+func download(url string, timeout time.Duration, limit int64, onProg func(got, total int64)) ([]byte, error) {
 	c := &http.Client{Timeout: timeout}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 	req.Header.Set("User-Agent", "YaksokNecut-Updater")
 	req.Header.Set("Cache-Control", "no-cache")
 	res, err := c.Do(req)
 	if err != nil {
-		return nil, "", fmt.Errorf("내려받기 실패: %v", err)
+		return nil, fmt.Errorf("내려받기 실패: %v", err)
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return nil, "", fmt.Errorf("서버 응답 %d", res.StatusCode)
+		return nil, fmt.Errorf("서버 응답 %d", res.StatusCode)
 	}
-	b, err := io.ReadAll(io.LimitReader(res.Body, 20<<20))
+	total := res.ContentLength
+	if onProg != nil {
+		onProg(0, total)
+	}
+	var buf bytes.Buffer
+	chunk := make([]byte, 64<<10)
+	r := io.LimitReader(res.Body, limit)
+	for {
+		n, err := r.Read(chunk)
+		if n > 0 {
+			buf.Write(chunk[:n])
+			if onProg != nil {
+				onProg(int64(buf.Len()), total)
+			}
+		}
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	return buf.Bytes(), nil
+}
+
+func fetchLatest(url string, timeout time.Duration) ([]byte, string, error) {
+	return fetchLatestProgress(url, timeout, nil)
+}
+
+func fetchLatestProgress(url string, timeout time.Duration, onProg func(got, total int64)) ([]byte, string, error) {
+	if strings.TrimSpace(url) == "" {
+		return nil, "", errors.New("업데이트 주소가 비어 있어요")
+	}
+	b, err := download(url, timeout, 20<<20, onProg)
 	if err != nil {
 		return nil, "", err
 	}
@@ -224,24 +255,13 @@ func validateExe(b []byte, want string) error {
 }
 
 func fetchExe(url string, want string, timeout time.Duration) ([]byte, error) {
-	c := &http.Client{Timeout: timeout}
-	req, err := http.NewRequest("GET", url, nil)
+	return fetchExeProgress(url, want, timeout, nil)
+}
+
+func fetchExeProgress(url string, want string, timeout time.Duration, onProg func(got, total int64)) ([]byte, error) {
+	b, err := download(url, timeout, 60<<20, onProg)
 	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("User-Agent", "YaksokNecut-Updater")
-	req.Header.Set("Cache-Control", "no-cache")
-	res, err := c.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("실행기 내려받기 실패: %v", err)
-	}
-	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("서버 응답 %d", res.StatusCode)
-	}
-	b, err := io.ReadAll(io.LimitReader(res.Body, 60<<20))
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("실행기 %v", err)
 	}
 	if err := validateExe(b, want); err != nil {
 		return nil, err

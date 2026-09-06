@@ -1,5 +1,6 @@
   /* ===================== 로고 · 앱 정보 ===================== */
   $('#about-ver').textContent = `버전 ${APP_VERSION} · ${BUILD_DATE}`;
+  $('#about-url').textContent = WEB_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const latestItems = CHANGELOG[0].items.slice(0, 3), more = CHANGELOG[0].items.length - latestItems.length;
   $('#changelog').innerHTML = `<div class="cl-latest"><b>최근 수정 (${CHANGELOG[0].v})</b><ul>${latestItems.map(t => `<li>${t}</li>`).join('')}${more > 0 ? `<li class="more">외 ${more}가지 — 이전 기록에서 전체 보기</li>` : ''}</ul></div>` +
     (CHANGELOG.length > 1 ? `<details><summary>이전 기록 ${CHANGELOG.length - 1}건</summary>${CHANGELOG.slice(1).map(c => `<div class="cl-old"><b>${c.v}</b> <em>${c.d}</em><ul>${c.items.map(t => `<li>${t}</li>`).join('')}</ul></div>`).join('')}</details>` : '');
@@ -199,8 +200,25 @@
   const RESTART_IDLE_MS = 3 * 60000, RESTART_COUNT = 10;
   const updWhat = () => updKind === 'app' ? '새 버전' : '새 실행기';
   function restartNow() { flushSettings(true); toast(`${updWhat()}으로 다시 시작해요… 잠시 뒤 다시 열려요`, 5000); setTimeout(() => { location.href = LOCAL + '/update/restart'; }, 400); }
+  // 받는 중 (실행기 1.13.0+): 오른쪽 위 단추 자리에 "실행기 업데이트 중 37%", 준비 점검 칩·업데이트 줄에도. 끝나면 setExeReady 로 [다시 시작] 단추가 됨
+  let updBusy = null;   // { kind: 'exe'|'app', ver, pct }
+  function setUpdBusy(b) {
+    const was = updBusy; updBusy = b && b.kind ? { kind: b.kind, ver: b.ver || '', pct: Math.max(0, Math.min(99, +b.pct || 0)) } : null;
+    const app = $('#app'), btn = $('#btn-restart');
+    if (updBusy && !exeReady) {
+      app.classList.add('exebusy'); btn.style.setProperty('--pct', updBusy.pct + '%');
+      $('#btn-restart-text').textContent = `${updBusy.kind === 'app' ? '앱' : '실행기'} 업데이트 중 ${updBusy.pct}%`;
+      const chip = document.getElementById('chk-updbusy'); if (chip) chip.querySelector('span').textContent = `${updBusy.kind === 'app' ? '앱' : '실행기'} ${updBusy.ver} 받는 중 ${updBusy.pct}%`;
+      const row = document.getElementById('upd-busy'); if (row) row.textContent = `${updBusy.kind === 'app' ? '앱' : '실행기'} ${updBusy.ver} 받는 중 ${updBusy.pct}%`;
+      if (!was && current === 's10') refreshTeacherKeep();
+    } else {
+      app.classList.remove('exebusy'); btn.style.removeProperty('--pct');
+      if (was && !exeReady) { const chip = document.getElementById('chk-updbusy'); if (chip) chip.remove(); const row = document.getElementById('upd-busy'); if (row) row.textContent = ''; }
+    }
+  }
+  function refreshTeacherKeep() { const el = $('#teacher'); const y = el.querySelector('#tmain') ? el.querySelector('#tmain').scrollTop : 0; ENTER.s10(); if (el.querySelector('#tmain')) el.querySelector('#tmain').scrollTop = y; }
   function setExeReady(v, kind) {
-    if (!v || exeReady === v) return; exeReady = v; updKind = kind || 'exe';
+    if (!v || exeReady === v) return; exeReady = v; updKind = kind || 'exe'; setUpdBusy(null);
     $('#app').classList.add('exeready'); $('#restart-v').textContent = v; $('#restart-what').textContent = updWhat(); $('#btn-restart-text').textContent = (updKind === 'app' ? '새 버전' : '실행기 새 버전') + ' · 다시 시작';
     toast(`${updKind === 'app' ? '새 버전' : '실행기'} ${v} 준비됐어요 — 오른쪽 위 [다시 시작]을 누르면 적용돼요 (안 눌러도 다음에 켤 때 적용)`, 7000);
     if (current === 's10') { const el = $('#teacher'); const y = el.querySelector('#tmain') ? el.querySelector('#tmain').scrollTop : 0; ENTER.s10(); if (el.querySelector('#tmain')) el.querySelector('#tmain').scrollTop = y; }
@@ -214,7 +232,17 @@
   $('#btn-restart-now').addEventListener('click', e => { e.stopPropagation(); pop(); if (restartT) { clearInterval(restartT); restartT = null; } $('#restart-ask').classList.remove('on'); restartNow(); });
   $('#btn-restart-later').addEventListener('click', e => { e.stopPropagation(); pop(); restartCancel(); toast('다음에 켤 때 새 실행기로 켜져요'); });
   $('#restart-ask').addEventListener('click', e => { if (e.target === e.currentTarget) restartCancel(); });   // 바깥을 만져도 취소
-  if (KIOSK && QUIT_PORT && LV) { const poll = () => localJson('/update/status').then(j => { if (j && j.exeReady) setExeReady(j.exeReady, 'exe'); else if (j && j.htmlReady) setExeReady(j.htmlReady, 'app'); }).catch(() => {}); setTimeout(poll, 25000); setInterval(poll, 60000); }
+  // 실행기에 새 버전 준비·받는 중 상태 묻기: 켠 지 3초에 한 번, 받는 중이면 2초마다, 아니면 60초마다
+  if (KIOSK && QUIT_PORT && LV) {
+    let pollT = null;
+    const poll = () => localJson('/update/status').then(j => {
+      if (!j) return;
+      if (j.exeReady) setExeReady(j.exeReady, 'exe'); else if (j.htmlReady) setExeReady(j.htmlReady, 'app');
+      setUpdBusy(j.busy || null);
+      clearTimeout(pollT); pollT = setTimeout(poll, j.busy ? 2000 : 60000);
+    }).catch(() => { clearTimeout(pollT); pollT = setTimeout(poll, 60000); });
+    pollT = setTimeout(poll, 3000);
+  }
   // 가만히 두면 자동 잠금 (교사 메뉴 › 학교·기록·앱 › '가만히 두면 잠금', 기본 안 함)
   let lastActive = Date.now();
   ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { lastActive = Date.now(); }, true));

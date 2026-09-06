@@ -32,7 +32,7 @@
     window.addEventListener('unhandledrejection', e => { const r = e.reason; if (!(r instanceof Error)) return; if (BENIGN.test(r.name + ' ' + r.message)) return; showCrash(r.message); });
     window.__yaksokCrash = showCrash;   // 점검용
   })();
-  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, pollQueue, watchQueue: watchQueueAfterPrint, get queue() { return pqLast; }, diagText, openWizard, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
+  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, setUpdBusy, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, pollQueue, watchQueue: watchQueueAfterPrint, get queue() { return pqLast; }, diagText, openWizard, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
   go('s0');
   $('#app').classList.toggle('haslock', !!settings.lockPin);
   if (settings.lockPin) showLock('unlock');   // 잠금 비밀번호가 있으면 켤 때 번호판부터

@@ -177,6 +177,7 @@ func main() {
 	os.MkdirAll(appDir, 0o755)
 	os.MkdirAll(profDir, 0o755)
 	htmlPath := filepath.Join(appDir, "yaksok-necut.html")
+	logPath = filepath.Join(dir, "launcher.log")
 	writeFonts(appDir)
 
 	// 앱 파일: 업데이트로 받아 둔 파일이 exe에 든 것보다 새 버전이면 그대로 두고, 아니면 exe에 든 것으로 씀
@@ -189,6 +190,7 @@ func main() {
 	}
 
 	exePath, _ := os.Executable()
+	logf("켜짐 — 실행기 %s · %s", launcherVer, exePath)
 	cleanOldExe(exePath)
 	if autostartOn() {
 		go setAutostart(true, exePath) // 윈도우 켤 때 자동 실행이 켜져 있으면 바로가기를 지금 exe 위치로 다시 맞춤
@@ -210,6 +212,37 @@ func main() {
 	var readyMu sync.Mutex
 	exeReady := ""  // 배경에서 받아 바꿔 둔 새 실행기 버전 — 앱이 /update/status 로 보고 [다시 시작]을 안내
 	htmlReady := "" // 느린 망에서 뒤늦게 받아 설치해 둔 새 앱 버전 — 다시 시작하면 적용
+	// 받는 중 표시 — 앱이 오른쪽 위에 "실행기 업데이트 중 37%" 를 보여 줌 (끝나면 exeReady/htmlReady 로 바뀜)
+	type dlBusy struct {
+		Kind  string `json:"kind"` // exe | app
+		Ver   string `json:"ver"`
+		Got   int64  `json:"got"`
+		Total int64  `json:"total"`
+		Pct   int    `json:"pct"`
+	}
+	var busy *dlBusy
+	setBusy := func(kind, ver string, got, total int64) {
+		readyMu.Lock()
+		defer readyMu.Unlock()
+		if kind == "" {
+			busy = nil
+			return
+		}
+		pct := 0
+		if total > 0 {
+			pct = int(got * 100 / total)
+		} else if got > 0 { // 크기를 모르면(청크 전송) 실행기 11MB · 앱 3.2MB 기준 어림
+			est := int64(11 << 20)
+			if kind == "app" {
+				est = 3200 << 10
+			}
+			pct = int(got * 100 / est)
+		}
+		if pct > 99 {
+			pct = 99
+		}
+		busy = &dlBusy{Kind: kind, Ver: ver, Got: got, Total: total, Pct: pct}
+	}
 	// 켤 때 자동 업데이트 (주소가 설정되어 있고 끄지 않았을 때)
 	// 1) 첫 4KB의 버전 스탬프만 읽어(≈0.1초) 새 버전이 있는지 본다 → 없으면 바로 시작
 	// 2) 앱이 새 버전이면 6초 안에 받아 설치하고 시작, 더 걸리면 뒤에서 받아 두고 앱에 [다시 시작] 안내
@@ -218,38 +251,61 @@ func main() {
 		cur, _ := os.ReadFile(htmlPath)
 		curV := htmlVersion(cur)
 		stampApp, stampLv, st := fetchStamp(u, 3*time.Second)
+		logf("업데이트 확인 — 지금 %s · 서버 %s/%s · %s", curV, stampApp, stampLv, map[int]string{stampOK: "확인됨", stampNone: "스탬프 없음(전체 받기)", stampOffline: "서버에 못 닿음(건너뜀)"}[st])
 		stampOK := st == stampOK
 		needApp := st == stampNone || (stampOK && cmpVer(stampApp, curV) > 0) // 서버에 닿지 못했으면(인터넷 없음) 이번엔 건너뛰고 바로 켠다
 		lv := stampLv
 		if needApp {
 			body, v, err := fetchLatest(u, 6*time.Second)
 			if err == nil {
-				if cmpVer(v, curV) > 0 && installUpdate(appDir, body) == nil {
-					startMsg = "upd=auto:" + v
+				if cmpVer(v, curV) > 0 {
+					if ie := installUpdate(appDir, body); ie == nil {
+						startMsg = "upd=auto:" + v
+						logf("앱 자동 업데이트 %s → %s", curV, v)
+					} else {
+						logf("앱 업데이트 설치 실패: %v", ie)
+					}
 				}
 				if !stampOK {
 					lv = htmlLauncherVer(body)
 				}
 			} else if stampOK && isTimeout(err) {
+				logf("앱 파일 받기 6초 초과 — 뒤에서 계속 받음")
 				go func() { // 느린 망: 뒤에서 받아 설치해 두고 앱에 알림 (다음 실행 또는 [다시 시작]에 적용)
-					if body, v, err := fetchLatest(u, 240*time.Second); err == nil && cmpVer(v, curV) > 0 && installUpdate(appDir, body) == nil {
+					setBusy("app", stampApp, 0, 0)
+					body, v, err := fetchLatestProgress(u, 240*time.Second, func(got, total int64) { setBusy("app", stampApp, got, total) })
+					setBusy("", "", 0, 0)
+					if err == nil && cmpVer(v, curV) > 0 && installUpdate(appDir, body) == nil {
 						readyMu.Lock()
 						htmlReady = v
 						readyMu.Unlock()
+						logf("앱 %s 뒤늦게 받아 둠 (다시 시작하면 적용)", v)
+					} else if err != nil {
+						logf("앱 파일 받기 실패: %v", err)
 					}
 				}()
+			} else if err != nil {
+				logf("앱 파일 받기 실패: %v", err)
 			}
 		}
 		if lv != "" && cmpVer(lv, launcherVer) > 0 {
 			if xu := exeURLFrom(u); xu != "" && exePath != "" {
 				go func() {
-					if nb, err := fetchExe(xu, lv, 180*time.Second); err == nil {
-						if swapExe(exePath, nb) == nil {
+					setBusy("exe", lv, 0, 0)
+					nb, err := fetchExeProgress(xu, lv, 180*time.Second, func(got, total int64) { setBusy("exe", lv, got, total) })
+					setBusy("", "", 0, 0)
+					if err == nil {
+						if se := swapExe(exePath, nb); se == nil {
 							os.WriteFile(pendingPath, []byte("upd=exe:"+lv), 0o644)
 							readyMu.Lock()
 							exeReady = lv
 							readyMu.Unlock()
+							logf("실행기 %s 받아 바꿔 둠 (다시 시작하면 적용)", lv)
+						} else {
+							logf("실행기 교체 실패: %v", se)
 						}
+					} else {
+						logf("실행기 %s 받기 실패: %v", lv, err)
 					}
 				}()
 			}
@@ -268,6 +324,7 @@ func main() {
 		filepath.Join(pf, "Microsoft", "Edge", "Application", "msedge.exe"),
 	})
 	if chrome == "" && edge == "" {
+		logf("크롬·엣지를 찾지 못함 — 종료")
 		msgbox("크롬이나 엣지 브라우저가 필요해요.\n윈도우 10·11에는 엣지가 기본으로 들어 있는데 찾지 못했어요.\nMicrosoft Edge 또는 Google Chrome을 설치한 뒤 다시 실행해 주세요.", 0x30)
 		return
 	}
@@ -337,10 +394,13 @@ func main() {
 		// 크롬이 기억한 '마지막 프린터'가 윈도우 기본 프린터와 다르면 지워서 기본 프린터로 나가게 (알PDF 등으로 새는 문제)
 		if changed, _ := syncPrinterPref(prefPathOf(profDir), defaultPrinterName()); changed {
 			printerFixed = true
+			logf("크롬이 기억한 다른 프린터를 지우고 기본 프린터(%s)로 맞춤", defaultPrinterName())
 		}
+		logf("브라우저 열기 — %s · 모니터 %d/%d%s", browserName, monIdx, len(mons), map[bool]string{true: " · " + msg, false: ""}[msg != ""])
 		c := exec.Command(exe, args...)
 		c.Dir = appDir
 		if err := c.Start(); err != nil {
+			logf("브라우저 실행 실패: %v", err)
 			msgbox("브라우저를 실행하지 못했어요:\n"+err.Error(), 0x10)
 			return nil
 		}
@@ -383,6 +443,7 @@ func main() {
 			curVer := htmlVersion(curHTML)
 			switch r.URL.Path {
 			case "/quit":
+				logf("[종료] 단추로 끝냄")
 				page("약속네컷을 닫는 중…")
 				mu.Lock()
 				relaunch = false
@@ -398,6 +459,7 @@ func main() {
 				if n < 1 || n > len(mons) {
 					n = 1
 				}
+				logf("모니터 %d번으로 옮김", n)
 				page(fmt.Sprintf("%d번 모니터로 옮기는 중…", n))
 				mu.Lock()
 				monIdx = n
@@ -413,7 +475,9 @@ func main() {
 				jsonOut(printerPaper())
 			case "/autostart": // 윈도우 켤 때 자동 실행 — on=1 켬 · on=0 끔 · 없으면 상태만
 				if v := r.URL.Query().Get("on"); v != "" {
+					logf("윈도우 켤 때 자동 실행 %s", map[bool]string{true: "켬", false: "끔"}[v == "1"])
 					if err := setAutostart(v == "1", exePath); err != nil {
+						logf("자동 실행 설정 실패: %v", err)
 						jsonOut(map[string]interface{}{"ok": false, "on": autostartOn(), "error": "시작 프로그램 폴더에 쓰지 못했어요"})
 						return
 					}
@@ -422,8 +486,17 @@ func main() {
 			case "/printer/queue": // 인쇄 대기열 — 뽑은 뒤 사진이 실제로 나가는지 (작업 수·가장 오래된 작업의 나이·멈춤 이유)
 				jsonOut(printerQueue())
 			case "/printer/queue/clear": // 대기열 비우기 (멈춘 작업 지우기 · 일시 중지 풀기)
-				jsonOut(clearPrinterQueue())
+				q := clearPrinterQueue()
+				logf("[대기열 비우기] — 지움 %d · 일시 중지 풂 %v · 남음 %d · %s", q.Removed, q.Resumed, q.Jobs, q.Detail)
+				jsonOut(q)
+			case "/log": // 실행기 기록 마지막 n줄
+				n, _ := strconv.Atoi(r.URL.Query().Get("n"))
+				if n <= 0 || n > 200 {
+					n = 30
+				}
+				jsonOut(map[string]interface{}{"path": logPath, "lines": lastLogLines(n)})
 			case "/relaunch/auto": // 크롬이 뜻하지 않게 닫히면 다시 열기 (기본 켬)
+				logf("닫히면 다시 열기 %s", map[bool]string{true: "끔", false: "켬"}[r.URL.Query().Get("on") == "0"])
 				mu.Lock()
 				if r.URL.Query().Get("on") == "0" {
 					cfg["auto_relaunch"] = "0"
@@ -443,7 +516,7 @@ func main() {
 					}
 				}
 				mu.Unlock()
-				jsonOut(map[string]interface{}{"launcher": launcherVer, "dir": dir, "exe": exePath, "browser": browserName, "config": cfgCopy, "relaunches": cc, "uptimeSec": int(time.Since(startedAt) / time.Second), "monitors": len(mons), "monitor": monIdx, "embedded": embeddedVer, "current": curVer, "printer": printerStatus(), "queue": printerQueue(), "paper": printerPaper(), "autostart": autostartOn()})
+				jsonOut(map[string]interface{}{"launcher": launcherVer, "dir": dir, "exe": exePath, "browser": browserName, "config": cfgCopy, "relaunches": cc, "uptimeSec": int(time.Since(startedAt) / time.Second), "monitors": len(mons), "monitor": monIdx, "embedded": embeddedVer, "current": curVer, "printer": printerStatus(), "queue": printerQueue(), "paper": printerPaper(), "autostart": autostartOn(), "log": lastLogLines(20), "logPath": logPath})
 			case "/settings/save": // 앱 설정 사본 — 크롬 저장소가 미처 못 쓴 채 꺼져도 다음 실행에 되살림
 				body, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 				if len(body) > 1 && body[0] == '{' {
@@ -479,8 +552,13 @@ func main() {
 				_, hasPrev := os.Stat(filepath.Join(appDir, "yaksok-necut.prev.html"))
 				readyMu.Lock()
 				er, hr := exeReady, htmlReady
+				var bz *dlBusy
+				if busy != nil {
+					b := *busy
+					bz = &b
+				}
 				readyMu.Unlock()
-				jsonOut(map[string]interface{}{"url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar, "exeReady": er, "htmlReady": hr, "relaunch": cfg["auto_relaunch"] != "0", "autostart": autostartOn()})
+				jsonOut(map[string]interface{}{"busy": bz, "url": updateURL(), "isDefault": strings.TrimSpace(cfg["update_url"]) == "", "auto": cfg["auto_update"] != "0", "current": curVer, "embedded": embeddedVer, "canRollback": hasPrev == nil, "launcher": launcherVer, "marker": launcherMarkerVar, "exeReady": er, "htmlReady": hr, "relaunch": cfg["auto_relaunch"] != "0", "autostart": autostartOn()})
 			case "/update/restart":
 				// 배경에서 바꿔 둔 새 실행기로 지금 다시 시작 (앱의 [다시 시작] 단추 / 첫 화면에서 3분 쉬면 자동)
 				readyMu.Lock()
@@ -490,6 +568,7 @@ func main() {
 					jsonOut(map[string]interface{}{"ok": false, "error": "준비된 새 버전이 없어요"})
 					return
 				}
+				logf("[다시 시작] — 실행기 %s · 앱 %s", er, hr)
 				if er != "" {
 					page("새 실행기(" + er + ")로 다시 시작해요… 잠시 뒤 다시 열립니다.")
 					mu.Lock()
@@ -539,6 +618,7 @@ func main() {
 				if err == nil && cmpVer(v, curVer) > 0 {
 					err = installUpdate(appDir, body)
 				}
+				logf("[지금 업데이트] — 서버 %s · 결과 %v", v, err)
 				if err != nil {
 					page("업데이트하지 못했어요: " + err.Error() + "<br>잠시 후 앱으로 돌아갑니다.")
 					restart("upd=err:" + url.QueryEscape(err.Error()))
@@ -569,6 +649,7 @@ func main() {
 				page(v + " 버전으로 바꾸는 중…")
 				restart(msg)
 			case "/update/rollback":
+				logf("[이전 버전으로 되돌리기]")
 				if err := rollbackUpdate(appDir); err != nil {
 					page(err.Error() + "<br>잠시 후 앱으로 돌아갑니다.")
 					restart("upd=err:" + url.QueryEscape(err.Error()))
@@ -606,6 +687,13 @@ func main() {
 		autoRelaunch := cfg["auto_relaunch"] != "0"
 		mu.Unlock()
 		// 앱의 [종료]가 아닌데 브라우저가 닫힘(아이가 Alt+F4 · 크롬이 튕김) → 다시 열어 부스가 멈춘 채 방치되지 않게
+		if !again && !newExe && !wantQuit {
+			code := -1
+			if c.ProcessState != nil {
+				code = c.ProcessState.ExitCode()
+			}
+			logf("브라우저가 뜻하지 않게 닫힘 — 종료 코드 %d · 켠 지 %ds · 다시 열기 %v", code, int(time.Since(launchedAt)/time.Second), autoRelaunch)
+		}
 		if !again && !newExe && !wantQuit && autoRelaunch {
 			now := time.Now()
 			if now.Sub(launchedAt) < 20*time.Second {
@@ -614,6 +702,7 @@ func main() {
 				quickExits = nil
 			}
 			if len(quickExits) >= 3 {
+				logf("켜자마자 3번 연속 닫힘 — 다시 열기 멈춤")
 				msgbox("크롬(엣지)이 켜자마자 계속 닫혀요.\n컴퓨터를 다시 시작한 뒤 약속네컷을 다시 실행해 주세요.\n계속되면 [문제 정보 복사]로 알려 주세요.", 0x30)
 				return
 			}
@@ -625,6 +714,7 @@ func main() {
 			continue
 		}
 		if newExe {
+			logf("새 실행기로 이어서 시작")
 			time.Sleep(600 * time.Millisecond)
 			if exeMsg != "" {
 				os.WriteFile(pendingPath, []byte(exeMsg), 0o644) // 새 실행기가 켜지면 앱에 알림

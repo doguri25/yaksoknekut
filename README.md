@@ -4,11 +4,16 @@
 
 - **앱 파일**: [`index.html`](index.html) — 브라우저로 열면 바로 동작하는 한 파일 앱 (항상 최신 버전)
 - **윈도우 앱**: [Releases](../../releases)에서 `약속네컷-윈도우앱.zip` 을 받아 풀고 `약속네컷.exe` 실행 — 설치 없음, 카메라 자동 허용, 확인창 없는 자동 인쇄, 전자칠판 모니터 자동 선택, 잠금 비밀번호, 설정 파일 보관
+- **브라우저 버전**: https://doguri25.github.io/yaksoknekut/ — 태블릿·크롬북·맥에서 설치 없이 (GitHub Pages · 인쇄는 브라우저 인쇄창에서 프린터·용지 4×6 선택). 앱 정보 창(첫 화면 로고 누르기)에 이 주소의 QR이 있음
 - **안내서**: [교사용 안내서 (그림 중심, PDF)](docs/약속네컷_교사용_안내서.pdf) · [학생용 안내 포스터 (A4)](docs/약속네컷_학생용_안내_포스터.pdf)
 
 ## 업데이트
 
 윈도우 앱은 켤 때 이 저장소의 `index.html` 을 확인해 새 버전이면 스스로 바꾸고(교사 메뉴 › 학교·기록·앱에서 끄거나 [지금 업데이트]), 실행기(exe)도 `index.html` 안의 `LAUNCHER_LATEST` 가 자기보다 높으면 `windows/yaksok-necut.exe` 를 받아 스스로 교체합니다. 배포하는 쪽은 새 `index.html`(과 바뀐 경우 `windows/yaksok-necut.exe`)을 `master` 에 올리기만 하면 됩니다.
+
+### GitHub Pages 켜기 (한 번만)
+
+저장소 **Settings › Pages › Build and deployment › Source: Deploy from a branch**, Branch **master** / **(root)** 저장. 1~2분 뒤 `https://doguri25.github.io/yaksoknekut/` 에서 `index.html` 이 열리고, 이후 `index.html` 을 올릴 때마다 자동으로 새 버전이 됩니다. 브라우저 버전은 실행기가 없으므로 자동 인쇄·대기열 감시·잠금 파일 보관은 빠지고, 설정은 그 브라우저에만 저장됩니다.
 
 ## 폴더
 

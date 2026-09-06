@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -211,5 +213,29 @@ func TestStamp(t *testing.T) {
 	}
 	if cmpVer("1.9.11", "1.9.9") <= 0 || cmpVer("1.11.0", "1.10.4") <= 0 {
 		t.Fatal("cmpVer")
+	}
+}
+
+// download 진행률 콜백 — 받은 바이트가 늘어나고 마지막엔 전체 크기와 같아야 함
+func TestDownloadProgress(t *testing.T) {
+	body := bytes.Repeat([]byte("x"), 300<<10)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+		w.Write(body)
+	}))
+	defer srv.Close()
+	var gots []int64
+	var total int64
+	b, err := download(srv.URL, 5*time.Second, 1<<20, func(got, tot int64) { gots = append(gots, got); total = tot })
+	if err != nil || len(b) != len(body) {
+		t.Fatalf("download: %v len=%d", err, len(b))
+	}
+	if total != int64(len(body)) || len(gots) < 2 || gots[len(gots)-1] != int64(len(body)) {
+		t.Fatalf("progress: total=%d gots=%v", total, gots)
+	}
+	for i := 1; i < len(gots); i++ {
+		if gots[i] < gots[i-1] {
+			t.Fatalf("progress not monotonic: %v", gots)
+		}
 	}
 }

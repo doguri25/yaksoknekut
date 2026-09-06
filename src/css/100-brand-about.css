@@ -33,6 +33,13 @@
   .about-list dt { color: var(--muted); font-size: 18px; letter-spacing: .06em; align-self: center; }
   .about-list dd { margin: 0; }
   .about-panel .small { font-size: 18px; max-width: none; white-space: nowrap; color: var(--muted); }
+  .about-web { display: flex; align-items: center; gap: 14px; width: 100%; background: var(--bg); border-radius: 14px; padding: 10px 14px; text-align: left; }
+  .about-web .about-qr { width: 72px; height: 72px; flex: none; background: #fff; padding: 4px; border-radius: 8px; box-sizing: border-box; }
+  .about-web-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .about-web-txt b { font-size: 16px; font-weight: 400; color: var(--muted); }
+  .about-web-txt .about-url { font: 22px "Jua", sans-serif; color: var(--ink); letter-spacing: .01em; }
+  .about-web-txt small { font: 500 13px var(--body-font), sans-serif; color: var(--muted); white-space: normal; }
+  .about-web-txt .about-url { white-space: nowrap; }
   .about-panel .about-lic { margin: 2px 0 0; font-size: 15px; line-height: 1.4; color: var(--muted); white-space: nowrap; display: flex; align-items: center; gap: 8px; }
   .about-panel .about-lic b { color: var(--ink); font-size: 15px; font-weight: 400; }
   .about-panel .about-lic .lic-more { border: 0; background: var(--bg); color: var(--coral-dark); font: 14px "Jua", sans-serif; border-radius: 999px; padding: 3px 11px; cursor: pointer; touch-action: manipulation; transition: background-color .18s; }

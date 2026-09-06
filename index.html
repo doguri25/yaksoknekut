@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<!-- yaksok-necut app=1.15.0 launcher=1.11.0 -->
+<!-- yaksok-necut app=1.17.0 launcher=1.13.0 -->
 <!--
   약속네컷 ⓒ 2026 도구리(홍북초등학교) · raccoon@ai.cne.go.kr
   이 저작물은 크리에이티브 커먼즈 저작자표시-비영리-변경금지 4.0 국제 라이선스(CC BY-NC-ND 4.0)에 따라 이용할 수 있습니다.
@@ -501,6 +501,11 @@
   #app[data-screen="s0"] #topleft { display: none; }   /* 첫 화면에는 [처음으로]가 필요 없음 */
   #app.fontwait .screen, #app.fontwait .topbtns { visibility: hidden; }   /* 고른 본문 글꼴 준비 전엔 글자를 잠깐 숨김 (배경만 보임) */
   #app.exeready[data-screen="s0"] #btn-restart { display: inline-flex; background: var(--coral); color: #fff; border-color: transparent; box-shadow: 0 3px 0 var(--coral-dark); }   /* 새 실행기를 받아 둔 뒤: [실행기 새 버전 · 다시 시작] */
+  /* 받는 중: 같은 자리에 "실행기 업데이트 중 37%" — 왼쪽부터 차오르는 띠, 누를 수 없음 */
+  #app.exebusy:not(.exeready)[data-screen="s0"] #btn-restart { display: inline-flex; pointer-events: none; color: var(--ink); border-color: rgba(255,127,80,.35); background: linear-gradient(90deg, var(--peach) var(--pct, 0%), rgba(255,255,255,.75) var(--pct, 0%)); transition: background .4s; }
+  #app.exebusy:not(.exeready) #btn-restart .ic { animation: spin 1.2s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #app.noanim #btn-restart .ic { animation: none; }
   #restart-ask { z-index: 67; }   /* 잠금 화면(66) 위에도 */
   #restart-ask .panel { max-width: 640px; }
   #restart-ask .small b { color: var(--coral); font-size: 30px; }
@@ -550,6 +555,13 @@
   .about-list dt { color: var(--muted); font-size: 18px; letter-spacing: .06em; align-self: center; }
   .about-list dd { margin: 0; }
   .about-panel .small { font-size: 18px; max-width: none; white-space: nowrap; color: var(--muted); }
+  .about-web { display: flex; align-items: center; gap: 14px; width: 100%; background: var(--bg); border-radius: 14px; padding: 10px 14px; text-align: left; }
+  .about-web .about-qr { width: 72px; height: 72px; flex: none; background: #fff; padding: 4px; border-radius: 8px; box-sizing: border-box; }
+  .about-web-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .about-web-txt b { font-size: 16px; font-weight: 400; color: var(--muted); }
+  .about-web-txt .about-url { font: 22px "Jua", sans-serif; color: var(--ink); letter-spacing: .01em; }
+  .about-web-txt small { font: 500 13px var(--body-font), sans-serif; color: var(--muted); white-space: normal; }
+  .about-web-txt .about-url { white-space: nowrap; }
   .about-panel .about-lic { margin: 2px 0 0; font-size: 15px; line-height: 1.4; color: var(--muted); white-space: nowrap; display: flex; align-items: center; gap: 8px; }
   .about-panel .about-lic b { color: var(--ink); font-size: 15px; font-weight: 400; }
   .about-panel .about-lic .lic-more { border: 0; background: var(--bg); color: var(--coral-dark); font: 14px "Jua", sans-serif; border-radius: 999px; padding: 3px 11px; cursor: pointer; touch-action: manipulation; transition: background-color .18s; }
@@ -892,6 +904,10 @@
       <h2>약속네컷</h2>
       <p class="about-ver" id="about-ver"></p>
       <dl class="about-list" id="about-list"></dl>
+      <div class="about-web"><!-- 브라우저 버전(GitHub Pages) 주소와 QR — 태블릿·크롬북은 설치 없이 이 주소로 (인쇄는 인쇄창) -->
+        <svg class="about-qr" viewBox="0 0 29 29" shape-rendering="crispEdges" aria-label="브라우저에서 열기 QR"><path d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM11 0h1v1h-1zM12 0h1v1h-1zM15 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM25 0h1v1h-1zM26 0h1v1h-1zM27 0h1v1h-1zM28 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM12 1h1v1h-1zM14 1h1v1h-1zM15 1h1v1h-1zM20 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM9 2h1v1h-1zM10 2h1v1h-1zM11 2h1v1h-1zM12 2h1v1h-1zM14 2h1v1h-1zM15 2h1v1h-1zM16 2h1v1h-1zM17 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM26 2h1v1h-1zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM9 3h1v1h-1zM11 3h1v1h-1zM12 3h1v1h-1zM14 3h1v1h-1zM19 3h1v1h-1zM20 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM25 3h1v1h-1zM26 3h1v1h-1zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM10 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM15 4h1v1h-1zM16 4h1v1h-1zM17 4h1v1h-1zM18 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM26 4h1v1h-1zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM10 5h1v1h-1zM13 5h1v1h-1zM15 5h1v1h-1zM16 5h1v1h-1zM17 5h1v1h-1zM18 5h1v1h-1zM19 5h1v1h-1zM20 5h1v1h-1zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM25 6h1v1h-1zM26 6h1v1h-1zM27 6h1v1h-1zM28 6h1v1h-1zM9 7h1v1h-1zM15 7h1v1h-1zM17 7h1v1h-1zM0 8h1v1h-1zM3 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM9 8h1v1h-1zM11 8h1v1h-1zM13 8h1v1h-1zM16 8h1v1h-1zM19 8h1v1h-1zM21 8h1v1h-1zM23 8h1v1h-1zM1 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM5 9h1v1h-1zM7 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM16 9h1v1h-1zM20 9h1v1h-1zM22 9h1v1h-1zM25 9h1v1h-1zM28 9h1v1h-1zM0 10h1v1h-1zM2 10h1v1h-1zM3 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM10 10h1v1h-1zM11 10h1v1h-1zM18 10h1v1h-1zM19 10h1v1h-1zM20 10h1v1h-1zM23 10h1v1h-1zM24 10h1v1h-1zM25 10h1v1h-1zM26 10h1v1h-1zM27 10h1v1h-1zM1 11h1v1h-1zM2 11h1v1h-1zM3 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM16 11h1v1h-1zM18 11h1v1h-1zM19 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM23 11h1v1h-1zM26 11h1v1h-1zM27 11h1v1h-1zM2 12h1v1h-1zM3 12h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM12 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1zM16 12h1v1h-1zM17 12h1v1h-1zM21 12h1v1h-1zM22 12h1v1h-1zM23 12h1v1h-1zM25 12h1v1h-1zM27 12h1v1h-1zM28 12h1v1h-1zM0 13h1v1h-1zM1 13h1v1h-1zM4 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM19 13h1v1h-1zM20 13h1v1h-1zM21 13h1v1h-1zM1 14h1v1h-1zM3 14h1v1h-1zM6 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM13 14h1v1h-1zM14 14h1v1h-1zM20 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM27 14h1v1h-1zM28 14h1v1h-1zM7 15h1v1h-1zM8 15h1v1h-1zM9 15h1v1h-1zM10 15h1v1h-1zM11 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM19 15h1v1h-1zM25 15h1v1h-1zM27 15h1v1h-1zM1 16h1v1h-1zM2 16h1v1h-1zM3 16h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM9 16h1v1h-1zM11 16h1v1h-1zM12 16h1v1h-1zM13 16h1v1h-1zM15 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM20 16h1v1h-1zM27 16h1v1h-1zM2 17h1v1h-1zM3 17h1v1h-1zM4 17h1v1h-1zM5 17h1v1h-1zM7 17h1v1h-1zM9 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM25 17h1v1h-1zM28 17h1v1h-1zM0 18h1v1h-1zM2 18h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM11 18h1v1h-1zM14 18h1v1h-1zM17 18h1v1h-1zM22 18h1v1h-1zM23 18h1v1h-1zM27 18h1v1h-1zM28 18h1v1h-1zM2 19h1v1h-1zM3 19h1v1h-1zM4 19h1v1h-1zM5 19h1v1h-1zM11 19h1v1h-1zM14 19h1v1h-1zM17 19h1v1h-1zM18 19h1v1h-1zM19 19h1v1h-1zM20 19h1v1h-1zM21 19h1v1h-1zM24 19h1v1h-1zM27 19h1v1h-1zM28 19h1v1h-1zM0 20h1v1h-1zM4 20h1v1h-1zM5 20h1v1h-1zM6 20h1v1h-1zM7 20h1v1h-1zM9 20h1v1h-1zM10 20h1v1h-1zM11 20h1v1h-1zM15 20h1v1h-1zM16 20h1v1h-1zM20 20h1v1h-1zM21 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM24 20h1v1h-1zM26 20h1v1h-1zM8 21h1v1h-1zM11 21h1v1h-1zM14 21h1v1h-1zM16 21h1v1h-1zM18 21h1v1h-1zM19 21h1v1h-1zM20 21h1v1h-1zM24 21h1v1h-1zM26 21h1v1h-1zM27 21h1v1h-1zM28 21h1v1h-1zM0 22h1v1h-1zM1 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM9 22h1v1h-1zM11 22h1v1h-1zM12 22h1v1h-1zM16 22h1v1h-1zM18 22h1v1h-1zM20 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM27 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM9 23h1v1h-1zM10 23h1v1h-1zM11 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM18 23h1v1h-1zM20 23h1v1h-1zM24 23h1v1h-1zM25 23h1v1h-1zM26 23h1v1h-1zM28 23h1v1h-1zM0 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM6 24h1v1h-1zM10 24h1v1h-1zM17 24h1v1h-1zM20 24h1v1h-1zM21 24h1v1h-1zM22 24h1v1h-1zM23 24h1v1h-1zM24 24h1v1h-1zM27 24h1v1h-1zM28 24h1v1h-1zM0 25h1v1h-1zM2 25h1v1h-1zM3 25h1v1h-1zM4 25h1v1h-1zM6 25h1v1h-1zM8 25h1v1h-1zM9 25h1v1h-1zM10 25h1v1h-1zM11 25h1v1h-1zM13 25h1v1h-1zM17 25h1v1h-1zM20 25h1v1h-1zM21 25h1v1h-1zM22 25h1v1h-1zM23 25h1v1h-1zM24 25h1v1h-1zM25 25h1v1h-1zM26 25h1v1h-1zM27 25h1v1h-1zM0 26h1v1h-1zM2 26h1v1h-1zM3 26h1v1h-1zM4 26h1v1h-1zM6 26h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM12 26h1v1h-1zM13 26h1v1h-1zM14 26h1v1h-1zM17 26h1v1h-1zM18 26h1v1h-1zM19 26h1v1h-1zM20 26h1v1h-1zM21 26h1v1h-1zM24 26h1v1h-1zM25 26h1v1h-1zM26 26h1v1h-1zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM11 27h1v1h-1zM12 27h1v1h-1zM13 27h1v1h-1zM17 27h1v1h-1zM18 27h1v1h-1zM19 27h1v1h-1zM20 27h1v1h-1zM23 27h1v1h-1zM27 27h1v1h-1zM0 28h1v1h-1zM1 28h1v1h-1zM2 28h1v1h-1zM3 28h1v1h-1zM4 28h1v1h-1zM5 28h1v1h-1zM6 28h1v1h-1zM8 28h1v1h-1zM11 28h1v1h-1zM15 28h1v1h-1zM17 28h1v1h-1zM19 28h1v1h-1zM20 28h1v1h-1zM21 28h1v1h-1zM23 28h1v1h-1zM24 28h1v1h-1zM25 28h1v1h-1zM27 28h1v1h-1z" fill="#27403A"/></svg>
+        <div class="about-web-txt"><b>태블릿·크롬북에서는 브라우저로</b><span class="about-url" id="about-url">doguri25.github.io/yaksoknekut</span><small>설치 없이 열려요 · 인쇄는 인쇄창에서</small></div>
+      </div>
       <div class="changelog" id="changelog"></div>
       <p class="small">사진은 어디에도 저장되지 않아요.</p>
       <p class="about-lic"><b>ⓒ 2026 도구리(홍북초등학교) · CC BY-NC-ND 4.0</b><button class="lic-more" id="btn-lic">자세히</button></p>
@@ -1647,12 +1663,14 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.15.0';
-  const LAUNCHER_LATEST = '1.11.0';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
+  const APP_VERSION = '1.17.0';
+  const LAUNCHER_LATEST = '1.13.0';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
   const BUILD_DATE = '2026-09-06';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록 — 맨 위가 최신. 항목 하나가 한 줄로 표시됨. 앱 정보 창에는 최신 버전만 펼쳐지고 나머지는 '이전 기록'에 접힘
   const CHANGELOG = [
+    { v: '1.17.0', d: '2026-09-06', items: ['윈도우 앱: 실행기(또는 앱 파일)를 뒤에서 받는 동안 첫 화면 오른쪽 위에 "실행기 업데이트 중 37%"가 차오르며 보이고, 다 받으면 그 자리가 [실행기 새 버전 · 다시 시작] 단추로 바뀌어요. 준비 점검 칩과 업데이트 줄에도 (실행기 1.13.0)', '앱 정보 창의 브라우저 주소 설명을 짧게 (잘리지 않게)'] },
+    { v: '1.16.0', d: '2026-09-06', items: ['윈도우 앱: 실행기 기록 — 켜짐·업데이트 확인 결과·다시 연 이유(종료 코드)·대기열 비우기·설정 변경·오류를 launcher.log 에 한 줄씩 남기고, [문제 정보 복사]에 마지막 20줄이 들어가요 (실행기 1.12.0)', '앱 정보 창에 브라우저 버전 주소와 QR — 태블릿·크롬북은 doguri25.github.io/yaksoknekut 로 설치 없이 열어요 (인쇄는 인쇄창)'] },
     { v: '1.15.0', d: '2026-09-06', items: ['윈도우 앱: 프린터 기본 용지 확인 — 실행기가 드라이버 기본 용지(크기·방향)를 읽어 시작 도우미 2단계에 "4×6(엽서) 100×148mm ✓ / A4 — 바꿔야 해요"로 보여 줘요. 완성·인쇄 › 프린터 점검의 \'용지 확인\'을 켜면 준비 점검과 켤 때 알림에도 (기본 꺼짐 · 실행기 1.11.0)', '윈도우 앱: 윈도우 켤 때 자동 실행 — 학교·기록·앱 › 업데이트 줄 스위치. 시작 프로그램에 바로가기를 넣어 부스 PC를 켜기만 하면 약속네컷이 열려요 (기본 꺼짐)', '카메라 선이 빠지면 바로 알림 — 찍는 중이면 준비 화면으로 돌아가 "카메라를 확인해 주세요", 다시 꽂으면 저절로 이어져요. 촬영 › 사용할 카메라 줄의 \'끊기면 알림\' (기본 켬)'] },
     { v: '1.14.1', d: '2026-09-06', items: ['완료 화면 인쇄 안내에서 "다음 친구 준비!" 문구 제거 — "사진은 약 40초 뒤 프린터에서 나와요"만'] },
     { v: '1.14.0', d: '2026-09-06', items: ['완료 화면에 인쇄 안내 한 줄 — "사진은 약 40초 뒤 프린터에서 나와요 · 다음 친구 준비!" (매수만큼 더). 윈도우 앱에서 대기열에 앞선 사진이 있으면 "앞에 사진 ○장이 있어서 조금 더 걸려요 · 약 ○분 뒤" — 아이들이 프린터 앞에 몰려 서 있지 않게', '내부 정리: 테스트를 기능별 18묶음으로 다시 나누고 브라우저 3개로 나눠 돌려 9분 → 4분쯤'] },
@@ -1789,6 +1807,7 @@
   const PMODE_MSG = (location.search.match(/[?&]pmode=([^&]+)/) || [])[1];
   const RELAUNCHED = /[?&]relaunch=1/.test(location.search);   // 실행기가 '크롬이 뜻하지 않게 닫혀서' 다시 연 경우
   const DEFAULT_UPDATE_URL = 'https://raw.githubusercontent.com/doguri25/yaksoknekut/master/index.html';   // 이 저장소의 최신 앱 파일
+  const WEB_URL = 'https://doguri25.github.io/yaksoknekut/';   // 브라우저 버전 (GitHub Pages) — 앱 정보 창의 주소·QR
   // 기기 종류 (음성·인쇄 방식을 기기에 맞게 고르는 데 씀)
   const UA = navigator.userAgent || '';
   const DEV = (() => {
@@ -2729,6 +2748,7 @@
 
   /* ===================== 로고 · 앱 정보 ===================== */
   $('#about-ver').textContent = `버전 ${APP_VERSION} · ${BUILD_DATE}`;
+  $('#about-url').textContent = WEB_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const latestItems = CHANGELOG[0].items.slice(0, 3), more = CHANGELOG[0].items.length - latestItems.length;
   $('#changelog').innerHTML = `<div class="cl-latest"><b>최근 수정 (${CHANGELOG[0].v})</b><ul>${latestItems.map(t => `<li>${t}</li>`).join('')}${more > 0 ? `<li class="more">외 ${more}가지 — 이전 기록에서 전체 보기</li>` : ''}</ul></div>` +
     (CHANGELOG.length > 1 ? `<details><summary>이전 기록 ${CHANGELOG.length - 1}건</summary>${CHANGELOG.slice(1).map(c => `<div class="cl-old"><b>${c.v}</b> <em>${c.d}</em><ul>${c.items.map(t => `<li>${t}</li>`).join('')}</ul></div>`).join('')}</details>` : '');
@@ -2928,8 +2948,25 @@
   const RESTART_IDLE_MS = 3 * 60000, RESTART_COUNT = 10;
   const updWhat = () => updKind === 'app' ? '새 버전' : '새 실행기';
   function restartNow() { flushSettings(true); toast(`${updWhat()}으로 다시 시작해요… 잠시 뒤 다시 열려요`, 5000); setTimeout(() => { location.href = LOCAL + '/update/restart'; }, 400); }
+  // 받는 중 (실행기 1.13.0+): 오른쪽 위 단추 자리에 "실행기 업데이트 중 37%", 준비 점검 칩·업데이트 줄에도. 끝나면 setExeReady 로 [다시 시작] 단추가 됨
+  let updBusy = null;   // { kind: 'exe'|'app', ver, pct }
+  function setUpdBusy(b) {
+    const was = updBusy; updBusy = b && b.kind ? { kind: b.kind, ver: b.ver || '', pct: Math.max(0, Math.min(99, +b.pct || 0)) } : null;
+    const app = $('#app'), btn = $('#btn-restart');
+    if (updBusy && !exeReady) {
+      app.classList.add('exebusy'); btn.style.setProperty('--pct', updBusy.pct + '%');
+      $('#btn-restart-text').textContent = `${updBusy.kind === 'app' ? '앱' : '실행기'} 업데이트 중 ${updBusy.pct}%`;
+      const chip = document.getElementById('chk-updbusy'); if (chip) chip.querySelector('span').textContent = `${updBusy.kind === 'app' ? '앱' : '실행기'} ${updBusy.ver} 받는 중 ${updBusy.pct}%`;
+      const row = document.getElementById('upd-busy'); if (row) row.textContent = `${updBusy.kind === 'app' ? '앱' : '실행기'} ${updBusy.ver} 받는 중 ${updBusy.pct}%`;
+      if (!was && current === 's10') refreshTeacherKeep();
+    } else {
+      app.classList.remove('exebusy'); btn.style.removeProperty('--pct');
+      if (was && !exeReady) { const chip = document.getElementById('chk-updbusy'); if (chip) chip.remove(); const row = document.getElementById('upd-busy'); if (row) row.textContent = ''; }
+    }
+  }
+  function refreshTeacherKeep() { const el = $('#teacher'); const y = el.querySelector('#tmain') ? el.querySelector('#tmain').scrollTop : 0; ENTER.s10(); if (el.querySelector('#tmain')) el.querySelector('#tmain').scrollTop = y; }
   function setExeReady(v, kind) {
-    if (!v || exeReady === v) return; exeReady = v; updKind = kind || 'exe';
+    if (!v || exeReady === v) return; exeReady = v; updKind = kind || 'exe'; setUpdBusy(null);
     $('#app').classList.add('exeready'); $('#restart-v').textContent = v; $('#restart-what').textContent = updWhat(); $('#btn-restart-text').textContent = (updKind === 'app' ? '새 버전' : '실행기 새 버전') + ' · 다시 시작';
     toast(`${updKind === 'app' ? '새 버전' : '실행기'} ${v} 준비됐어요 — 오른쪽 위 [다시 시작]을 누르면 적용돼요 (안 눌러도 다음에 켤 때 적용)`, 7000);
     if (current === 's10') { const el = $('#teacher'); const y = el.querySelector('#tmain') ? el.querySelector('#tmain').scrollTop : 0; ENTER.s10(); if (el.querySelector('#tmain')) el.querySelector('#tmain').scrollTop = y; }
@@ -2943,7 +2980,17 @@
   $('#btn-restart-now').addEventListener('click', e => { e.stopPropagation(); pop(); if (restartT) { clearInterval(restartT); restartT = null; } $('#restart-ask').classList.remove('on'); restartNow(); });
   $('#btn-restart-later').addEventListener('click', e => { e.stopPropagation(); pop(); restartCancel(); toast('다음에 켤 때 새 실행기로 켜져요'); });
   $('#restart-ask').addEventListener('click', e => { if (e.target === e.currentTarget) restartCancel(); });   // 바깥을 만져도 취소
-  if (KIOSK && QUIT_PORT && LV) { const poll = () => localJson('/update/status').then(j => { if (j && j.exeReady) setExeReady(j.exeReady, 'exe'); else if (j && j.htmlReady) setExeReady(j.htmlReady, 'app'); }).catch(() => {}); setTimeout(poll, 25000); setInterval(poll, 60000); }
+  // 실행기에 새 버전 준비·받는 중 상태 묻기: 켠 지 3초에 한 번, 받는 중이면 2초마다, 아니면 60초마다
+  if (KIOSK && QUIT_PORT && LV) {
+    let pollT = null;
+    const poll = () => localJson('/update/status').then(j => {
+      if (!j) return;
+      if (j.exeReady) setExeReady(j.exeReady, 'exe'); else if (j.htmlReady) setExeReady(j.htmlReady, 'app');
+      setUpdBusy(j.busy || null);
+      clearTimeout(pollT); pollT = setTimeout(poll, j.busy ? 2000 : 60000);
+    }).catch(() => { clearTimeout(pollT); pollT = setTimeout(poll, 60000); });
+    pollT = setTimeout(poll, 3000);
+  }
   // 가만히 두면 자동 잠금 (교사 메뉴 › 학교·기록·앱 › '가만히 두면 잠금', 기본 안 함)
   let lastActive = Date.now();
   ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { lastActive = Date.now(); }, true));
@@ -3847,6 +3894,7 @@
         if (d.printer) L.push(`프린터: ${d.printer.name || '-'} · ${d.printer.error || d.printer.detail || d.printer.status}${d.printer.fixed ? ' · 크롬 기억 프린터를 기본 프린터로 맞춤' : ''}`);
         if (d.queue) L.push(`대기열: ${d.queue.error || `${d.queue.jobs}장 · ${d.queue.detail}${d.queue.oldestSec ? ` · 가장 오래된 작업 ${d.queue.oldestSec}초` : ''}${d.queue.paused ? ' · 일시 중지' : ''}`}`);
         if (d.paper) L.push(`기본 용지: ${d.paper.error || `${d.paper.detail}${d.paper.form ? ` (${d.paper.form}` + (d.paper.paperId ? ` #${d.paper.paperId}` : '') + ')' : ''}`} · 자동 실행 ${d.autostart ? '켬' : '끔'} · 용지 확인 ${s.paperCheck ? '켬' : '끔'} · 카메라 끊김 알림 ${s.camWatch === false ? '끔' : '켬'}`);
+        if (Array.isArray(d.log) && d.log.length) { L.push(`실행기 기록 (마지막 ${d.log.length}줄${d.logPath ? ' · ' + d.logPath : ''}):`); d.log.forEach(l => L.push('  ' + l)); }
       } catch (e) {   // 옛 실행기: /diag 가 없음
         try { const p = await localJson('/printer/status', 5000); L.push(`프린터: ${p.name || '-'} · ${p.error || p.detail || p.status}`); } catch (e2) { L.push('실행기: 연결 안 됨 (/printer/status 실패)'); }
         try { const u = await localJson('/update/status', 4000); L.push(`업데이트: 자동 ${u.auto ? '켬' : '끔'} · 기본 주소 ${u.isDefault ? '예' : '아니오'} · 실행기 ${u.launcher}`); } catch (e3) {}
@@ -3957,7 +4005,7 @@
             <span class="tchk ${settings.volume ? 'ok' : 'warn'}"><i></i><b>소리</b><span>${['꺼짐', '작게', '보통', '크게'][settings.volume] || '보통'}${settings.volume && settings.voice ? ' · 음성' : ''}</span></span>
             <span class="tchk ok"><i></i><b>완성</b><span>${settings.output === 'board' ? '칠판에 크게' : settings.output === 'both' ? '인쇄 + 칠판' : '인쇄'}</span></span>
             <span class="tchk ${settings.lockPin ? 'ok' : 'info'}"><i></i><b>잠금</b><span>${settings.lockPin ? '설정됨' : '없음'}</span></span>
-            ${exeReady ? `<span class="tchk warn"><i></i><b>${updKind === 'app' ? '앱' : '실행기'}</b><span>새 버전 ${exeReady} 준비됨</span><button class="tlink2" data-act="exerestart">지금 다시 시작</button></span>` : ''}
+            ${exeReady ? `<span class="tchk warn"><i></i><b>${updKind === 'app' ? '앱' : '실행기'}</b><span>새 버전 ${exeReady} 준비됨</span><button class="tlink2" data-act="exerestart">지금 다시 시작</button></span>` : updBusy ? `<span class="tchk wait" id="chk-updbusy"><i></i><b>업데이트</b><span>${updBusy.kind === 'app' ? '앱' : '실행기'} ${updBusy.ver} 받는 중 ${updBusy.pct}%</span></span>` : ''}
           </div>
           <div class="tquick">
             <div class="tq wide"><h4>행사 세트 <span class="thint">세트를 고르면 그 행사의 액자·문장만 학생에게 보여요</span></h4>${setsGrid}</div>
@@ -4067,7 +4115,7 @@
               <span class="thint">설정 코드 한 줄로 다른 컴퓨터나 초기화 뒤에 복구할 수 있어요 (비밀번호·카메라는 빼고)</span>
               <div id="bk-box" style="display:none"><textarea id="bk-text" class="tinput" style="width:100%;max-width:none;height:84px;font:400 14px/1.4 var(--body-font),sans-serif;resize:none" spellcheck="false" placeholder="여기에 설정 코드를 붙여 넣으세요 (YK2.… 로 시작)"></textarea><div class="tctl" style="margin-top:6px"><button class="btn tiny" data-act="bkapply" id="bk-apply" style="display:none">이 코드로 복구</button><button class="btn sec tiny" data-act="bkclose">닫기</button><span class="thint" id="bk-msg"></span></div></div>
             </div></div>
-          ${QUIT_PORT ? row(sub('업데이트', `앱 v${APP_VERSION} · 실행기 ${LV || '옛 버전'}`), `<div class="tctl" style="flex-direction:column;align-items:stretch;gap:4px"><div class="tctl"><button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span>${exeReady ? `<button class="btn tiny" data-act="exerestart">${updKind === 'app' ? '앱' : '실행기'} ${exeReady} 준비됨 · 지금 다시 시작</button>` : ''}<button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button></div><div class="tctl"><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 자동 업데이트</span>${sw('autoRestart', settings.autoRestart !== false)}<span class="thint">새 실행기 오면 3분 쉴 때 다시 시작</span>${LV && cmpVer(LV, '1.10.0') >= 0 ? `<label class="tsw"><input type="checkbox" id="relaunch-auto" checked><i></i></label><span class="thint">닫히면 다시 열기</span>${info('h-relaunch')}` : ''}</div>${LV && cmpVer(LV, '1.11.0') >= 0 ? `<div class="tctl"><label class="tsw"><input type="checkbox" id="autostart"><i></i></label><span class="thint">윈도우 켤 때 약속네컷 자동 실행 <span id="autostart-msg"></span></span></div>` : ''}</div>`,
+          ${QUIT_PORT ? row(sub('업데이트', `앱 v${APP_VERSION} · 실행기 ${LV || '옛 버전'}`), `<div class="tctl" style="flex-direction:column;align-items:stretch;gap:4px"><div class="tctl"><button class="btn sec tiny" data-act="updcheck">업데이트 확인</button><span class="thint" id="upd-result"></span><span class="thint" id="upd-busy">${updBusy && !exeReady ? `${updBusy.kind === 'app' ? '앱' : '실행기'} ${updBusy.ver} 받는 중 ${updBusy.pct}%` : ''}</span>${exeReady ? `<button class="btn tiny" data-act="exerestart">${updKind === 'app' ? '앱' : '실행기'} ${exeReady} 준비됨 · 지금 다시 시작</button>` : ''}<button class="btn sec tiny" data-act="updback" id="upd-back" style="display:none">이전 버전으로 되돌리기</button></div><div class="tctl"><label class="tsw"><input type="checkbox" id="upd-auto"><i></i></label><span class="thint">켤 때 자동 업데이트</span>${sw('autoRestart', settings.autoRestart !== false)}<span class="thint">새 실행기 오면 3분 쉴 때 다시 시작</span>${LV && cmpVer(LV, '1.10.0') >= 0 ? `<label class="tsw"><input type="checkbox" id="relaunch-auto" checked><i></i></label><span class="thint">닫히면 다시 열기</span>${info('h-relaunch')}` : ''}</div>${LV && cmpVer(LV, '1.11.0') >= 0 ? `<div class="tctl"><label class="tsw"><input type="checkbox" id="autostart"><i></i></label><span class="thint">윈도우 켤 때 약속네컷 자동 실행 <span id="autostart-msg"></span></span></div>` : ''}</div>`,
             help('h-relaunch', "<b>닫히면 다시 열기</b>: 크롬(엣지)이 뜻하지 않게 닫히면(아이가 Alt+F4를 누름 · 브라우저가 튕김) 실행기가 2~3초 뒤 앱을 다시 열어 부스가 멈춘 채 방치되지 않게 해요. 오른쪽 위 [종료]나 이 메뉴의 [앱 종료]로 끝낸 경우는 다시 열지 않아요. <b>자동 재시작</b>: 새 실행기를 받아 두면 첫 화면에서 3분 동안 아무도 안 만질 때 10초 카운트다운 뒤 새 실행기로 켜요(만지면 취소). <b>윈도우 켤 때 자동 실행</b>(기본 꺼짐): 시작 프로그램 폴더에 약속네컷 바로가기를 넣어 컴퓨터를 켜면 앱이 저절로 열려요 — 행사 부스 PC용. 이 사용자 계정에서만이고, exe 파일을 옮겨도 다음 실행 때 바로가기를 다시 맞춰요.")) : ''}
           ${row(sub('초기화 · 도움', '초기화는 두 번 눌러요 · 인쇄 매수는 유지'), `<button class="btn sec tiny" data-act="reset" id="btn-reset">${ic('undo')} 기본 설정으로 되돌리기</button><span class="tsep"></span><button class="btn sec tiny" data-act="wizard">시작 도우미</button><button class="btn sec tiny" data-act="diag">문제 정보 복사</button>${info('h-help')}`,
             help('h-help', `<b>시작 도우미</b>: 처음 설치할 때 ① 기본 프린터 → ② 용지 4×6·테두리 없음·인쇄 크기 → ③ 테스트 인쇄·카메라를 순서대로 확인해요. <b>문제 정보 복사</b>: 앱·실행기 버전, 프린터·대기열·카메라 상태, 설정 요약, 최근 오류를 한 번에 복사해요 — 안 될 때 이 내용을 ${AUTHOR.email} 로 보내 주시면 원인을 바로 찾을 수 있어요 (사진·이름 같은 개인 정보는 들어가지 않아요).`))}
@@ -4221,7 +4269,7 @@
     window.addEventListener('unhandledrejection', e => { const r = e.reason; if (!(r instanceof Error)) return; if (BENIGN.test(r.name + ' ' + r.message)) return; showCrash(r.message); });
     window.__yaksokCrash = showCrash;   // 점검용
   })();
-  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, pollQueue, watchQueue: watchQueueAfterPrint, get queue() { return pqLast; }, diagText, openWizard, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
+  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, setUpdBusy, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, pollQueue, watchQueue: watchQueueAfterPrint, get queue() { return pqLast; }, diagText, openWizard, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV } };   // 점검용
   go('s0');
   $('#app').classList.toggle('haslock', !!settings.lockPin);
   if (settings.lockPin) showLock('unlock');   // 잠금 비밀번호가 있으면 켤 때 번호판부터
