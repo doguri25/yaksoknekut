@@ -67,6 +67,9 @@
   .changelog li::before { content: "•"; position: absolute; left: 2px; color: var(--coral); }
   .cl-latest ul { font-size: 16px; color: var(--ink); }
   .changelog details > div { max-height: 170px; }
+  .cl-all { font-size: 14px; color: var(--muted); text-align: center; padding: 2px 0 4px; border-bottom: 1px dashed var(--line); }
+  .cl-all b { font-weight: 400; color: var(--ink); word-break: break-all; }
+  .cl-all a { color: var(--coral-dark); }
   .cl-old { margin-top: 8px; font-size: 15px; color: var(--ink-2, #40534E); }
   .cl-old b { font-family: "Jua", sans-serif; font-weight: 400; color: var(--coral); font-size: 16px; }
   .cl-old em { font-style: normal; color: var(--muted); font-size: 13px; margin-left: 4px; }

@@ -87,15 +87,15 @@
     const grid = $('#sgrid'); grid.innerHTML = '';
     if (activeCat === 'promise') {
       const list = promisesFor(S.frame.set || 'promise');
-      grid.style.gridTemplateColumns = '1fr 1fr'; grid.style.gridTemplateRows = 'none'; grid.style.gridAutoRows = 'auto'; grid.style.alignContent = 'start';
-      const mk = (t, on) => { const b = document.createElement('button'); b.className = 'pbtn' + (on ? ' on' : ''); b.textContent = t || '빈칸으로 (나중에 펜으로)'; if (!t) b.classList.add('empty');
+      grid.style.gridTemplateColumns = '1fr 1fr'; grid.style.gridTemplateRows = 'none'; grid.style.gridAutoRows = 'auto'; grid.style.alignContent = 'start'; grid.classList.add('plist');
+      const mk = (t, on) => { const b = document.createElement('button'); b.className = 'pbtn' + (on ? ' on' : ''); b.textContent = t || '나중에 펜으로 쓸게요'; if (!t) b.classList.add('empty');
         b.addEventListener('click', () => { pop(); S.promiseText = t || ''; S.promiseInk = null; S.inkStrokes = []; rebuildBase(); renderDecor(); renderDrawer(); if (t) buddySay('promise'); }); return b; };
       const ib = document.createElement('button'); ib.className = 'pbtn ink' + (S.promiseInk ? ' on' : ''); ib.innerHTML = S.promiseInk ? '✎ 손글씨 다시 쓰기' : '✎ 손글씨로 쓸래요'; ib.addEventListener('click', () => { pop(); openInk(); });
       grid.appendChild(ib); grid.appendChild(mk('', !S.promiseText && !S.promiseInk)); list.forEach(t => grid.appendChild(mk(t, S.promiseText === t)));
       $('#full-note').textContent = S.promiseInk ? '손으로 쓴 약속이 약속 칸에 인쇄돼요' : '고른 문장이 약속 칸에 인쇄돼요 · 손가락으로 직접 써도 돼요'; $('#full-note').style.color = '';
       return;
     }
-    grid.style.gridTemplateColumns = ''; grid.style.gridTemplateRows = ''; grid.style.gridAutoRows = ''; grid.style.alignContent = '';
+    grid.style.gridTemplateColumns = ''; grid.style.gridTemplateRows = ''; grid.style.gridAutoRows = ''; grid.style.alignContent = ''; grid.classList.remove('plist');
     if (activeCat === 'paper') {
       const colors = [S.frame.bg].concat(PAPER_COLORS.filter(c => c.toLowerCase() !== S.frame.bg.toLowerCase()));
       colors.forEach((col, i) => {

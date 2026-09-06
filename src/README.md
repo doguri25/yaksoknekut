@@ -16,6 +16,7 @@ python3 build.py --check    # src 를 합친 결과가 지금 yaksok-necut.html 
 | `fonts/fonts.first.html` | 기본 본문 글꼴(메이플스토리체) 블록 — 스크립트 **앞**에 놓여 첫 화면부터 쓰임 |
 | `fonts/fonts.rest.html` | 나머지 본문 글꼴 8종 블록 — 스크립트 **뒤**에 놓여 첫 화면을 늦추지 않음 (교사 메뉴를 열 때 읽음) |
 | `js/NNN-이름.js` | 스크립트 — 하나의 IIFE 안에 파일 이름 순서대로 이어 붙음 (000 설정표·액자 → 010 설정 저장 → … → 190 교사 메뉴 → 200 시작) |
+| `changelog.json` | 수정 기록 전체 (맨 위가 최신). 새 버전 항목은 여기에 넣음 — `build.py` 가 최근 10개를 앱(`CHANGELOG`)에 넣고 전체를 `CHANGELOG.md` 로 씀 |
 | `tail.html` | 맨 끝 |
 
 글꼴 블록은 `fontpick/embed.py` 가 만듭니다(글꼴 원본을 KS X 1001 2,350자로 잘라 base64). 글꼴 원본 파일은 재배포 조건 때문에 저장소에 넣지 않습니다.

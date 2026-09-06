@@ -17,7 +17,8 @@
   .ink-colors button.on { box-shadow: 0 0 0 3px var(--coral); }
   .ink-tools .btn.small { min-height: 52px; font-size: 22px; }
   .pbtn.on { border-color: var(--coral); background: var(--peach); }
-  .pbtn.empty { grid-column: 1 / -1; color: var(--muted); }
+  .pbtn.empty { color: var(--muted); }   /* [손글씨로 쓸래요]와 한 줄에 (한 줄을 다 차지하면 문장 줄이 아래 안내와 겹침) */
+  .sgrid.plist { overflow-y: auto; align-content: start; padding-right: 4px; }   /* 약속 문장이 많으면(최대 12) 서랍 안에서 스크롤 — 아래 안내 글과 겹치지 않게 */
   .pbtn:active { transform: scale(.96); }
   .cbtn { border: 6px solid transparent; border-radius: 20px; cursor: pointer; min-width: 0; min-height: 0; box-shadow: inset 0 0 0 2px rgba(39,64,58,.12); touch-action: manipulation; padding: 0; }
   .cbtn.on { border-color: var(--coral); }

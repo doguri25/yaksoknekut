@@ -3,7 +3,7 @@
   $('#about-url').textContent = WEB_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const latestItems = CHANGELOG[0].items.slice(0, 3), more = CHANGELOG[0].items.length - latestItems.length;
   $('#changelog').innerHTML = `<div class="cl-latest"><b>최근 수정 (${CHANGELOG[0].v})</b><ul>${latestItems.map(t => `<li>${t}</li>`).join('')}${more > 0 ? `<li class="more">외 ${more}가지 — 이전 기록에서 전체 보기</li>` : ''}</ul></div>` +
-    (CHANGELOG.length > 1 ? `<details><summary>이전 기록 ${CHANGELOG.length - 1}건</summary>${CHANGELOG.slice(1).map(c => `<div class="cl-old"><b>${c.v}</b> <em>${c.d}</em><ul>${c.items.map(t => `<li>${t}</li>`).join('')}</ul></div>`).join('')}</details>` : '');
+    (CHANGELOG.length > 1 ? `<details><summary>이전 기록 ${CHANGELOG.length - 1}건</summary><div class="cl-all">앱에는 최근 ${CHANGELOG.length}개만 · 전체 기록은 ${KIOSK || BRIDGE ? `<b>${CHANGELOG_URL.replace(/^https?:\/\//, '')}</b>` : `<a href="${CHANGELOG_URL}" target="_blank" rel="noopener">GitHub의 CHANGELOG.md</a>`}</div>${CHANGELOG.slice(1).map(c => `<div class="cl-old"><b>${c.v}</b> <em>${c.d}</em><ul>${c.items.map(t => `<li>${t}</li>`).join('')}</ul></div>`).join('')}</details>` : '');
   $('#about-list').innerHTML = `<dt>제작</dt><dd>${AUTHOR.name}</dd><dt>소속</dt><dd>${AUTHOR.org}</dd><dt>연락처</dt><dd>${AUTHOR.email}</dd>${KIOSK ? `<dt>실행기</dt><dd>${LV || '옛 버전'}</dd>` : ''}`;
   const openAbout = e => { e.stopPropagation(); pop(); $('#about').classList.add('on'); };
   $('#brand').addEventListener('click', openAbout);
