@@ -93,6 +93,7 @@
   .tq.wide { grid-column: 1 / span 2; }
   .tq h4 { margin: 0; font: 21px "Jua", sans-serif; font-weight: 400; display: flex; align-items: center; gap: 8px; }
   .tq h4 .thint { margin-left: auto; }
+  .tq h4 .tq-voice { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }   /* 소리 카드 제목 줄의 음성 안내 스위치 (5단계 소리 크기와 한 줄에 안 들어가서) */
   .tq .seg { flex: none; }
   .ttoday { display: flex; gap: 22px; align-items: center; margin-top: 12px; padding: 10px 18px; border-radius: 14px; background: #fff; border: 1px solid var(--line); }
   .ttoday b { font: 26px "Jua", sans-serif; color: var(--coral); margin-right: 6px; }

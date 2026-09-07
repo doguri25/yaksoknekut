@@ -1,5 +1,3 @@
-//go:build windows
-
 package main
 
 // 실행기 기록 — %LOCALAPPDATA%\YaksokNecut\launcher.log 에 켜짐·업데이트·다시 연 이유·대기열 비우기·오류를 한 줄씩.

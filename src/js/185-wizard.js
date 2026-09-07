@@ -122,6 +122,7 @@
         if (d.printer) L.push(`프린터: ${d.printer.name || '-'} · ${d.printer.error || d.printer.detail || d.printer.status}${d.printer.fixed ? ' · 크롬 기억 프린터를 기본 프린터로 맞춤' : ''}`);
         if (d.queue) L.push(`대기열: ${d.queue.error || `${d.queue.jobs}장 · ${d.queue.detail}${d.queue.oldestSec ? ` · 가장 오래된 작업 ${d.queue.oldestSec}초` : ''}${d.queue.paused ? ' · 일시 중지' : ''}`}`);
         if (d.paper) L.push(`기본 용지: ${d.paper.error || `${d.paper.detail}${d.paper.form ? ` (${d.paper.form}` + (d.paper.paperId ? ` #${d.paper.paperId}` : '') + ')' : ''}`} · 자동 실행 ${d.autostart ? '켬' : '끔'} · 용지 확인 ${s.paperCheck ? '켬' : '끔'} · 카메라 끊김 알림 ${s.camWatch === false ? '끔' : '켬'}`);
+        if (d.tts) L.push(`실행기 음성: ${d.tts.error ? '실패 — ' + d.tts.error : d.tts.voices && d.tts.voices.length ? `목소리 ${d.tts.voices.join(', ')} · 만든 문장 ${d.tts.cached}개${d.tts.running ? ' · 엔진 켜짐' : ''}` : '아직 안 씀'} · 앱 쪽 ${loudOn() ? `매우 크게 사용 중 (재생 ${loud.hits}번, 실패 ${loud.fails}번${loud.fail ? ' · ' + loud.fail : ''})` : '안 씀'}`);
         if (Array.isArray(d.log) && d.log.length) { L.push(`실행기 기록 (마지막 ${d.log.length}줄${d.logPath ? ' · ' + d.logPath : ''}):`); d.log.forEach(l => L.push('  ' + l)); }
       } catch (e) {   // 옛 실행기: /diag 가 없음
         try { const p = await localJson('/printer/status', 5000); L.push(`프린터: ${p.name || '-'} · ${p.error || p.detail || p.status}`); } catch (e2) { L.push('실행기: 연결 안 됨 (/printer/status 실패)'); }

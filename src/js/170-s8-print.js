@@ -51,7 +51,7 @@
       const src = a.createBufferSource(); src.buffer = buf;
       const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1400 + Math.random() * 1800; f.Q.value = .8;
       const g = a.createGain(); g.gain.value = (.18 + Math.random() * .22) * vol();
-      src.connect(f); f.connect(g); g.connect(a.destination); src.start(a.currentTime + Math.random() * 1.6);
+      src.connect(f); f.connect(g); g.connect(aout(a)); src.start(a.currentTime + Math.random() * 1.6);
     }
   }
   // 완성 사진을 칠판(화면 전체)에 크게 보여 주기 — 시간이 지나거나 화면을 누르면 끝

@@ -5,12 +5,18 @@
     if (actx && actx.state === 'suspended') actx.resume();
     return actx;
   }
-  const vol = () => [0, .35, .7, 1][settings.volume] || 0;
+  const vol = () => [0, .35, .7, 1, 2][settings.volume] || 0;   // 0 꺼짐 · 1 작게 · 2 보통 · 3 크게 · 4 매우 크게(소리가 작은 노트북 — 2배, 찌그러지지 않게 리미터 통과)
+  let limiter = null;
+  function aout(a) {   // 소리가 나가는 곳 — '매우 크게'면 리미터(컴프레서)를 거쳐 스피커로
+    if (vol() <= 1) return a.destination;
+    if (!limiter) { limiter = a.createDynamicsCompressor(); limiter.threshold.value = -10; limiter.knee.value = 8; limiter.ratio.value = 8; limiter.attack.value = .003; limiter.release.value = .12; limiter.connect(a.destination); }
+    return limiter;
+  }
   function tone(f, dur, type, g, when) {
     if (!vol()) return; const a = audio(); if (!a) return;
     const o = a.createOscillator(), gn = a.createGain();
     o.type = type || 'sine'; o.frequency.value = f;
-    o.connect(gn); gn.connect(a.destination);
+    o.connect(gn); gn.connect(aout(a));
     const t = a.currentTime + (when || 0);
     gn.gain.setValueAtTime(0.0001, t);
     gn.gain.linearRampToValueAtTime((g || .25) * vol(), t + .01);
@@ -23,7 +29,7 @@
     const n = Math.floor(a.sampleRate * .03), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
     const src = a.createBufferSource(); src.buffer = buf; const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 3000; f.Q.value = 1;
-    const g = a.createGain(); g.gain.value = .8 * vol(); src.connect(f); f.connect(g); g.connect(a.destination); src.start();
+    const g = a.createGain(); g.gain.value = .8 * vol(); src.connect(f); f.connect(g); g.connect(aout(a)); src.start();
   }
   const beepGo = () => tone(1320, .3);
   const pop = () => tone(620, .08, 'square', .07);
@@ -52,6 +58,45 @@
     for (const g of groups) for (const re of VOICE_PREF) { const m = g.find(v => re.test(v.name)); if (m) return m; }
     return groups[0][0] || ko[0];
   }
+  /* ---------- '매우 크게'의 음성 안내 — 브라우저 음성(speechSynthesis)은 스피커로 바로 나가 앱이 키울 수 없고 상한이 기기 최대(1.0).
+     윈도우 앱(실행기 1.15.0+)에서는 실행기가 윈도우 음성 엔진(크롬과 같은 목소리)으로 만든 WAV 를 받아 효과음처럼 2배 + 리미터로 튼다.
+     안내 문장은 7개로 고정이라 켤 때(와 매우 크게로 바꿀 때) 미리 만들어 두어 말할 때 기다리지 않는다. 실행기가 못 만들면 브라우저 음성으로. ---------- */
+  const LOUD_TTS = !!(QUIT_PORT && LV && cmpVer(LV, '1.15.0') >= 0 && !BRIDGE);
+  const loudOn = () => LOUD_TTS && settings.volume === 4 && !!settings.voice;
+  const loud = { bufs: {}, pending: {}, src: null, seq: 0, fails: 0, fail: '', warmed: null, hits: 0 };
+  const voiceHint = () => { const n = settings.voiceName || (pickVoice() || {}).name || ''; const m = n.match(/Microsoft\s+([A-Za-z]+)/i); return m ? m[1] : ''; };   // "Microsoft Heami - Korean" → Heami (실행기가 같은 이름의 목소리를 고름)
+  function loudFetch(text) {   // 실행기에서 WAV 를 받아 디코드 — 같은 문장은 한 번만
+    if (loud.bufs[text]) return Promise.resolve(loud.bufs[text]);
+    if (loud.pending[text]) return loud.pending[text];
+    const a = audio(); if (!a) return Promise.reject(new Error('오디오 없음'));
+    const opt = (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? { signal: AbortSignal.timeout(25000) } : {};
+    const p = fetch(`${LOCAL}/tts?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voiceHint())}`, opt)
+      .then(r => { if (!r.ok) return r.json().catch(() => ({})).then(j => { throw new Error(j.error || ('HTTP ' + r.status)); }); return r.arrayBuffer(); })
+      .then(ab => a.decodeAudioData(ab))
+      .then(buf => { loud.bufs[text] = buf; loud.fails = 0; loud.fail = ''; return buf; })
+      .catch(e => { loud.fails++; loud.fail = (e && e.message) || '실패'; throw e; })
+      .finally(() => { delete loud.pending[text]; });
+    loud.pending[text] = p; return p;
+  }
+  function loudStop() { if (loud.src) { try { loud.src.stop(); } catch (e) {} loud.src = null; } }
+  function loudPlay(buf) {
+    const a = audio(); if (!a) return; loudStop();
+    const src = a.createBufferSource(), g = a.createGain(); src.buffer = buf; g.gain.value = vol(); src.connect(g); g.connect(aout(a));
+    src.onended = () => { if (loud.src === src) loud.src = null; }; src.start(); loud.src = src; loud.hits++;
+  }
+  function speakLoud(text) {
+    try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+    const my = ++loud.seq;
+    loudFetch(text).then(b => { if (loud.seq === my) { loudPlay(b); ttsStatus = '실행기 음성'; } })
+      .catch(() => { if (loud.seq === my) { ttsStatus = '실행기 음성 실패(' + loud.fail + ') → 브라우저 음성'; speakBrowser(text); } });
+  }
+  // 안내 문장 7개를 미리 만들어 둠 — 켤 때·매우 크게로 바꿀 때·목소리를 바꿀 때 (목소리가 바뀌면 다시)
+  function warmLoud(force) {   // force: 교사가 매우 크게를 다시 고름 — 실패 기록을 잊고 빠진 문장을 다시 시도
+    if (!loudOn()) return; const h = voiceHint(); if (loud.warmed === h && !force) return;
+    if (loud.warmed !== null && loud.warmed !== h) loud.bufs = {};   // 목소리가 바뀜 — 전에 만든 소리는 버림
+    loud.warmed = h; loud.fails = 0; loud.fail = '';
+    Object.values(VOICE).reduce((p, t) => p.then(() => loudFetch(t).catch(() => {})), Promise.resolve());
+  }
   // 첫 터치 때 한 번 빈 문장을 말하게 해서 아이패드·안드로이드의 음성 엔진을 깨움 (터치 없이 부르면 막히는 기기가 있음)
   let ttsPrimed = false;
   function primeSpeech() {
@@ -59,7 +104,12 @@
     try { speechSynthesis.resume(); const u = new SpeechSynthesisUtterance(' '); u.lang = 'ko-KR'; u.volume = 0; speechSynthesis.speak(u); } catch (e) {}
   }
   function speak(text) {
-    if (!settings.voice || !vol() || !HAS_TTS) return;
+    if (!settings.voice || !vol()) return;
+    if (loudOn() && (loud.fails < 3 || loud.bufs[text])) { speakLoud(text); return; }   // 매우 크게: 실행기가 만든 음성을 효과음처럼 2배로 (실패가 잦으면 미리 만든 문장만 쓰고 나머지는 브라우저 음성으로)
+    speakBrowser(text);
+  }
+  function speakBrowser(text) {
+    if (!HAS_TTS) return;
     if (BRIDGE && BRIDGE.speak) { try { BRIDGE.speak(text); ttsStatus = '앱 음성'; } catch (e) { ttsStatus = '앱 음성 오류'; } return; }
     try {
       if (!voices.length) loadVoices();
@@ -67,7 +117,7 @@
       const go = () => {
         try {
           speechSynthesis.resume();
-          const u = new SpeechSynthesisUtterance(text); u.lang = 'ko-KR'; u.rate = 1.0; u.pitch = 1.0; u.volume = vol();   // 음높이를 바꾸면 기계음이 심해져서 기본값 사용
+          const u = new SpeechSynthesisUtterance(text); u.lang = 'ko-KR'; u.rate = 1.0; u.pitch = 1.0; u.volume = Math.min(1, vol());   // 음높이를 바꾸면 기계음이 심해져서 기본값 사용
           const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang || 'ko-KR'; }
           u.onstart = () => { ttsStatus = '정상'; }; u.onerror = e => { ttsStatus = '오류: ' + (e.error || '알 수 없음'); };
           lastUtter = u;   // 크롬이 말하는 도중 문장을 지워 버리는 버그 방지(참조 유지)
@@ -129,17 +179,17 @@
     if (kind === 'classic') {   // 원래 셔터음: 짧은 치직
       const len = Math.floor(a.sampleRate * .12), buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
       for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
-      const src = a.createBufferSource(), gn = a.createGain(); src.buffer = buf; gn.gain.value = .5 * vol(); src.connect(gn); gn.connect(a.destination); src.start(); return;
+      const src = a.createBufferSource(), gn = a.createGain(); src.buffer = buf; gn.gain.value = .5 * vol(); src.connect(gn); gn.connect(aout(a)); src.start(); return;
     }
     const click = (t, f, len, g) => {
       const n = Math.floor(a.sampleRate * len), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
       for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 4);
       const src = a.createBufferSource(); src.buffer = buf; const flt = a.createBiquadFilter(); flt.type = 'bandpass'; flt.frequency.value = f; flt.Q.value = 1.2;
-      const gn = a.createGain(); gn.gain.value = g * vol(); src.connect(flt); flt.connect(gn); gn.connect(a.destination); src.start(a.currentTime + t);
+      const gn = a.createGain(); gn.gain.value = g * vol(); src.connect(flt); flt.connect(gn); gn.connect(aout(a)); src.start(a.currentTime + t);
     };
     click(0, 2600, .035, .9); click(.085, 1400, .07, 1);          // 찰 · 칵
     const o = a.createOscillator(), g = a.createGain(); o.type = 'sine';   // 낮은 '툭'
     o.frequency.setValueAtTime(180, a.currentTime + .085); o.frequency.exponentialRampToValueAtTime(60, a.currentTime + .17);
     g.gain.setValueAtTime(.35 * vol(), a.currentTime + .085); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .22);
-    o.connect(g); g.connect(a.destination); o.start(a.currentTime + .085); o.stop(a.currentTime + .24);
+    o.connect(g); g.connect(aout(a)); o.start(a.currentTime + .085); o.stop(a.currentTime + .24);
   }

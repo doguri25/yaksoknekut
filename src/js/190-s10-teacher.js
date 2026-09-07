@@ -67,7 +67,7 @@
     const topSet = Object.entries(td.sets || {}).sort((a, b) => b[1] - a[1])[0];
     const nextMon = MONITORS > 1 ? (MONITOR % MONITORS) + 1 : 0;
     const promiseList = promisesFor(set);
-    const voiceNote = koVoices().length ? `이 기기의 한국어 목소리 ${koVoices().length}개` : BRIDGE ? '앱 음성을 사용합니다' : DEV.android ? '한국어 목소리를 찾지 못했어요 — 태블릿 설정 › 일반(또는 접근성) › 텍스트 음성 변환에서 한국어 음성 데이터를 설치하세요' : DEV.ios ? '한국어 목소리를 찾지 못했어요 — 설정 › 손쉬운 사용 › 음성 콘텐츠 › 음성에서 한국어를 추가하세요' : '한국어 목소리를 찾지 못했어요 — 윈도우 설정 › 시간 및 언어 › 음성에서 한국어 음성을 추가하세요';
+    const voiceNote = koVoices().length ? `이 기기의 한국어 목소리 ${koVoices().length}개${loudOn() ? ' · 매우 크게: 실행기가 같은 목소리로 만든 음성' + (loud.fail ? ` (실패: ${esc(loud.fail)})` : '') : ''}` : BRIDGE ? '앱 음성을 사용합니다' : DEV.android ? '한국어 목소리를 찾지 못했어요 — 태블릿 설정 › 일반(또는 접근성) › 텍스트 음성 변환에서 한국어 음성 데이터를 설치하세요' : DEV.ios ? '한국어 목소리를 찾지 못했어요 — 설정 › 손쉬운 사용 › 음성 콘텐츠 › 음성에서 한국어를 추가하세요' : '한국어 목소리를 찾지 못했어요 — 윈도우 설정 › 시간 및 언어 › 음성에서 한국어 음성을 추가하세요';
 
     el.innerHTML = `
       <aside class="tside">
@@ -90,7 +90,7 @@
             <span class="tchk ${QUIT_PORT && LV ? (PDLG ? 'ok' : 'wait') : 'info'}" id="chk-printer"><i></i><b>프린터</b><span>${BRIDGE ? '앱 인쇄창' : QUIT_PORT && LV ? (PDLG ? '뽑을 때 선택창에서 고름' : '확인 중…') : QUIT_PORT ? '옛 실행기 — 확인 불가' : '인쇄창에서 고름'}</span></span>
             <span class="tchk ${settings.paper == null ? 'info' : settings.paper <= 5 ? 'warn' : 'ok'}"><i></i><b>인화지</b><span>${settings.paper == null ? '안 씀' : settings.paper + '장'}</span></span>
             <span class="tchk ok"><i></i><b>세트</b><span>${setName}</span></span>
-            <span class="tchk ${settings.volume ? 'ok' : 'warn'}"><i></i><b>소리</b><span>${['꺼짐', '작게', '보통', '크게'][settings.volume] || '보통'}${settings.volume && settings.voice ? ' · 음성' : ''}</span></span>
+            <span class="tchk ${settings.volume ? 'ok' : 'warn'}"><i></i><b>소리</b><span>${['꺼짐', '작게', '보통', '크게', '매우 크게'][settings.volume] || '보통'}${settings.volume && settings.voice ? ' · 음성' : ''}</span></span>
             <span class="tchk ok"><i></i><b>완성</b><span>${settings.output === 'board' ? '칠판에 크게' : settings.output === 'both' ? '인쇄 + 칠판' : '인쇄'}</span></span>
             <span class="tchk ${settings.lockPin ? 'ok' : 'info'}"><i></i><b>잠금</b><span>${settings.lockPin ? '설정됨' : '없음'}</span></span>
             ${exeReady ? `<span class="tchk warn"><i></i><b>${updKind === 'app' ? '앱' : '실행기'}</b><span>새 버전 ${exeReady} 준비됨</span><button class="tlink2" data-act="exerestart">지금 다시 시작</button></span>` : updBusy ? `<span class="tchk wait" id="chk-updbusy"><i></i><b>업데이트</b><span>${updBusy.kind === 'app' ? '앱' : '실행기'} ${updBusy.ver} 받는 중 ${updBusy.pct}%</span></span>` : ''}
@@ -99,7 +99,7 @@
             <div class="tq wide"><h4>행사 세트 <span class="thint">세트를 고르면 그 행사의 액자·문장만 학생에게 보여요</span></h4>${setsGrid}</div>
             <div class="tq"><h4>완성 사진은 ${info('h-out1')}</h4><div class="tctl">${seg('output', OUT)}</div>${help('h-out1', outHelp)}</div>
             <div class="tq"><h4>최대 인쇄 매수</h4><div class="tctl">${seg('maxCopies', [[1, '1장'], [2, '2장'], [3, '3장'], [4, '4장']])}<span class="thint">1장이면 매수 화면 생략</span></div></div>
-            <div class="tq"><h4>소리</h4><div class="tctl">${seg('volume', [[0, '꺼짐'], [1, '작게'], [2, '보통'], [3, '크게']])}<span class="tctl" style="gap:8px;flex:none;margin-left:6px"><span class="thint">음성 안내</span>${sw('voice', settings.voice)}</span></div></div>
+            <div class="tq"><h4>소리 <span class="thint tq-voice">음성 안내 ${sw('voice', settings.voice)}</span></h4><div class="tctl">${seg('volume', [[0, '꺼짐'], [1, '작게'], [2, '보통'], [3, '크게'], [4, '매우 크게']])}</div></div>
             <div class="tq"><h4>카운트다운</h4><div class="tctl">${seg('countdown', [[3, '3초'], [5, '5초']])}<span class="thint">저학년은 5초가 여유 있어요</span></div></div>
           </div>
           <div class="ttoday"><span><b>${td.done}</b>완성</span><span><b>${td.prints}</b>장 인쇄</span><span><b>${td.board || 0}</b>칠판</span><span class="thint">오늘${topSet ? ' · ' + ((FRAME_SETS.find(x => x.id === topSet[0]) || { name: topSet[0] }).name) + ' 세트' : ''}</span><button class="tlink" data-tab="app">기록 보기 →</button></div>
@@ -162,7 +162,7 @@
 
         <div class="tpage" data-pane="sound">
           <div class="thead"><h3>소리</h3><span class="tdesc">기기: <b>${DEV.label}</b>${HAS_TTS ? '' : ' · <b>이 브라우저는 음성을 지원하지 않아요</b>'}</span></div>
-          ${row('소리 크기', seg('volume', [[0, '꺼짐'], [1, '작게'], [2, '보통'], [3, '크게']]))}
+          ${row('소리 크기', `${seg('volume', [[0, '꺼짐'], [1, '작게'], [2, '보통'], [3, '크게'], [4, '매우 크게']])}<span class="thint">매우 크게: 스피커가 작은 노트북용${LOUD_TTS ? ' — 음성 안내도 실행기가 만들어 크게' : QUIT_PORT ? ' — 음성 안내까지 키우려면 새 실행기(1.15) 필요' : ' (음성 안내는 기기 최대까지)'}</span>`)}
           ${row('셔터', `${seg('shutterSound', [['classic', '기본'], ['click', '찰칵'], ['beep', '삐'], ['none', '없음']])}<button class="btn sec tiny" data-act="shuttertest">들어 보기</button>`)}
           ${row('카운트다운 소리', `${seg('countSound', [['beep', '삐'], ['tick', '틱'], ['none', '없음']])}<button class="btn sec tiny" data-act="counttest">들어 보기</button>`)}
           ${row('음성 안내', `${sw('voice', settings.voice)}<span class="thint">"카메라를 봐요" 같은 짧은 안내</span><button class="btn sec tiny" data-act="voicetest">들어 보기</button>`)}
@@ -227,10 +227,10 @@
     }));
     el.querySelectorAll('[data-help]').forEach(b => b.addEventListener('click', () => { const h = el.querySelector('#' + b.dataset.help); if (!h) return; const on = !h.classList.contains('on'); h.classList.toggle('on', on); b.classList.toggle('on', on); }));
     el.querySelectorAll('[data-set]').forEach(i => i.addEventListener('change', () => {
-      settings[i.dataset.set] = i.checked; saveSettings(); if (i.dataset.set === 'anim') applyTheme(); if (i.dataset.set === 'hiRes') { stopCamera(); camInfo = { label: '', w: 0, h: 0, note: '' }; }
+      settings[i.dataset.set] = i.checked; saveSettings(); if (i.dataset.set === 'anim') applyTheme(); if (i.dataset.set === 'hiRes') { stopCamera(); camInfo = { label: '', w: 0, h: 0, note: '' }; } if (i.dataset.set === 'voice') warmLoud();
       el.querySelectorAll(`[data-set="${i.dataset.set}"]`).forEach(x => { x.checked = i.checked; });   // 같은 설정이 두 페이지에 있으면 함께 바꿈
     }));
-    const vs = el.querySelector('#voice-sel'); if (vs) vs.addEventListener('change', () => { settings.voiceName = vs.value; saveSettings(); speak('안녕? 나는 약속네컷이야!'); });
+    const vs = el.querySelector('#voice-sel'); if (vs) vs.addEventListener('change', () => { settings.voiceName = vs.value; saveSettings(); warmLoud(); speak('안녕? 나는 약속네컷이야!'); });
     el.querySelectorAll('[data-mon]').forEach(b => b.addEventListener('click', () => { pop(); if (+b.dataset.mon !== MONITOR) moveToMonitor(+b.dataset.mon); }));
     el.querySelectorAll('[data-pmode]').forEach(b => b.addEventListener('click', () => {
       pop(); const dialog = b.dataset.pmode === 'dialog'; if (dialog === PDLG) return;
@@ -266,7 +266,7 @@
       const key = sg.dataset.seg, v = b.dataset.v; settings[key] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSettings();
       if (key === 'mirror') applyMirror();
       el.querySelectorAll(`[data-seg="${key}"] button`).forEach(x => x.classList.toggle('on', x.dataset.v === v));   // 같은 설정이 두 페이지에 있으면 함께 바꿈
-      if (key === 'volume') beep();
+      if (key === 'volume') { beep(); warmLoud(true); }
       if (key === 'frameSet') { applyTexts(); const y = main.scrollTop; ENTER.s10(); el.querySelector('#tmain').scrollTop = y; }
     })));
     el.querySelectorAll('[data-text]').forEach(i => i.addEventListener('input', () => { settings[i.dataset.text] = i.value.trim(); saveSettings(); applyTexts(); }));

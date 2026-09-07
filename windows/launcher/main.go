@@ -178,6 +178,18 @@ func main() {
 	os.MkdirAll(profDir, 0o755)
 	htmlPath := filepath.Join(appDir, "yaksok-necut.html")
 	logPath = filepath.Join(dir, "launcher.log")
+	afterUpdate := len(os.Args) > 1 && os.Args[1] == "--after-update"
+	wait := time.Duration(0)
+	if afterUpdate {
+		wait = 20 * time.Second
+	}
+	if !claimSingle(wait) { // 이미 켜져 있음 → 그 창을 앞으로 가져오고 조용히 끝냄
+		logf("중복 실행 — 이미 켜져 있어 그 창을 앞으로")
+		if !focusRunning(dir) {
+			msgbox("약속네컷이 이미 실행 중이에요.\n화면에 안 보이면 작업 표시줄에서 약속네컷(크롬) 창을 눌러 주세요.", 0x40)
+		}
+		return
+	}
 	writeFonts(appDir)
 
 	// 앱 파일: 업데이트로 받아 둔 파일이 exe에 든 것보다 새 버전이면 그대로 두고, 아니면 exe에 든 것으로 씀
@@ -333,7 +345,10 @@ func main() {
 	port := 0
 	if ln != nil {
 		port = ln.Addr().(*net.TCPAddr).Port
+		os.WriteFile(portFile(dir), []byte(strconv.Itoa(port)), 0o644) // 두 번째로 켜진 실행기가 '창을 앞으로'를 부탁할 통로
+		defer os.Remove(portFile(dir))
 	}
+	defer ttsStop() // 실행기 음성 워커(PowerShell)가 남지 않게
 
 	mons := listMonitors()
 	monIdx, _ := strconv.Atoi(cfg["monitor"])
@@ -489,6 +504,20 @@ func main() {
 				q := clearPrinterQueue()
 				logf("[대기열 비우기] — 지움 %d · 일시 중지 풂 %v · 남음 %d · %s", q.Removed, q.Resumed, q.Jobs, q.Detail)
 				jsonOut(q)
+			case "/focus": // 중복 실행된 exe 가 부름 — 켜져 있는 크롬 창을 앞으로, 그 pid 를 돌려줌
+				mu.Lock()
+				c := cur
+				mu.Unlock()
+				pid := 0
+				if c != nil && c.Process != nil {
+					pid = c.Process.Pid
+					bringToFront(uint32(pid))
+				}
+				logf("중복 실행 요청 — 창을 앞으로 (pid %d)", pid)
+				w.Header().Set("Content-Type", "text/plain")
+				fmt.Fprint(w, pid)
+			case "/tts", "/tts/info": // 매우 크게 — 실행기가 윈도우 음성 엔진으로 만든 안내 음성(WAV)
+				serveTTS(w, r)
 			case "/log": // 실행기 기록 마지막 n줄
 				n, _ := strconv.Atoi(r.URL.Query().Get("n"))
 				if n <= 0 || n > 200 {
@@ -516,7 +545,7 @@ func main() {
 					}
 				}
 				mu.Unlock()
-				jsonOut(map[string]interface{}{"launcher": launcherVer, "dir": dir, "exe": exePath, "browser": browserName, "config": cfgCopy, "relaunches": cc, "uptimeSec": int(time.Since(startedAt) / time.Second), "monitors": len(mons), "monitor": monIdx, "embedded": embeddedVer, "current": curVer, "printer": printerStatus(), "queue": printerQueue(), "paper": printerPaper(), "autostart": autostartOn(), "log": lastLogLines(20), "logPath": logPath})
+				jsonOut(map[string]interface{}{"launcher": launcherVer, "dir": dir, "exe": exePath, "browser": browserName, "config": cfgCopy, "relaunches": cc, "uptimeSec": int(time.Since(startedAt) / time.Second), "monitors": len(mons), "monitor": monIdx, "embedded": embeddedVer, "current": curVer, "printer": printerStatus(), "queue": printerQueue(), "paper": printerPaper(), "autostart": autostartOn(), "tts": ttsInfo(), "log": lastLogLines(20), "logPath": logPath})
 			case "/settings/save": // 앱 설정 사본 — 크롬 저장소가 미처 못 쓴 채 꺼져도 다음 실행에 되살림
 				body, _ := io.ReadAll(io.LimitReader(r.Body, 1<<20))
 				if len(body) > 1 && body[0] == '{' {
@@ -719,7 +748,7 @@ func main() {
 			if exeMsg != "" {
 				os.WriteFile(pendingPath, []byte(exeMsg), 0o644) // 새 실행기가 켜지면 앱에 알림
 			}
-			nc := exec.Command(exePath)
+			nc := exec.Command(exePath, "--after-update") // 새 실행기는 이 프로세스가 끝나 뮤텍스를 놓을 때까지 잠시 기다렸다 켜짐
 			nc.Dir = filepath.Dir(exePath)
 			if nc.Start() == nil {
 				return
