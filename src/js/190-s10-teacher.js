@@ -162,7 +162,8 @@
 
         <div class="tpage" data-pane="sound">
           <div class="thead"><h3>소리</h3><span class="tdesc">기기: <b>${DEV.label}</b>${HAS_TTS ? '' : ' · <b>이 브라우저는 음성을 지원하지 않아요</b>'}</span></div>
-          ${row('소리 크기', `${seg('volume', [[0, '꺼짐'], [1, '작게'], [2, '보통'], [3, '크게'], [4, '매우 크게']])}<span class="thint">매우 크게: 스피커가 작은 노트북용${LOUD_TTS ? ' — 음성 안내도 실행기가 만들어 크게' : QUIT_PORT ? ' — 음성 안내까지 키우려면 새 실행기(1.15) 필요' : ' (음성 안내는 기기 최대까지)'}</span>`)}
+          ${row('소리 크기', `${seg('volume', [[0, '꺼짐'], [1, '작게'], [2, '보통'], [3, '크게'], [4, '매우 크게']])}<span class="thint">매우 크게: 스피커가 작은 노트북용 — 효과음 2배, 음성 안내는 기기 최대까지</span>`)}
+          ${row(sub('음성도 실행기로 크게', '매우 크게일 때'), `${LOUD_TTS ? sw('loudTts', settings.loudTts === true) : ''}<span class="thint">${LOUD_TTS ? '켜면 음성 안내를 실행기가 윈도우 목소리(해미)로 만들어 효과음처럼 2배로 틀어요 — 인터넷이 없어 크롬도 해미 목소리를 쓰는 컴퓨터용. 꺼짐(기본)이면 크롬 목소리 그대로' : QUIT_PORT ? '새 실행기(1.15)에서 쓸 수 있어요' : '윈도우 앱에서만'}</span>`)}
           ${row('셔터', `${seg('shutterSound', [['classic', '기본'], ['click', '찰칵'], ['beep', '삐'], ['none', '없음']])}<button class="btn sec tiny" data-act="shuttertest">들어 보기</button>`)}
           ${row('카운트다운 소리', `${seg('countSound', [['beep', '삐'], ['tick', '틱'], ['none', '없음']])}<button class="btn sec tiny" data-act="counttest">들어 보기</button>`)}
           ${row('음성 안내', `${sw('voice', settings.voice)}<span class="thint">"카메라를 봐요" 같은 짧은 안내</span><button class="btn sec tiny" data-act="voicetest">들어 보기</button>`)}
@@ -227,7 +228,7 @@
     }));
     el.querySelectorAll('[data-help]').forEach(b => b.addEventListener('click', () => { const h = el.querySelector('#' + b.dataset.help); if (!h) return; const on = !h.classList.contains('on'); h.classList.toggle('on', on); b.classList.toggle('on', on); }));
     el.querySelectorAll('[data-set]').forEach(i => i.addEventListener('change', () => {
-      settings[i.dataset.set] = i.checked; saveSettings(); if (i.dataset.set === 'anim') applyTheme(); if (i.dataset.set === 'hiRes') { stopCamera(); camInfo = { label: '', w: 0, h: 0, note: '' }; } if (i.dataset.set === 'voice') warmLoud();
+      settings[i.dataset.set] = i.checked; saveSettings(); if (i.dataset.set === 'anim') applyTheme(); if (i.dataset.set === 'hiRes') { stopCamera(); camInfo = { label: '', w: 0, h: 0, note: '' }; } if (i.dataset.set === 'voice' || i.dataset.set === 'loudTts') warmLoud(true);
       el.querySelectorAll(`[data-set="${i.dataset.set}"]`).forEach(x => { x.checked = i.checked; });   // 같은 설정이 두 페이지에 있으면 함께 바꿈
     }));
     const vs = el.querySelector('#voice-sel'); if (vs) vs.addEventListener('change', () => { settings.voiceName = vs.value; saveSettings(); warmLoud(); speak('안녕? 나는 약속네컷이야!'); });

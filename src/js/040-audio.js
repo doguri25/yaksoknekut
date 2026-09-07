@@ -59,10 +59,11 @@
     return groups[0][0] || ko[0];
   }
   /* ---------- '매우 크게'의 음성 안내 — 브라우저 음성(speechSynthesis)은 스피커로 바로 나가 앱이 키울 수 없고 상한이 기기 최대(1.0).
-     윈도우 앱(실행기 1.15.0+)에서는 실행기가 윈도우 음성 엔진(크롬과 같은 목소리)으로 만든 WAV 를 받아 효과음처럼 2배 + 리미터로 튼다.
+     기본은 그대로(크롬의 구글 목소리 등 좋은 목소리 유지). 소리 › '음성도 실행기로 크게'를 켠 윈도우 앱(실행기 1.15.0+)에서만
+     실행기가 윈도우 음성 엔진(해미)으로 만든 WAV 를 받아 효과음처럼 2배 + 리미터로 튼다 — 인터넷이 없어 크롬도 해미를 쓰는 컴퓨터용.
      안내 문장은 7개로 고정이라 켤 때(와 매우 크게로 바꿀 때) 미리 만들어 두어 말할 때 기다리지 않는다. 실행기가 못 만들면 브라우저 음성으로. ---------- */
   const LOUD_TTS = !!(QUIT_PORT && LV && cmpVer(LV, '1.15.0') >= 0 && !BRIDGE);
-  const loudOn = () => LOUD_TTS && settings.volume === 4 && !!settings.voice;
+  const loudOn = () => LOUD_TTS && settings.volume === 4 && !!settings.voice && settings.loudTts === true;   // 기본 꺼짐 — 매우 크게라도 음성은 브라우저(크롬) 목소리 그대로(기기 최대까지). 켜면 실행기가 윈도우 목소리로 만들어 2배로
   const loud = { bufs: {}, pending: {}, src: null, seq: 0, fails: 0, fail: '', warmed: null, hits: 0 };
   const voiceHint = () => { const n = settings.voiceName || (pickVoice() || {}).name || ''; const m = n.match(/Microsoft\s+([A-Za-z]+)/i); return m ? m[1] : ''; };   // "Microsoft Heami - Korean" → Heami (실행기가 같은 이름의 목소리를 고름)
   function loudFetch(text) {   // 실행기에서 WAV 를 받아 디코드 — 같은 문장은 한 번만
