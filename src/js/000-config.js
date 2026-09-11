@@ -269,9 +269,9 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.19.1';
+  const APP_VERSION = '1.19.2';
   const LAUNCHER_LATEST = '1.15.0';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
-  const BUILD_DATE = '2026-09-07';
+  const BUILD_DATE = '2026-09-11';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록은 src/changelog.json 에 (맨 위가 최신). build.py 가 최근 10개만 여기에 넣고, 전체는 저장소의 CHANGELOG.md 로 씀 — 앱 파일이 기록 때문에 계속 커지지 않게
   const CHANGELOG = /*@@CHANGELOG@@*/[];

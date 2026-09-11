@@ -1,5 +1,5 @@
   /* ===================== 설정 (사진은 저장하지 않음) ===================== */
-  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', autoRestart: true, showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, retakeOne: false, stamp: false, queueWatch: true, paperCheck: false, camWatch: true, loudTts: false, hero: {}, promises: {}, promiseLabels: {} };
+  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', autoRestart: true, showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, retakeOne: false, stamp: false, queueWatch: false, paperCheck: false, camWatch: true, loudTts: false, hero: {}, promises: {}, promiseLabels: {} };
   /* 저장 위치 — 브라우저 저장소(localStorage) + 윈도우 앱이면 실행기 파일(settings.json).
      학교 컴퓨터는 크롬이 닫힐 때 사이트 데이터를 지우는 정책이 걸려 있거나 저장소 쓰기가 막힌 경우가 있어,
      윈도우 앱에서는 실행기에 둔 사본을 먼저 믿고 켤 때 되살린다. */
@@ -13,7 +13,14 @@
       try { const x = new XMLHttpRequest(); x.open('GET', LOCAL + '/settings/load', false); x.send(); if (x.status === 200 && x.responseText && x.responseText !== 'null') mirror = JSON.parse(x.responseText); STORE.where = '실행기 파일 + 브라우저'; } catch (e) { STORE.where = '브라우저 (실행기 연결 안 됨)'; }
       if (mirror && typeof mirror === 'object' && (!local || (mirror._ts || 1) >= (local._ts || 0))) { STORE.restored = !local || (mirror._ts || 1) > (local._ts || 0); local = mirror; }
     }
-    return Object.assign({}, DEFAULTS, local || {});
+    return migrate(Object.assign({}, DEFAULTS, local || {}));
+  }
+  // 예전 버전에서 저장한 설정을 새 기본값에 맞춤 (한 번만 — _mig 로 표시)
+  //  1: 대기열 감시 기본 켬→끔 (1.19.2). 1.13.1~1.19.1 은 켬이 기본이라 저장된 설정에 켬이 들어 있음 — 행사장에서 인쇄가 밀리면 "멈춘 것 같아요"가 잘못 떠서 끔으로
+  function migrate(s) {
+    const m = +s._mig || 0;
+    if (m < 1 && s.queueWatch === true) s.queueWatch = false;
+    s._mig = 1; return s;
   }
   if (QUIT_PORT && LV && STORE.restored) { try { localStorage.setItem('yaksok-settings', JSON.stringify(settings)); } catch (e) {} }
   let mirrorT = null;
@@ -51,7 +58,7 @@
   }
   function applyBackup(o) {
     const keep = {}; BACKUP_SKIP.forEach(k => { if (k in settings) keep[k] = settings[k]; });
-    delete o._v; delete o._d; settings = Object.assign({}, DEFAULTS, o, keep); saveSettings(); applyTexts(); applyTheme();
+    delete o._v; delete o._d; settings = migrate(Object.assign({}, DEFAULTS, o, keep)); saveSettings(); applyTexts(); applyTheme();
   }
   const storeText = () => QUIT_PORT ? (LV ? `실행기 v${LV} · 사본 ${STORE.mirror || (STORE.restored ? '복구됨' : '아직 없음')}` : '옛 실행기 — 브라우저에만 저장돼요. 새 약속네컷.exe로 바꾸면 실행기 파일에도 보관해요') : '이 브라우저의 사이트 데이터에 저장돼요';
   window.addEventListener('pagehide', () => flushSettings(true));

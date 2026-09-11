@@ -104,10 +104,21 @@
   // 프린터는 '준비됨'인데 작업이 한참 그대로면(스풀러 멈춤·일시 중지·오프라인 — 행사장에서 가장 흔한 사고) "인쇄가 멈춘 것 같아요" + [대기열 비우기]
   const QUEUE_OK = !!(QUIT_PORT && LV && cmpVer(LV, '1.10.0') >= 0);
   let pqT = null, pqSeen = 0, pqUntil = 0, pqAlert = false, pqLast = null, pqAt = 0;
+  // 멈춤 판정은 '가장 오래된 작업의 나이'가 아니라 '진행이 없는 시간'으로 — 행사장에서 찍는 속도가 인쇄보다 빨라 대기열이 쌓이면
+  // 맨 앞 작업은 정상으로 나가고 있어도 들어온 지 몇 분이 지나 있어서, 나이로 재면 멀쩡한 프린터를 '멈춤'으로 오해함
+  let pqHead = { jobs: 0, printed: 0, oldest: 0, since: 0 };   // 마지막으로 진행이 보인 때의 모습
   const fmtSec = s => s < 60 ? `${s}초` : `${Math.floor(s / 60)}분${s % 60 ? ' ' + (s % 60) + '초' : ''}`;
   const stuckLimit = q => 90 + 50 * Math.max(0, (q.pages || 1) - 1);   // 셀피 CP1500 기준 한 장 40~60초 · 쪽수만큼 여유
+  function noProgress(q) {   // 진행(작업 수 줄어듦 · 쪽 넘어감 · 맨 앞 작업이 바뀜)이 안 보인 지 몇 초인지
+    const now = Date.now();
+    if (q.jobs === 0) { pqHead = { jobs: 0, printed: 0, oldest: 0, since: 0 }; return 0; }
+    const moved = !pqHead.since || q.jobs < pqHead.jobs || (q.printed || 0) > pqHead.printed || q.oldestSec < pqHead.oldest - 5;
+    if (moved) pqHead = { jobs: q.jobs, printed: q.printed || 0, oldest: q.oldestSec, since: now };
+    else { pqHead.jobs = Math.max(pqHead.jobs, q.jobs); pqHead.oldest = Math.max(pqHead.oldest, q.oldestSec); }   // 새 사진이 더 들어온 건 진행이 아님
+    return Math.round((now - pqHead.since) / 1000);
+  }
   function watchQueueAfterPrint() {
-    if (!QUEUE_OK || settings.queueWatch === false) return;   // 완성·인쇄 › 프린터 점검 › 대기열 감시 (기본 켬)
+    if (!QUEUE_OK || settings.queueWatch === false) return;   // 완성·인쇄 › 프린터 점검 › 대기열 감시 (기본 끔 — 1.19.2)
     pqUntil = Date.now() + 4 * 60000; pqSeen = 0;
     if (!pqT) { setTimeout(pollQueue, 1500); pqT = setInterval(pollQueue, 4000); }
   }
@@ -116,14 +127,14 @@
     let q; try { q = await localJson('/printer/queue', 3000); } catch (e) { return; }
     if (!q || q.error) return; pqLast = q; pqAt = Date.now();
     if (current === 's9') donePrintLine();   // 완료 화면의 '약 ○초 뒤 나와요' 줄을 대기열에 맞춰 갱신
-    const chip = $('#pq-chip'), stuck = q.jobs > 0 && (!!q.problem || q.oldestSec > stuckLimit(q));
+    const idle = noProgress(q), chip = $('#pq-chip'), stuck = q.jobs > 0 && (!!q.problem || idle > stuckLimit(q)); q.idleSec = idle;
     if (q.jobs > 0) { pqSeen = Math.max(pqSeen, q.jobs); chip.querySelector('span').textContent = `인쇄 중 ${q.jobs}장`; chip.classList.add('on'); chip.classList.toggle('bad', stuck); }
     else if (chip.classList.contains('on')) { chip.classList.remove('on', 'bad'); if (pqSeen) toast('사진이 다 나왔어요'); pqSeen = 0; if (pqAlert) hidePrinterAlert(); }
     if (stuck && !$('#printer-alert').classList.contains('on')) showQueueAlert(q);
     else if (pqAlert && q.jobs > 0) $('#palert-what').textContent = queueWhat(q);   // 열려 있는 알림의 시간 표시 갱신
     if (q.jobs === 0 && Date.now() > pqUntil && pqT) { clearInterval(pqT); pqT = null; }
   }
-  const queueWhat = q => (q.problem ? q.detail : `대기열에 ${q.jobs}장이 ${fmtSec(q.oldestSec)}째 그대로예요`) + (q.name ? ` (${q.name.slice(0, 24)})` : '');
+  const queueWhat = q => (q.problem ? q.detail : `대기열 ${q.jobs}장이 ${fmtSec(q.idleSec || q.oldestSec)}째 나가지 않아요`) + (q.name ? ` (${q.name.slice(0, 24)})` : '');
   function showQueueAlert(q) {
     pqAlert = true;
     $('#palert-title').textContent = '인쇄가 멈춘 것 같아요'; $('#palert-what').textContent = queueWhat(q);

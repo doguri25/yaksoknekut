@@ -32,7 +32,7 @@
     window.addEventListener('unhandledrejection', e => { const r = e.reason; if (!(r instanceof Error)) return; if (BENIGN.test(r.name + ' ' + r.message)) return; showCrash(r.message); });
     window.__yaksokCrash = showCrash;   // 점검용
   })();
-  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, changelog: CHANGELOG, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, setUpdBusy, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, pollQueue, watchQueue: watchQueueAfterPrint, get queue() { return pqLast; }, diagText, openWizard, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV, speak, warmLoud, loudOn, get loud() { return loud; } } };   // 점검용
+  window.__yaksok = { get state() { return S; }, get settings() { return settings; }, go, applyPixelFilter, FILTER_OK, version: APP_VERSION, changelog: CHANGELOG, frames: FRAMES, compose, draw: DRAW, capture, autoLevel, sharpness, setExeReady, setUpdBusy, idleFor: ms => { lastActive = Date.now() - ms; }, get exeReady() { return exeReady; }, ensureFont, ensureAllFonts, localJson, pollQueue, watchQueue: watchQueueAfterPrint, get queue() { return pqLast; }, get queueHead() { return pqHead; }, set queueHead(v) { pqHead = v; }, diagText, openWizard, tts: { pickVoice, setVoices: a => { voices = a; }, get status() { return ttsStatus; }, dev: DEV, speak, warmLoud, loudOn, get loud() { return loud; } } };   // 점검용
   go('s0');
   warmLoud();   // 매우 크게(윈도우 앱): 안내 음성 7문장을 실행기에서 미리 만들어 둠
   $('#app').classList.toggle('haslock', !!settings.lockPin);
