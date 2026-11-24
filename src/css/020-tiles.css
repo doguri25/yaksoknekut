@@ -18,4 +18,6 @@
   .big-tiles svg { width: 100%; height: auto; max-height: 280px; display: block; }
   .big-tiles .tile-name { font-size: 46px; }
   .big-tiles .tile-sub { font-size: 24px; }
+  .big-tiles.three { grid-template-columns: repeat(3, 1fr); width: 1200px; }   /* [사진만]까지 세 칸 */
+  .big-tiles.three .tile { padding: 24px 18px 20px; }
 

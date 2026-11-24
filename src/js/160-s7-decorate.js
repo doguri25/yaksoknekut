@@ -80,7 +80,7 @@
     closeInk(); rebuildBase(); renderDecor(); renderDrawer();
   });
   function renderDrawer() {
-    const cats = STICKER_CATS.filter(catOn);
+    const cats = STICKER_CATS.filter(c => catOn(c) && (c.id !== 'promise' || (S.frame && S.frame.promise)));   // 사진만 액자는 약속 칸이 없어 '약속' 탭을 숨김
     if (!cats.find(c => c.id === activeCat)) activeCat = cats.length ? cats[0].id : null;
     $('#tabs').innerHTML = cats.map(c => `<button class="tab${c.id === activeCat ? ' on' : ''}" data-cat="${c.id}">${c.name}</button>`).join('');
     $$('#tabs .tab').forEach(t => t.addEventListener('click', () => { pop(); activeCat = t.dataset.cat; renderDrawer(); }));
