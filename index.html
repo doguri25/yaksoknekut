@@ -1710,7 +1710,7 @@
   const BUILD_DATE = '2026-11-24';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록은 src/changelog.json 에 (맨 위가 최신). build.py 가 최근 10개만 여기에 넣고, 전체는 저장소의 CHANGELOG.md 로 씀 — 앱 파일이 기록 때문에 계속 커지지 않게
-  const CHANGELOG = [{"v": "1.20.0", "d": "2026-11-24", "items": ["컷 수 화면에 [사진만] 추가 — 약속(글 쓰는) 칸 없이 사진만 들어가는 두 칸·세 칸·네 칸 액자. 세 칸은 큰 사진 1장 + 작은 사진 2장이고, 사진 4장을 찍은 뒤 칸 수만큼 골라요. 세트마다 그 세트 액자의 바탕색·장식·문구를 그대로 써요", "사진만 액자에서는 꾸미기의 '약속' 탭이 안 보여요 · 교사 메뉴 › 행사 세트에서 사진만 액자도 하나씩 끌 수 있고, 셋 다 끄면 [사진만] 칸이 숨어요", "교사 메뉴 › 촬영 › 컷 수 고르기 화면을 끌 때 '사진만'으로 바로 시작할 수도 있어요 · 오늘 기록의 컷 수에 '사진만 3칸'처럼 따로 셈"]}, {"v": "1.19.2", "d": "2026-09-11", "items": ["대기열 감시 기본값을 끔으로 — 행사장에서는 찍는 속도가 인쇄보다 빨라 대기열이 쌓이는 게 정상이라, 예전 컴퓨터도 이번 업데이트 때 한 번 끔으로 맞춰요 (교사 메뉴 › 완성·인쇄 › 프린터 점검 줄에서 다시 켤 수 있음)", "대기열 감시를 켜 둔 경우 '인쇄가 멈춘 것 같아요' 판정을 작업의 나이가 아니라 '진행이 없는 시간'으로 — 사진이 밀려 있어도 한 장씩 나가고 있으면 알리지 않아요"]}, {"v": "1.19.1", "d": "2026-09-07", "items": ["매우 크게에서 음성 안내는 다시 브라우저(크롬) 목소리 그대로 — 실행기가 만든 윈도우 목소리(해미)가 크롬의 구글 목소리보다 못해서. 실행기 음성은 교사 메뉴 › 소리 › '음성도 실행기로 크게' 스위치(기본 꺼짐)로 남겨 두어, 인터넷이 없어 크롬도 해미 목소리를 쓰는 컴퓨터에서만 켜면 됩니다"]}, {"v": "1.19.0", "d": "2026-09-07", "items": ["윈도우 앱: 소리 크기 '매우 크게'에서 음성 안내도 함께 커져요 — 브라우저 음성은 기기 최대를 못 넘어서, 실행기가 윈도우 음성 엔진(크롬과 같은 목소리)으로 만든 소리를 앱이 효과음처럼 2배 + 리미터로 틀어요. 안내 문장 7개는 켤 때 미리 만들어 두고, 실행기가 못 만들면 브라우저 음성으로 (실행기 1.15.0)"]}, {"v": "1.18.1", "d": "2026-09-07", "items": ["소리 크기에 '매우 크게' 추가 (교사 메뉴 › 소리, 자주 쓰는 설정) — 스피커가 작은 노트북용으로 효과음을 2배로, 찌그러지지 않게 리미터를 거쳐요. 음성 안내는 기기 최대까지"]}, {"v": "1.18.0", "d": "2026-09-07", "items": ["윈도우 앱: 중복 실행 막기 — 이미 켜져 있는데 약속네컷.exe를 또 누르면 새로 열지 않고 켜져 있는 창을 앞으로 가져와요 (실행기 1.14.0)"]}, {"v": "1.17.2", "d": "2026-09-06", "items": ["앱 정보 창의 수정 기록을 최근 10개만 — 전체 기록은 저장소의 CHANGELOG.md 로 (앱 파일 10KB 가벼워짐 · 새 항목은 src/changelog.json 에)", "학교·기록·앱 › [코드로 복구]를 눌러도 크롬의 '붙여넣기 허용' 말풍선이 뜨지 않게 — 앱이 클립보드를 읽지 않고 입력칸에 Ctrl+V로 붙여 넣어요"]}, {"v": "1.17.1", "d": "2026-09-06", "items": ["꾸미기 › 약속 탭: [손글씨로 쓸래요]와 [나중에 펜으로 쓸게요]를 한 줄에 놓아 문장 줄이 아래 안내 글과 겹치던 것 수정 · 문장이 많으면(최대 12개) 서랍 안에서 스크롤"]}, {"v": "1.17.0", "d": "2026-09-06", "items": ["윈도우 앱: 실행기(또는 앱 파일)를 뒤에서 받는 동안 첫 화면 오른쪽 위에 \"실행기 업데이트 중 37%\"가 차오르며 보이고, 다 받으면 그 자리가 [실행기 새 버전 · 다시 시작] 단추로 바뀌어요. 준비 점검 칩과 업데이트 줄에도 (실행기 1.13.0)", "앱 정보 창의 브라우저 주소 설명을 짧게 (잘리지 않게)"]}, {"v": "1.16.0", "d": "2026-09-06", "items": ["윈도우 앱: 실행기 기록 — 켜짐·업데이트 확인 결과·다시 연 이유(종료 코드)·대기열 비우기·설정 변경·오류를 launcher.log 에 한 줄씩 남기고, [문제 정보 복사]에 마지막 20줄이 들어가요 (실행기 1.12.0)", "앱 정보 창에 브라우저 버전 주소와 QR — 태블릿·크롬북은 doguri25.github.io/yaksoknekut 로 설치 없이 열어요 (인쇄는 인쇄창)"]}];
+  const CHANGELOG = [{"v": "1.20.0", "d": "2026-11-24", "items": ["컷 수 화면에 [사진만] 추가 — 약속(글 쓰는) 칸 없이 사진만 들어가는 두 칸·세 칸·네 칸 액자. 세 칸은 큰 사진 1장 + 작은 사진 2장이고, 사진 4장을 찍은 뒤 칸 수만큼 골라요. 세트마다 그 세트 액자의 바탕색·장식·문구를 그대로 써요", "사진만 액자에서는 꾸미기의 '약속' 탭이 안 보이고, 완료 화면도 '약속을 적어서' 대신 '사진을 게시판에 붙여 주세요!'로 · 교사 메뉴 › 행사 세트에서 사진만 액자도 하나씩 끌 수 있고, 셋 다 끄면 [사진만] 칸이 숨어요", "교사 메뉴 › 촬영 › 컷 수 고르기 화면을 끌 때 '사진만'으로 바로 시작할 수도 있어요 · 오늘 기록의 컷 수에 '사진만 3칸'처럼 따로 셈"]}, {"v": "1.19.2", "d": "2026-09-11", "items": ["대기열 감시 기본값을 끔으로 — 행사장에서는 찍는 속도가 인쇄보다 빨라 대기열이 쌓이는 게 정상이라, 예전 컴퓨터도 이번 업데이트 때 한 번 끔으로 맞춰요 (교사 메뉴 › 완성·인쇄 › 프린터 점검 줄에서 다시 켤 수 있음)", "대기열 감시를 켜 둔 경우 '인쇄가 멈춘 것 같아요' 판정을 작업의 나이가 아니라 '진행이 없는 시간'으로 — 사진이 밀려 있어도 한 장씩 나가고 있으면 알리지 않아요"]}, {"v": "1.19.1", "d": "2026-09-07", "items": ["매우 크게에서 음성 안내는 다시 브라우저(크롬) 목소리 그대로 — 실행기가 만든 윈도우 목소리(해미)가 크롬의 구글 목소리보다 못해서. 실행기 음성은 교사 메뉴 › 소리 › '음성도 실행기로 크게' 스위치(기본 꺼짐)로 남겨 두어, 인터넷이 없어 크롬도 해미 목소리를 쓰는 컴퓨터에서만 켜면 됩니다"]}, {"v": "1.19.0", "d": "2026-09-07", "items": ["윈도우 앱: 소리 크기 '매우 크게'에서 음성 안내도 함께 커져요 — 브라우저 음성은 기기 최대를 못 넘어서, 실행기가 윈도우 음성 엔진(크롬과 같은 목소리)으로 만든 소리를 앱이 효과음처럼 2배 + 리미터로 틀어요. 안내 문장 7개는 켤 때 미리 만들어 두고, 실행기가 못 만들면 브라우저 음성으로 (실행기 1.15.0)"]}, {"v": "1.18.1", "d": "2026-09-07", "items": ["소리 크기에 '매우 크게' 추가 (교사 메뉴 › 소리, 자주 쓰는 설정) — 스피커가 작은 노트북용으로 효과음을 2배로, 찌그러지지 않게 리미터를 거쳐요. 음성 안내는 기기 최대까지"]}, {"v": "1.18.0", "d": "2026-09-07", "items": ["윈도우 앱: 중복 실행 막기 — 이미 켜져 있는데 약속네컷.exe를 또 누르면 새로 열지 않고 켜져 있는 창을 앞으로 가져와요 (실행기 1.14.0)"]}, {"v": "1.17.2", "d": "2026-09-06", "items": ["앱 정보 창의 수정 기록을 최근 10개만 — 전체 기록은 저장소의 CHANGELOG.md 로 (앱 파일 10KB 가벼워짐 · 새 항목은 src/changelog.json 에)", "학교·기록·앱 › [코드로 복구]를 눌러도 크롬의 '붙여넣기 허용' 말풍선이 뜨지 않게 — 앱이 클립보드를 읽지 않고 입력칸에 Ctrl+V로 붙여 넣어요"]}, {"v": "1.17.1", "d": "2026-09-06", "items": ["꾸미기 › 약속 탭: [손글씨로 쓸래요]와 [나중에 펜으로 쓸게요]를 한 줄에 놓아 문장 줄이 아래 안내 글과 겹치던 것 수정 · 문장이 많으면(최대 12개) 서랍 안에서 스크롤"]}, {"v": "1.17.0", "d": "2026-09-06", "items": ["윈도우 앱: 실행기(또는 앱 파일)를 뒤에서 받는 동안 첫 화면 오른쪽 위에 \"실행기 업데이트 중 37%\"가 차오르며 보이고, 다 받으면 그 자리가 [실행기 새 버전 · 다시 시작] 단추로 바뀌어요. 준비 점검 칩과 업데이트 줄에도 (실행기 1.13.0)", "앱 정보 창의 브라우저 주소 설명을 짧게 (잘리지 않게)"]}, {"v": "1.16.0", "d": "2026-09-06", "items": ["윈도우 앱: 실행기 기록 — 켜짐·업데이트 확인 결과·다시 연 이유(종료 코드)·대기열 비우기·설정 변경·오류를 launcher.log 에 한 줄씩 남기고, [문제 정보 복사]에 마지막 20줄이 들어가요 (실행기 1.12.0)", "앱 정보 창에 브라우저 버전 주소와 QR — 태블릿·크롬북은 doguri25.github.io/yaksoknekut 로 설치 없이 열어요 (인쇄는 인쇄창)"]}];
   const CHANGELOG_URL = 'https://github.com/doguri25/yaksoknekut/blob/master/CHANGELOG.md';   // 전체 수정 기록
 
   // 추천 동작 — 촬영마다 이 중에서 무작위로 3개를 뽑고 마지막은 '마음대로!'. 그림은 아래 POSE_ART(약속이 일러스트)
@@ -1796,7 +1796,7 @@
   const MAX_STICKERS = 12;
 
   /* ===================== 설정 (사진은 저장하지 않음) ===================== */
-  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', autoRestart: true, showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, retakeOne: false, stamp: false, queueWatch: false, paperCheck: false, camWatch: true, loudTts: false, hero: {}, promises: {}, promiseLabels: {} };
+  const DEFAULTS = { showCutSelect: true, defaultCuts: 4, defaultPhoto: false, frames: {}, cats: {}, brightness: 0, volume: 2, printCount: 0, maxCopies: 2, autoFull: true, voice: true, frameSet: 'promise', schoolName: '홍북초등학교', campaignLine: '우리 반은 서로를 지켜요', countdown: 3, shutterSound: 'classic', countSound: 'beep', theme: 'mint', bodyFont: 'maple', autoRestart: true, showPoses: true, anim: true, season: 'auto', cameraId: '', mirror: true, output: 'print', boardSeconds: 8, printScale: 100, lockPin: '', lockAfter: 0, paper: null, attract: 0, hiRes: true, burst: false, autoLevel: true, printSharpen: true, retakeOne: false, stamp: false, queueWatch: false, paperCheck: false, camWatch: true, loudTts: false, hero: {}, promises: {}, promiseLabels: {} };
   /* 저장 위치 — 브라우저 저장소(localStorage) + 윈도우 앱이면 실행기 파일(settings.json).
      학교 컴퓨터는 크롬이 닫힐 때 사이트 데이터를 지우는 정책이 걸려 있거나 저장소 쓰기가 막힌 경우가 있어,
      윈도우 앱에서는 실행기에 둔 사본을 먼저 믿고 켤 때 되살린다. */
@@ -3107,7 +3107,7 @@
     if (e.target.closest('#hot')) return;
     audio(); pop(); primeSpeech();
     if (settings.autoFull) wantFull(true);   // 브라우저 주소창 숨김
-    if (settings.showCutSelect) go('s1'); else { S.photoOnly = settings.defaultCuts === 'photo'; if (!S.photoOnly) S.cuts = settings.defaultCuts; go('s2'); }   // 컷 수 화면을 끄면 정해 둔 2컷·4컷·사진만으로 바로
+    if (settings.showCutSelect) go('s1'); else { S.photoOnly = !!settings.defaultPhoto; if (!S.photoOnly) S.cuts = settings.defaultCuts; go('s2'); }   // 컷 수 화면을 끄면 정해 둔 2컷·4컷·사진만으로 바로 (사진만은 defaultPhoto — defaultCuts는 옛 버전이 읽어도 되게 늘 2·4)
     ensureCamera();
   });
   // 교사 메뉴: 오른쪽 위 5초 길게 누르기
@@ -3798,8 +3798,9 @@
   const DONE_TEXT = { welcome: '입학을 축하해요!', grad: '졸업을 축하해요!', sports: '우리 팀 파이팅!', birthday: '생일 축하해!', chuseok: '풍성한 한가위 보내요!', reading: '책과 함께 자라요!', xmas: '메리 크리스마스!', children: '어린이날 축하해!' };   // 세트별 완료 인사 (학교폭력예방·일상은 그대로)
   ENTER.s9 = () => {
     const greet = DONE_TEXT[settings.frameSet || 'promise'];
-    const base = (settings.output || 'print') === 'board' ? '다음 친구도<br>찍어 봐요!' : '약속을 적어서<br>게시판에 붙여 주세요!';
-    $('#done-title').innerHTML = greet ? `<span style="color:var(--coral)">${greet}</span><br>${(settings.output || 'print') === 'board' ? '다음 친구도 찍어 봐요!' : '약속을 적어서 게시판에 붙여 주세요!'}` : base;
+    // 칠판 보기면 다음 친구 안내, 사진만 액자(약속 칸 없음)면 사진을 붙이라고, 나머지는 약속을 적어서 붙이라고
+    const [a, b] = (settings.output || 'print') === 'board' ? ['다음 친구도', '찍어 봐요!'] : S.frame && !S.frame.promise ? ['사진을', '게시판에 붙여 주세요!'] : ['약속을 적어서', '게시판에 붙여 주세요!'];
+    $('#done-title').innerHTML = greet ? `<span style="color:var(--coral)">${greet}</span><br>${a} ${b}` : `${a}<br>${b}`;
     donePrintLine();
     let n = T.done; const el = $('#done-count'); el.textContent = n;
     every(() => { n--; el.textContent = n; if (n <= 0) go('s0'); }, 1000);
@@ -3934,7 +3935,7 @@
     L.push(`브라우저: ${UA.replace(/^Mozilla\/5\.0\s*/, '').slice(0, 140)}`);
     L.push(`카메라: ${camInfo.label ? `${camInfo.label} ${camInfo.w}×${camInfo.h}` : '아직 안 켬'}${camInfo.note ? ' · ' + camInfo.note : ''}${s.cameraId ? ' · 교사가 고른 카메라' : ' · 자동'} · 거울 ${s.mirror === false ? '끔' : '켬'} · 밝기 ${s.brightness || 0}`);
     const q = [s.hiRes !== false && '고화질', s.burst && '연속3장', s.autoLevel !== false && '자동보정', s.printSharpen !== false && '인쇄선명'].filter(Boolean).join('/');
-    L.push(`설정: 세트 ${s.frameSet} · 완성 ${s.output || 'print'} · 최대 ${s.maxCopies}장 · 인쇄 크기 ${s.printScale || 100}% · 컷 수 화면 ${s.showCutSelect ? '켬' : `끔(${s.defaultCuts === 'photo' ? '사진만' : s.defaultCuts + '컷'})`} · 카운트 ${s.countdown}초 · 소리 ${s.volume} · 음성 ${s.voice ? '켬' : '끔'}${s.voiceName ? `(${s.voiceName})` : ''} · 잠금 ${s.lockPin ? '있음' : '없음'} · 자동잠금 ${s.lockAfter || 0}분 · 테마 ${s.theme} · 글꼴 ${s.bodyFont} · 품질 ${q} · 한컷다시 ${s.retakeOne ? '켬' : '끔'} · 도장 ${s.stamp ? '켬' : '끔'} · 인화지 ${s.paper == null ? '안 씀' : s.paper + '장'} · 대기화면 ${s.attract || 0} · 자동재시작 ${s.autoRestart === false ? '끔' : '켬'} · 움직임 ${s.anim === false ? '끔' : '켬'}`);
+    L.push(`설정: 세트 ${s.frameSet} · 완성 ${s.output || 'print'} · 최대 ${s.maxCopies}장 · 인쇄 크기 ${s.printScale || 100}% · 컷 수 화면 ${s.showCutSelect ? '켬' : `끔(${s.defaultPhoto ? '사진만' : s.defaultCuts + '컷'})`} · 카운트 ${s.countdown}초 · 소리 ${s.volume} · 음성 ${s.voice ? '켬' : '끔'}${s.voiceName ? `(${s.voiceName})` : ''} · 잠금 ${s.lockPin ? '있음' : '없음'} · 자동잠금 ${s.lockAfter || 0}분 · 테마 ${s.theme} · 글꼴 ${s.bodyFont} · 품질 ${q} · 한컷다시 ${s.retakeOne ? '켬' : '끔'} · 도장 ${s.stamp ? '켬' : '끔'} · 인화지 ${s.paper == null ? '안 씀' : s.paper + '장'} · 대기화면 ${s.attract || 0} · 자동재시작 ${s.autoRestart === false ? '끔' : '켬'} · 움직임 ${s.anim === false ? '끔' : '켬'}`);
     L.push(`설정 보관: ${storeText()} · 누적 인쇄 ${s.printCount || 0}장`);
     try { const st = loadStats(), td = st.days[todayKey()] || { done: 0, prints: 0, board: 0 }; L.push(`오늘 기록: 완성 ${td.done} · 인쇄 ${td.prints} · 칠판 ${td.board || 0}`); } catch (e) {}
     const errs = recentErrors();
@@ -4092,7 +4093,7 @@
 
         <div class="tpage" data-pane="shoot">
           <div class="thead"><h3>촬영</h3><span class="tdesc">카메라와 찍는 흐름</span></div>
-          ${row('컷 수 고르기 화면', `${sw('showCutSelect', settings.showCutSelect)}<span class="thint">끄면 바로</span>${seg('defaultCuts', [[2, '2컷'], [4, '4컷'], ['photo', '사진만']])}<span class="thint">으로 시작</span>`)}
+          ${row('컷 수 고르기 화면', `${sw('showCutSelect', settings.showCutSelect)}<span class="thint">끄면 바로</span><span class="seg" data-seg="startCuts">${[[2, '2컷'], [4, '4컷'], ['photo', '사진만']].map(([v, n]) => `<button data-v="${v}" class="${String(settings.defaultPhoto ? 'photo' : settings.defaultCuts) === String(v) ? 'on' : ''}">${n}</button>`).join('')}</span><span class="thint">으로 시작</span>`)}
           ${row('카운트다운', `${seg('countdown', [[3, '3초'], [5, '5초']])}<span class="thint">저학년은 5초가 여유 있어요</span>`)}
           ${row('추천 동작 카드', `${sw('showPoses', settings.showPoses !== false)}<span class="thint">끄면 카메라 화면이 그 자리까지 커져요</span><span class="tsep"></span><span class="tsub">한 컷만 다시 찍기</span>${sw('retakeOne', !!settings.retakeOne)}${info('h-retake')}`,
             help('h-retake', `<b>한 컷만 다시 찍기</b>: 켜면 고르기 화면의 사진 카드마다 [다시 찍기]가 붙어요. 눈 감은 그 컷 하나만 다시 찍고 고르던 순서 그대로 돌아오니, 4장을 다 다시 찍지 않아 줄이 밀리지 않아요 (한 팀 ${RETAKE_MAX}번까지 · 기본 꺼짐). 4장 전부 다시 찍는 [다시 찍을래요]는 그대로 있어요.`))}
@@ -4229,7 +4230,10 @@
     el.querySelectorAll('[data-frame]').forEach(i => i.addEventListener('change', () => { settings.frames[i.dataset.frame] = i.checked; saveSettings(); const card = i.closest('.tfr'); if (card) card.classList.toggle('on', i.checked); const d = el.querySelector('[data-pane="set"] .tdesc'); if (d) d.innerHTML = `지금: <b>${setName}</b> · 액자 ${setFrames.length}개 중 ${setFrames.filter(frameOn).length}개 사용`; }));
     el.querySelectorAll('[data-cat]').forEach(i => i.addEventListener('change', () => { settings.cats[i.dataset.cat] = i.checked; saveSettings(); }));
     el.querySelectorAll('[data-seg]').forEach(sg => sg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-      const key = sg.dataset.seg, v = b.dataset.v; settings[key] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; saveSettings();
+      const key = sg.dataset.seg, v = b.dataset.v;
+      if (key === 'startCuts') { settings.defaultPhoto = v === 'photo'; if (v !== 'photo') settings.defaultCuts = +v; }   // 컷 수 화면을 끌 때 시작: 2·4는 defaultCuts, 사진만은 defaultPhoto (defaultCuts에 글자를 넣으면 옛 버전으로 되돌릴 때 빈 액자 화면이 됨)
+      else settings[key] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v;
+      saveSettings();
       if (key === 'mirror') applyMirror();
       el.querySelectorAll(`[data-seg="${key}"] button`).forEach(x => x.classList.toggle('on', x.dataset.v === v));   // 같은 설정이 두 페이지에 있으면 함께 바꿈
       if (key === 'volume') { beep(); warmLoud(true); }
