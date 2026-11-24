@@ -273,7 +273,9 @@
       if (frame.slotBorder) { ctx.strokeStyle = frame.slotBorder; ctx.lineWidth = 12; rr(ctx, sl.x, sl.y, sl.w, sl.h, frame.radius || 28); ctx.stroke(); }
     });
     if (frame.caption) {
-      const c = frame.caption; ctx.fillStyle = c.color; ctx.font = FONT(c.size); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(resolveText(c.text), c.x, c.y);
+      const c = frame.caption, t = resolveText(c.text); let size = c.size; ctx.font = FONT(size);
+      if (c.maxW) while (size > 30 && ctx.measureText(t).width > c.maxW) ctx.font = FONT(size -= 2);   // 사진만 액자: 긴 문구(캠페인·학교 이름)는 줄여서 한 줄에
+      ctx.fillStyle = c.color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, c.x, c.y);
     }
     if (frame.promise) {
       const lbl = (settings.promiseLabels && settings.promiseLabels[frame.id]) || frame.promise.label;

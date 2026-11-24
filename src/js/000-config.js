@@ -185,6 +185,28 @@
       bg: '#C4EBD6', decor: 'bubbles', bubbles: ['신난다!', '우리 최고!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '오늘의 한마디', lines: 3 } }
   ];
+  // 사진만 액자 — 약속(글 쓰는) 칸 없이 사진만 2·3·4칸. 컷 수 화면의 [사진만]에서 고름.
+  // 세트마다 그 세트 액자 하나(PHOTO_BASE)의 바탕색·장식·문구를 그대로 씀 · 교사 메뉴 › 행사 세트에서 하나씩 끌 수 있음.
+  // 장식이 문구 줄과 겹치는 액자(별·리본·트리·말풍선)는 바탕으로 쓰지 않음. 문구는 maxW를 넘으면 글씨가 작아짐
+  const PHOTO_LAYOUTS = {
+    2: { name: '사진만 두 칸', sub: '사진 2장을 크게', cap: { y: 910, size: 84, maxW: 1500 },
+         slots: [ {x:80,y:230,w:800,h:533}, {x:920,y:230,w:800,h:533} ] },
+    3: { name: '사진만 세 칸', sub: '큰 사진 1장 + 작은 사진 2장', cap: { y: 1010, size: 72, maxW: 1500 },
+         slots: [ {x:86,y:170,w:1080,h:720}, {x:1196,y:170,w:518,h:345}, {x:1196,y:545,w:518,h:345} ] },
+    4: { name: '사진만 네 칸', sub: '사진 4장을 가득', cap: { y: 1066, size: 60, maxW: 1300 },
+         slots: [ {x:225,y:90,w:660,h:440}, {x:915,y:90,w:660,h:440}, {x:225,y:560,w:660,h:440}, {x:915,y:560,w:660,h:440} ] }
+  };
+  const PHOTO_BASE = { daily: 'd4-grid', promise: 'f4-grid', welcome: 'w4-ribbon', grad: 'g4-grid', sports: 's4-film', birthday: 'b4-grid', chuseok: 'c4-moon', reading: 'r4-book', xmas: 'x4-snow', children: 'k4-rainbow' };
+  FRAME_SETS.forEach(st => {
+    const b = FRAMES.find(f => f.id === PHOTO_BASE[st.id]) || FRAMES.find(f => f.set === st.id && f.cuts === 4);
+    if (!b) return;
+    [2, 3, 4].forEach(n => {
+      const L = PHOTO_LAYOUTS[n];
+      FRAMES.push({ set: st.id, id: st.id + '-p' + n, cuts: n, photoOnly: true, name: L.name, sub: L.sub,
+        bg: b.bg, decor: b.decor, radius: b.radius, slotBorder: b.slotBorder, slots: L.slots,
+        caption: b.caption ? Object.assign({ text: b.caption.text, color: b.caption.color, x: 900 }, L.cap) : null });
+    });
+  });
 
   // 약속 문장 (행사 세트별 기본값 — 교사 메뉴에서 편집)
   const DEFAULT_PROMISES = {
@@ -269,9 +291,9 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.19.2';
+  const APP_VERSION = '1.20.0';
   const LAUNCHER_LATEST = '1.15.0';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
-  const BUILD_DATE = '2026-09-11';
+  const BUILD_DATE = '2026-11-24';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록은 src/changelog.json 에 (맨 위가 최신). build.py 가 최근 10개만 여기에 넣고, 전체는 저장소의 CHANGELOG.md 로 씀 — 앱 파일이 기록 때문에 계속 커지지 않게
   const CHANGELOG = /*@@CHANGELOG@@*/[];

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<!-- yaksok-necut app=1.19.2 launcher=1.15.0 -->
+<!-- yaksok-necut app=1.20.0 launcher=1.15.0 -->
 <!--
   약속네컷 ⓒ 2026 도구리(홍북초등학교) · raccoon@ai.cne.go.kr
   이 저작물은 크리에이티브 커먼즈 저작자표시-비영리-변경금지 4.0 국제 라이선스(CC BY-NC-ND 4.0)에 따라 이용할 수 있습니다.
@@ -170,6 +170,8 @@
   .big-tiles svg { width: 100%; height: auto; max-height: 280px; display: block; }
   .big-tiles .tile-name { font-size: 46px; }
   .big-tiles .tile-sub { font-size: 24px; }
+  .big-tiles.three { grid-template-columns: repeat(3, 1fr); width: 1200px; }   /* [사진만]까지 세 칸 */
+  .big-tiles.three .tile { padding: 24px 18px 20px; }
 
   /* ---------- camera ---------- */
   .cam-wrap { display: flex; align-items: center; justify-content: center; gap: 24px; width: 100%; }
@@ -1012,6 +1014,19 @@
         <span class="tile-name">네 칸</span>
         <span class="tile-sub">사진 4장을 찍고<br>순서대로 골라요</span>
       </button>
+      <button class="tile" data-mode="photo" id="tile-photo">
+        <svg viewBox="0 0 300 200" aria-hidden="true">
+          <rect x="6" y="6" width="288" height="188" rx="22" fill="#F1ECFF"/>
+          <rect x="34" y="22" width="112" height="74" rx="10" fill="#D9CCFF"/>
+          <rect x="154" y="22" width="112" height="74" rx="10" fill="#D9CCFF"/>
+          <rect x="34" y="104" width="112" height="74" rx="10" fill="#D9CCFF"/>
+          <rect x="154" y="104" width="112" height="74" rx="10" fill="#D9CCFF"/>
+          <circle cx="90" cy="59" r="17" fill="#FFDCC8"/><circle cx="210" cy="59" r="17" fill="#FFDCC8"/>
+          <circle cx="90" cy="141" r="17" fill="#FFDCC8"/><circle cx="210" cy="141" r="17" fill="#FFDCC8"/>
+        </svg>
+        <span class="tile-name">사진만</span>
+        <span class="tile-sub">글 쓰는 칸 없이<br>사진만 2·3·4칸</span>
+      </button>
     </div>
     <button class="btn corner" data-go="s0" aria-label="처음으로">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
@@ -1584,6 +1599,28 @@
       bg: '#C4EBD6', decor: 'bubbles', bubbles: ['신난다!', '우리 최고!'], radius: 30, slots: S2B,
       promise: { x: 90, y: 720, w: 1620, h: 420, label: '오늘의 한마디', lines: 3 } }
   ];
+  // 사진만 액자 — 약속(글 쓰는) 칸 없이 사진만 2·3·4칸. 컷 수 화면의 [사진만]에서 고름.
+  // 세트마다 그 세트 액자 하나(PHOTO_BASE)의 바탕색·장식·문구를 그대로 씀 · 교사 메뉴 › 행사 세트에서 하나씩 끌 수 있음.
+  // 장식이 문구 줄과 겹치는 액자(별·리본·트리·말풍선)는 바탕으로 쓰지 않음. 문구는 maxW를 넘으면 글씨가 작아짐
+  const PHOTO_LAYOUTS = {
+    2: { name: '사진만 두 칸', sub: '사진 2장을 크게', cap: { y: 910, size: 84, maxW: 1500 },
+         slots: [ {x:80,y:230,w:800,h:533}, {x:920,y:230,w:800,h:533} ] },
+    3: { name: '사진만 세 칸', sub: '큰 사진 1장 + 작은 사진 2장', cap: { y: 1010, size: 72, maxW: 1500 },
+         slots: [ {x:86,y:170,w:1080,h:720}, {x:1196,y:170,w:518,h:345}, {x:1196,y:545,w:518,h:345} ] },
+    4: { name: '사진만 네 칸', sub: '사진 4장을 가득', cap: { y: 1066, size: 60, maxW: 1300 },
+         slots: [ {x:225,y:90,w:660,h:440}, {x:915,y:90,w:660,h:440}, {x:225,y:560,w:660,h:440}, {x:915,y:560,w:660,h:440} ] }
+  };
+  const PHOTO_BASE = { daily: 'd4-grid', promise: 'f4-grid', welcome: 'w4-ribbon', grad: 'g4-grid', sports: 's4-film', birthday: 'b4-grid', chuseok: 'c4-moon', reading: 'r4-book', xmas: 'x4-snow', children: 'k4-rainbow' };
+  FRAME_SETS.forEach(st => {
+    const b = FRAMES.find(f => f.id === PHOTO_BASE[st.id]) || FRAMES.find(f => f.set === st.id && f.cuts === 4);
+    if (!b) return;
+    [2, 3, 4].forEach(n => {
+      const L = PHOTO_LAYOUTS[n];
+      FRAMES.push({ set: st.id, id: st.id + '-p' + n, cuts: n, photoOnly: true, name: L.name, sub: L.sub,
+        bg: b.bg, decor: b.decor, radius: b.radius, slotBorder: b.slotBorder, slots: L.slots,
+        caption: b.caption ? Object.assign({ text: b.caption.text, color: b.caption.color, x: 900 }, L.cap) : null });
+    });
+  });
 
   // 약속 문장 (행사 세트별 기본값 — 교사 메뉴에서 편집)
   const DEFAULT_PROMISES = {
@@ -1668,12 +1705,12 @@
   ];
 
   // ★ 앱 정보 — 고칠 때마다 버전과 날짜를 올립니다
-  const APP_VERSION = '1.19.2';
+  const APP_VERSION = '1.20.0';
   const LAUNCHER_LATEST = '1.15.0';   // 이 앱에 맞는 윈도우 실행기(exe) 버전 — 실행기가 index.html에서 이 값을 읽어 자기보다 높으면 저장소의 windows/yaksok-necut.exe 로 스스로 바꿈
-  const BUILD_DATE = '2026-09-11';
+  const BUILD_DATE = '2026-11-24';
   const AUTHOR = { name: '도구리', org: '홍북초등학교', email: 'raccoon@ai.cne.go.kr' };
   // 수정 기록은 src/changelog.json 에 (맨 위가 최신). build.py 가 최근 10개만 여기에 넣고, 전체는 저장소의 CHANGELOG.md 로 씀 — 앱 파일이 기록 때문에 계속 커지지 않게
-  const CHANGELOG = [{"v": "1.19.2", "d": "2026-09-11", "items": ["대기열 감시 기본값을 끔으로 — 행사장에서는 찍는 속도가 인쇄보다 빨라 대기열이 쌓이는 게 정상이라, 예전 컴퓨터도 이번 업데이트 때 한 번 끔으로 맞춰요 (교사 메뉴 › 완성·인쇄 › 프린터 점검 줄에서 다시 켤 수 있음)", "대기열 감시를 켜 둔 경우 '인쇄가 멈춘 것 같아요' 판정을 작업의 나이가 아니라 '진행이 없는 시간'으로 — 사진이 밀려 있어도 한 장씩 나가고 있으면 알리지 않아요"]}, {"v": "1.19.1", "d": "2026-09-07", "items": ["매우 크게에서 음성 안내는 다시 브라우저(크롬) 목소리 그대로 — 실행기가 만든 윈도우 목소리(해미)가 크롬의 구글 목소리보다 못해서. 실행기 음성은 교사 메뉴 › 소리 › '음성도 실행기로 크게' 스위치(기본 꺼짐)로 남겨 두어, 인터넷이 없어 크롬도 해미 목소리를 쓰는 컴퓨터에서만 켜면 됩니다"]}, {"v": "1.19.0", "d": "2026-09-07", "items": ["윈도우 앱: 소리 크기 '매우 크게'에서 음성 안내도 함께 커져요 — 브라우저 음성은 기기 최대를 못 넘어서, 실행기가 윈도우 음성 엔진(크롬과 같은 목소리)으로 만든 소리를 앱이 효과음처럼 2배 + 리미터로 틀어요. 안내 문장 7개는 켤 때 미리 만들어 두고, 실행기가 못 만들면 브라우저 음성으로 (실행기 1.15.0)"]}, {"v": "1.18.1", "d": "2026-09-07", "items": ["소리 크기에 '매우 크게' 추가 (교사 메뉴 › 소리, 자주 쓰는 설정) — 스피커가 작은 노트북용으로 효과음을 2배로, 찌그러지지 않게 리미터를 거쳐요. 음성 안내는 기기 최대까지"]}, {"v": "1.18.0", "d": "2026-09-07", "items": ["윈도우 앱: 중복 실행 막기 — 이미 켜져 있는데 약속네컷.exe를 또 누르면 새로 열지 않고 켜져 있는 창을 앞으로 가져와요 (실행기 1.14.0)"]}, {"v": "1.17.2", "d": "2026-09-06", "items": ["앱 정보 창의 수정 기록을 최근 10개만 — 전체 기록은 저장소의 CHANGELOG.md 로 (앱 파일 10KB 가벼워짐 · 새 항목은 src/changelog.json 에)", "학교·기록·앱 › [코드로 복구]를 눌러도 크롬의 '붙여넣기 허용' 말풍선이 뜨지 않게 — 앱이 클립보드를 읽지 않고 입력칸에 Ctrl+V로 붙여 넣어요"]}, {"v": "1.17.1", "d": "2026-09-06", "items": ["꾸미기 › 약속 탭: [손글씨로 쓸래요]와 [나중에 펜으로 쓸게요]를 한 줄에 놓아 문장 줄이 아래 안내 글과 겹치던 것 수정 · 문장이 많으면(최대 12개) 서랍 안에서 스크롤"]}, {"v": "1.17.0", "d": "2026-09-06", "items": ["윈도우 앱: 실행기(또는 앱 파일)를 뒤에서 받는 동안 첫 화면 오른쪽 위에 \"실행기 업데이트 중 37%\"가 차오르며 보이고, 다 받으면 그 자리가 [실행기 새 버전 · 다시 시작] 단추로 바뀌어요. 준비 점검 칩과 업데이트 줄에도 (실행기 1.13.0)", "앱 정보 창의 브라우저 주소 설명을 짧게 (잘리지 않게)"]}, {"v": "1.16.0", "d": "2026-09-06", "items": ["윈도우 앱: 실행기 기록 — 켜짐·업데이트 확인 결과·다시 연 이유(종료 코드)·대기열 비우기·설정 변경·오류를 launcher.log 에 한 줄씩 남기고, [문제 정보 복사]에 마지막 20줄이 들어가요 (실행기 1.12.0)", "앱 정보 창에 브라우저 버전 주소와 QR — 태블릿·크롬북은 doguri25.github.io/yaksoknekut 로 설치 없이 열어요 (인쇄는 인쇄창)"]}, {"v": "1.15.0", "d": "2026-09-06", "items": ["윈도우 앱: 프린터 기본 용지 확인 — 실행기가 드라이버 기본 용지(크기·방향)를 읽어 시작 도우미 2단계에 \"4×6(엽서) 100×148mm ✓ / A4 — 바꿔야 해요\"로 보여 줘요. 완성·인쇄 › 프린터 점검의 '용지 확인'을 켜면 준비 점검과 켤 때 알림에도 (기본 꺼짐 · 실행기 1.11.0)", "윈도우 앱: 윈도우 켤 때 자동 실행 — 학교·기록·앱 › 업데이트 줄 스위치. 시작 프로그램에 바로가기를 넣어 부스 PC를 켜기만 하면 약속네컷이 열려요 (기본 꺼짐)", "카메라 선이 빠지면 바로 알림 — 찍는 중이면 준비 화면으로 돌아가 \"카메라를 확인해 주세요\", 다시 꽂으면 저절로 이어져요. 촬영 › 사용할 카메라 줄의 '끊기면 알림' (기본 켬)"]}];
+  const CHANGELOG = [{"v": "1.20.0", "d": "2026-11-24", "items": ["컷 수 화면에 [사진만] 추가 — 약속(글 쓰는) 칸 없이 사진만 들어가는 두 칸·세 칸·네 칸 액자. 세 칸은 큰 사진 1장 + 작은 사진 2장이고, 사진 4장을 찍은 뒤 칸 수만큼 골라요. 세트마다 그 세트 액자의 바탕색·장식·문구를 그대로 써요", "사진만 액자에서는 꾸미기의 '약속' 탭이 안 보여요 · 교사 메뉴 › 행사 세트에서 사진만 액자도 하나씩 끌 수 있고, 셋 다 끄면 [사진만] 칸이 숨어요", "교사 메뉴 › 촬영 › 컷 수 고르기 화면을 끌 때 '사진만'으로 바로 시작할 수도 있어요 · 오늘 기록의 컷 수에 '사진만 3칸'처럼 따로 셈"]}, {"v": "1.19.2", "d": "2026-09-11", "items": ["대기열 감시 기본값을 끔으로 — 행사장에서는 찍는 속도가 인쇄보다 빨라 대기열이 쌓이는 게 정상이라, 예전 컴퓨터도 이번 업데이트 때 한 번 끔으로 맞춰요 (교사 메뉴 › 완성·인쇄 › 프린터 점검 줄에서 다시 켤 수 있음)", "대기열 감시를 켜 둔 경우 '인쇄가 멈춘 것 같아요' 판정을 작업의 나이가 아니라 '진행이 없는 시간'으로 — 사진이 밀려 있어도 한 장씩 나가고 있으면 알리지 않아요"]}, {"v": "1.19.1", "d": "2026-09-07", "items": ["매우 크게에서 음성 안내는 다시 브라우저(크롬) 목소리 그대로 — 실행기가 만든 윈도우 목소리(해미)가 크롬의 구글 목소리보다 못해서. 실행기 음성은 교사 메뉴 › 소리 › '음성도 실행기로 크게' 스위치(기본 꺼짐)로 남겨 두어, 인터넷이 없어 크롬도 해미 목소리를 쓰는 컴퓨터에서만 켜면 됩니다"]}, {"v": "1.19.0", "d": "2026-09-07", "items": ["윈도우 앱: 소리 크기 '매우 크게'에서 음성 안내도 함께 커져요 — 브라우저 음성은 기기 최대를 못 넘어서, 실행기가 윈도우 음성 엔진(크롬과 같은 목소리)으로 만든 소리를 앱이 효과음처럼 2배 + 리미터로 틀어요. 안내 문장 7개는 켤 때 미리 만들어 두고, 실행기가 못 만들면 브라우저 음성으로 (실행기 1.15.0)"]}, {"v": "1.18.1", "d": "2026-09-07", "items": ["소리 크기에 '매우 크게' 추가 (교사 메뉴 › 소리, 자주 쓰는 설정) — 스피커가 작은 노트북용으로 효과음을 2배로, 찌그러지지 않게 리미터를 거쳐요. 음성 안내는 기기 최대까지"]}, {"v": "1.18.0", "d": "2026-09-07", "items": ["윈도우 앱: 중복 실행 막기 — 이미 켜져 있는데 약속네컷.exe를 또 누르면 새로 열지 않고 켜져 있는 창을 앞으로 가져와요 (실행기 1.14.0)"]}, {"v": "1.17.2", "d": "2026-09-06", "items": ["앱 정보 창의 수정 기록을 최근 10개만 — 전체 기록은 저장소의 CHANGELOG.md 로 (앱 파일 10KB 가벼워짐 · 새 항목은 src/changelog.json 에)", "학교·기록·앱 › [코드로 복구]를 눌러도 크롬의 '붙여넣기 허용' 말풍선이 뜨지 않게 — 앱이 클립보드를 읽지 않고 입력칸에 Ctrl+V로 붙여 넣어요"]}, {"v": "1.17.1", "d": "2026-09-06", "items": ["꾸미기 › 약속 탭: [손글씨로 쓸래요]와 [나중에 펜으로 쓸게요]를 한 줄에 놓아 문장 줄이 아래 안내 글과 겹치던 것 수정 · 문장이 많으면(최대 12개) 서랍 안에서 스크롤"]}, {"v": "1.17.0", "d": "2026-09-06", "items": ["윈도우 앱: 실행기(또는 앱 파일)를 뒤에서 받는 동안 첫 화면 오른쪽 위에 \"실행기 업데이트 중 37%\"가 차오르며 보이고, 다 받으면 그 자리가 [실행기 새 버전 · 다시 시작] 단추로 바뀌어요. 준비 점검 칩과 업데이트 줄에도 (실행기 1.13.0)", "앱 정보 창의 브라우저 주소 설명을 짧게 (잘리지 않게)"]}, {"v": "1.16.0", "d": "2026-09-06", "items": ["윈도우 앱: 실행기 기록 — 켜짐·업데이트 확인 결과·다시 연 이유(종료 코드)·대기열 비우기·설정 변경·오류를 launcher.log 에 한 줄씩 남기고, [문제 정보 복사]에 마지막 20줄이 들어가요 (실행기 1.12.0)", "앱 정보 창에 브라우저 버전 주소와 QR — 태블릿·크롬북은 doguri25.github.io/yaksoknekut 로 설치 없이 열어요 (인쇄는 인쇄창)"]}];
   const CHANGELOG_URL = 'https://github.com/doguri25/yaksoknekut/blob/master/CHANGELOG.md';   // 전체 수정 기록
 
   // 추천 동작 — 촬영마다 이 중에서 무작위로 3개를 뽑고 마지막은 '마음대로!'. 그림은 아래 POSE_ART(약속이 일러스트)
@@ -1826,7 +1863,7 @@
   const catOn = c => settings.cats[c.id] !== false;
 
   /* ===================== 상태 ===================== */
-  function fresh(demo) { return { cuts: 4, frame: null, shots: [], picked: [], filter: 'none', stickers: [], paperBg: null, copies: 1, promiseText: '', promiseInk: null, inkStrokes: [], retakeUsed: false, retakeIdx: null, retakeKeep: null, retakeOneN: 0, demo: !!demo }; }   // retakeIdx: 한 컷만 다시 찍을 때 그 컷 번호 · retakeKeep: 그동안 고른 순서 · retakeOneN: 이 팀이 한 컷 다시 찍은 횟수(최대 3)
+  function fresh(demo) { return { cuts: 4, photoOnly: false, frame: null, shots: [], picked: [], filter: 'none', stickers: [], paperBg: null, copies: 1, promiseText: '', promiseInk: null, inkStrokes: [], retakeUsed: false, retakeIdx: null, retakeKeep: null, retakeOneN: 0, demo: !!demo }; }   // retakeIdx: 한 컷만 다시 찍을 때 그 컷 번호 · retakeKeep: 그동안 고른 순서 · retakeOneN: 이 팀이 한 컷 다시 찍은 횟수(최대 3) · photoOnly: 컷 수 화면에서 [사진만]을 고름 (cuts는 액자를 고를 때 정해짐)
   let S = fresh(false);
   function resetSession() {
     if (S.shots) S.shots.forEach(c => { c.width = 0; c.height = 0; });
@@ -2016,8 +2053,9 @@
   function recordFinish(prints, board) {
     const st = loadStats(), k = todayKey(), d = st.days[k] || (st.days[k] = { done: 0, prints: 0, board: 0, sets: {}, cuts: {}, promises: {} });
     d.done++; d.prints += prints; if (board) d.board++;
-    const set = S.frame ? S.frame.set : (settings.frameSet || 'promise'); d.sets[set] = (d.sets[set] || 0) + 1; d.cuts[S.cuts] = (d.cuts[S.cuts] || 0) + 1;
-    if (S.promiseText) d.promises[S.promiseText] = (d.promises[S.promiseText] || 0) + 1;
+    const set = S.frame ? S.frame.set : (settings.frameSet || 'promise'); d.sets[set] = (d.sets[set] || 0) + 1;
+    const ck = S.frame && S.frame.photoOnly ? 'p' + S.cuts : S.cuts; d.cuts[ck] = (d.cuts[ck] || 0) + 1;   // 사진만 액자는 'p3'처럼 따로 셈
+    if (S.promiseText && S.frame && S.frame.promise) d.promises[S.promiseText] = (d.promises[S.promiseText] || 0) + 1;
     try { localStorage.setItem(STATS_KEY, JSON.stringify(st)); } catch (e) {}
   }
   function statsText() {
@@ -2026,7 +2064,7 @@
     const top = o => Object.entries(o).sort((a, b) => b[1] - a[1]);
     const all = keys.reduce((acc, d) => { const x = st.days[d]; acc.done += x.done; acc.prints += x.prints; acc.board += x.board || 0; return acc; }, { done: 0, prints: 0, board: 0 });
     const lines = [`[약속네컷 기록] ${k}`, `오늘: 완성 ${t.done}장 · 인쇄 ${t.prints}장 · 칠판 보기 ${t.board}번`];
-    if (t.done) { lines.push('세트: ' + top(t.sets).map(([id, n]) => `${setName(id)} ${n}`).join(', ')); lines.push('컷 수: ' + top(t.cuts).map(([c, n]) => `${c}컷 ${n}`).join(', ')); }
+    if (t.done) { lines.push('세트: ' + top(t.sets).map(([id, n]) => `${setName(id)} ${n}`).join(', ')); lines.push('컷 수: ' + top(t.cuts).map(([c, n]) => `${c[0] === 'p' ? '사진만 ' + c.slice(1) + '칸' : c + '컷'} ${n}`).join(', ')); }
     const tp = top(t.promises).slice(0, 5); if (tp.length) lines.push('많이 고른 약속: ' + tp.map(([p, n]) => `"${p}" ${n}`).join(', '));
     lines.push(`누적(${keys.length}일): 완성 ${all.done}장 · 인쇄 ${all.prints}장 · 칠판 보기 ${all.board}번`);
     return lines.join('\n');
@@ -2337,7 +2375,9 @@
       if (frame.slotBorder) { ctx.strokeStyle = frame.slotBorder; ctx.lineWidth = 12; rr(ctx, sl.x, sl.y, sl.w, sl.h, frame.radius || 28); ctx.stroke(); }
     });
     if (frame.caption) {
-      const c = frame.caption; ctx.fillStyle = c.color; ctx.font = FONT(c.size); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(resolveText(c.text), c.x, c.y);
+      const c = frame.caption, t = resolveText(c.text); let size = c.size; ctx.font = FONT(size);
+      if (c.maxW) while (size > 30 && ctx.measureText(t).width > c.maxW) ctx.font = FONT(size -= 2);   // 사진만 액자: 긴 문구(캠페인·학교 이름)는 줄여서 한 줄에
+      ctx.fillStyle = c.color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, c.x, c.y);
     }
     if (frame.promise) {
       const lbl = (settings.promiseLabels && settings.promiseLabels[frame.id]) || frame.promise.label;
@@ -3067,7 +3107,7 @@
     if (e.target.closest('#hot')) return;
     audio(); pop(); primeSpeech();
     if (settings.autoFull) wantFull(true);   // 브라우저 주소창 숨김
-    if (settings.showCutSelect) go('s1'); else { S.cuts = settings.defaultCuts; go('s2'); }
+    if (settings.showCutSelect) go('s1'); else { S.photoOnly = settings.defaultCuts === 'photo'; if (!S.photoOnly) S.cuts = settings.defaultCuts; go('s2'); }   // 컷 수 화면을 끄면 정해 둔 2컷·4컷·사진만으로 바로
     ensureCamera();
   });
   // 교사 메뉴: 오른쪽 위 5초 길게 누르기
@@ -3084,11 +3124,22 @@
   })();
 
   /* ===================== S1 컷 수 ===================== */
-  $$('#s1 .tile').forEach(t => t.addEventListener('click', () => { pop(); S.cuts = +t.dataset.cuts; go('s2'); }));
-
+  // [두 칸]·[네 칸]은 약속 칸이 있는 액자, [사진만]은 글 쓰는 칸 없는 2·3·4칸 액자 (컷 수는 액자 화면에서 정해짐)
+  const photoFramesOn = () => FRAMES.some(f => f.photoOnly && f.set === (settings.frameSet || 'promise') && frameOn(f));
+  ENTER.s1 = () => {
+    const on = photoFramesOn();   // 이 세트의 사진만 액자를 교사가 모두 껐으면 [사진만] 칸을 숨김
+    $('#tile-photo').style.display = on ? '' : 'none';
+    $('#s1 .big-tiles').classList.toggle('three', on);
+  };
+  $$('#s1 .tile').forEach(t => t.addEventListener('click', () => {
+    pop(); S.photoOnly = t.dataset.mode === 'photo';
+    if (!S.photoOnly) S.cuts = +t.dataset.cuts;
+    go('s2');
+  }));
   /* ===================== S2 액자 ===================== */
   ENTER.s2 = () => {
-    const list = FRAMES.filter(f => f.set === (settings.frameSet || 'promise') && f.cuts === S.cuts && frameOn(f));
+    const set = settings.frameSet || 'promise';
+    const list = FRAMES.filter(f => f.set === set && frameOn(f) && (S.photoOnly ? f.photoOnly : !f.photoOnly && f.cuts === S.cuts));   // 사진만: 그 세트의 2·3·4칸 액자
     const wrap = $('#frame-tiles'); wrap.innerHTML = '';
     const n = Math.max(1, list.length);
     wrap.style.gridTemplateColumns = `repeat(${Math.min(n, 3)}, 1fr)`;
@@ -3099,12 +3150,11 @@
       compose(c, { frame: f, placeholder: true });
       b.appendChild(c);
       b.insertAdjacentHTML('beforeend', `<span class="tile-name">${f.name}</span><span class="tile-sub">${f.sub}</span>`);
-      b.addEventListener('click', () => { pop(); if (S.frame !== f) { S.promiseInk = null; S.inkStrokes = []; } S.frame = f; go(S.shots.length === 4 ? 's5' : 's3'); });
+      b.addEventListener('click', () => { pop(); if (S.frame !== f) { S.promiseInk = null; S.inkStrokes = []; } S.frame = f; S.cuts = f.cuts; go(S.shots.length === 4 ? 's5' : 's3'); });
       wrap.appendChild(b);
     });
     if (!list.length) wrap.innerHTML = '<p class="muted">켜져 있는 액자가 없어요. 교사 메뉴에서 액자를 켜 주세요.</p>';
   };
-
   /* ===================== 카메라 ===================== */
   const video = $('#video'); let stream = null, camRetryT = null, camInfo = { label: '', w: 0, h: 0, note: '' }, camDevices = [];
   const BAD_CAM = /\b(IR|infrared|depth|virtual|OBS|Snap|ManyCam|DroidCam|Iriun|NDI|XSplit|Streamlabs)\b/i;   // 적외선·가상 카메라는 뒤로
@@ -3476,7 +3526,7 @@
     closeInk(); rebuildBase(); renderDecor(); renderDrawer();
   });
   function renderDrawer() {
-    const cats = STICKER_CATS.filter(catOn);
+    const cats = STICKER_CATS.filter(c => catOn(c) && (c.id !== 'promise' || (S.frame && S.frame.promise)));   // 사진만 액자는 약속 칸이 없어 '약속' 탭을 숨김
     if (!cats.find(c => c.id === activeCat)) activeCat = cats.length ? cats[0].id : null;
     $('#tabs').innerHTML = cats.map(c => `<button class="tab${c.id === activeCat ? ' on' : ''}" data-cat="${c.id}">${c.name}</button>`).join('');
     $$('#tabs .tab').forEach(t => t.addEventListener('click', () => { pop(); activeCat = t.dataset.cat; renderDrawer(); }));
@@ -3884,7 +3934,7 @@
     L.push(`브라우저: ${UA.replace(/^Mozilla\/5\.0\s*/, '').slice(0, 140)}`);
     L.push(`카메라: ${camInfo.label ? `${camInfo.label} ${camInfo.w}×${camInfo.h}` : '아직 안 켬'}${camInfo.note ? ' · ' + camInfo.note : ''}${s.cameraId ? ' · 교사가 고른 카메라' : ' · 자동'} · 거울 ${s.mirror === false ? '끔' : '켬'} · 밝기 ${s.brightness || 0}`);
     const q = [s.hiRes !== false && '고화질', s.burst && '연속3장', s.autoLevel !== false && '자동보정', s.printSharpen !== false && '인쇄선명'].filter(Boolean).join('/');
-    L.push(`설정: 세트 ${s.frameSet} · 완성 ${s.output || 'print'} · 최대 ${s.maxCopies}장 · 인쇄 크기 ${s.printScale || 100}% · 컷 수 화면 ${s.showCutSelect ? '켬' : `끔(${s.defaultCuts}컷)`} · 카운트 ${s.countdown}초 · 소리 ${s.volume} · 음성 ${s.voice ? '켬' : '끔'}${s.voiceName ? `(${s.voiceName})` : ''} · 잠금 ${s.lockPin ? '있음' : '없음'} · 자동잠금 ${s.lockAfter || 0}분 · 테마 ${s.theme} · 글꼴 ${s.bodyFont} · 품질 ${q} · 한컷다시 ${s.retakeOne ? '켬' : '끔'} · 도장 ${s.stamp ? '켬' : '끔'} · 인화지 ${s.paper == null ? '안 씀' : s.paper + '장'} · 대기화면 ${s.attract || 0} · 자동재시작 ${s.autoRestart === false ? '끔' : '켬'} · 움직임 ${s.anim === false ? '끔' : '켬'}`);
+    L.push(`설정: 세트 ${s.frameSet} · 완성 ${s.output || 'print'} · 최대 ${s.maxCopies}장 · 인쇄 크기 ${s.printScale || 100}% · 컷 수 화면 ${s.showCutSelect ? '켬' : `끔(${s.defaultCuts === 'photo' ? '사진만' : s.defaultCuts + '컷'})`} · 카운트 ${s.countdown}초 · 소리 ${s.volume} · 음성 ${s.voice ? '켬' : '끔'}${s.voiceName ? `(${s.voiceName})` : ''} · 잠금 ${s.lockPin ? '있음' : '없음'} · 자동잠금 ${s.lockAfter || 0}분 · 테마 ${s.theme} · 글꼴 ${s.bodyFont} · 품질 ${q} · 한컷다시 ${s.retakeOne ? '켬' : '끔'} · 도장 ${s.stamp ? '켬' : '끔'} · 인화지 ${s.paper == null ? '안 씀' : s.paper + '장'} · 대기화면 ${s.attract || 0} · 자동재시작 ${s.autoRestart === false ? '끔' : '켬'} · 움직임 ${s.anim === false ? '끔' : '켬'}`);
     L.push(`설정 보관: ${storeText()} · 누적 인쇄 ${s.printCount || 0}장`);
     try { const st = loadStats(), td = st.days[todayKey()] || { done: 0, prints: 0, board: 0 }; L.push(`오늘 기록: 완성 ${td.done} · 인쇄 ${td.prints} · 칠판 ${td.board || 0}`); } catch (e) {}
     const errs = recentErrors();
@@ -4034,7 +4084,7 @@
         <div class="tpage" data-pane="promise">
           <div class="thead"><h3>약속 문장</h3><span class="tdesc"><b>${setName}</b> 세트 · 꾸미기 '약속' 탭에서 학생이 고르는 문장</span></div>
           <div class="trow"><div class="tlbl">${sub('약속 칸 제목', '액자마다 · 비우면 기본 제목')}</div>
-            <div class="tgrid">${setFrames.map(f => `<label class="tlab"><span>${f.name}</span><input type="text" class="tinput" data-label="${f.id}" maxlength="30" placeholder="${esc(f.promise.label)}" value="${esc((settings.promiseLabels || {})[f.id] || '')}"></label>`).join('')}</div></div>
+            <div class="tgrid">${setFrames.filter(f => f.promise).map(f => `<label class="tlab"><span>${f.name}</span><input type="text" class="tinput" data-label="${f.id}" maxlength="30" placeholder="${esc(f.promise.label)}" value="${esc((settings.promiseLabels || {})[f.id] || '')}"></label>`).join('')}</div></div>
           <div class="trow"><div class="tlbl">${sub('약속 문장', '한 줄에 하나 · 최대 12개')}</div>
             <div class="tctl" style="flex-direction:column;align-items:stretch;gap:8px"><textarea class="tinput tarea" data-promises="${set}" rows="7">${esc(promiseList.join('\n'))}</textarea>
             <div class="tctl"><button class="btn sec tiny" data-act="promises-reset">기본 문장으로 되돌리기</button><span class="thint">지금 ${promiseList.length}개</span></div></div></div>
@@ -4042,7 +4092,7 @@
 
         <div class="tpage" data-pane="shoot">
           <div class="thead"><h3>촬영</h3><span class="tdesc">카메라와 찍는 흐름</span></div>
-          ${row('컷 수 고르기 화면', `${sw('showCutSelect', settings.showCutSelect)}<span class="thint">끄면 바로</span>${seg('defaultCuts', [[2, '2컷'], [4, '4컷']])}<span class="thint">으로 시작</span>`)}
+          ${row('컷 수 고르기 화면', `${sw('showCutSelect', settings.showCutSelect)}<span class="thint">끄면 바로</span>${seg('defaultCuts', [[2, '2컷'], [4, '4컷'], ['photo', '사진만']])}<span class="thint">으로 시작</span>`)}
           ${row('카운트다운', `${seg('countdown', [[3, '3초'], [5, '5초']])}<span class="thint">저학년은 5초가 여유 있어요</span>`)}
           ${row('추천 동작 카드', `${sw('showPoses', settings.showPoses !== false)}<span class="thint">끄면 카메라 화면이 그 자리까지 커져요</span><span class="tsep"></span><span class="tsub">한 컷만 다시 찍기</span>${sw('retakeOne', !!settings.retakeOne)}${info('h-retake')}`,
             help('h-retake', `<b>한 컷만 다시 찍기</b>: 켜면 고르기 화면의 사진 카드마다 [다시 찍기]가 붙어요. 눈 감은 그 컷 하나만 다시 찍고 고르던 순서 그대로 돌아오니, 4장을 다 다시 찍지 않아 줄이 밀리지 않아요 (한 팀 ${RETAKE_MAX}번까지 · 기본 꺼짐). 4장 전부 다시 찍는 [다시 찍을래요]는 그대로 있어요.`))}

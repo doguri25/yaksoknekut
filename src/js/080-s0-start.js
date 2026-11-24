@@ -52,7 +52,7 @@
     if (e.target.closest('#hot')) return;
     audio(); pop(); primeSpeech();
     if (settings.autoFull) wantFull(true);   // 브라우저 주소창 숨김
-    if (settings.showCutSelect) go('s1'); else { S.cuts = settings.defaultCuts; go('s2'); }
+    if (settings.showCutSelect) go('s1'); else { S.photoOnly = settings.defaultCuts === 'photo'; if (!S.photoOnly) S.cuts = settings.defaultCuts; go('s2'); }   // 컷 수 화면을 끄면 정해 둔 2컷·4컷·사진만으로 바로
     ensureCamera();
   });
   // 교사 메뉴: 오른쪽 위 5초 길게 누르기

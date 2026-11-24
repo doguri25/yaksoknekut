@@ -119,7 +119,7 @@
         <div class="tpage" data-pane="promise">
           <div class="thead"><h3>약속 문장</h3><span class="tdesc"><b>${setName}</b> 세트 · 꾸미기 '약속' 탭에서 학생이 고르는 문장</span></div>
           <div class="trow"><div class="tlbl">${sub('약속 칸 제목', '액자마다 · 비우면 기본 제목')}</div>
-            <div class="tgrid">${setFrames.map(f => `<label class="tlab"><span>${f.name}</span><input type="text" class="tinput" data-label="${f.id}" maxlength="30" placeholder="${esc(f.promise.label)}" value="${esc((settings.promiseLabels || {})[f.id] || '')}"></label>`).join('')}</div></div>
+            <div class="tgrid">${setFrames.filter(f => f.promise).map(f => `<label class="tlab"><span>${f.name}</span><input type="text" class="tinput" data-label="${f.id}" maxlength="30" placeholder="${esc(f.promise.label)}" value="${esc((settings.promiseLabels || {})[f.id] || '')}"></label>`).join('')}</div></div>
           <div class="trow"><div class="tlbl">${sub('약속 문장', '한 줄에 하나 · 최대 12개')}</div>
             <div class="tctl" style="flex-direction:column;align-items:stretch;gap:8px"><textarea class="tinput tarea" data-promises="${set}" rows="7">${esc(promiseList.join('\n'))}</textarea>
             <div class="tctl"><button class="btn sec tiny" data-act="promises-reset">기본 문장으로 되돌리기</button><span class="thint">지금 ${promiseList.length}개</span></div></div></div>
@@ -127,7 +127,7 @@
 
         <div class="tpage" data-pane="shoot">
           <div class="thead"><h3>촬영</h3><span class="tdesc">카메라와 찍는 흐름</span></div>
-          ${row('컷 수 고르기 화면', `${sw('showCutSelect', settings.showCutSelect)}<span class="thint">끄면 바로</span>${seg('defaultCuts', [[2, '2컷'], [4, '4컷']])}<span class="thint">으로 시작</span>`)}
+          ${row('컷 수 고르기 화면', `${sw('showCutSelect', settings.showCutSelect)}<span class="thint">끄면 바로</span>${seg('defaultCuts', [[2, '2컷'], [4, '4컷'], ['photo', '사진만']])}<span class="thint">으로 시작</span>`)}
           ${row('카운트다운', `${seg('countdown', [[3, '3초'], [5, '5초']])}<span class="thint">저학년은 5초가 여유 있어요</span>`)}
           ${row('추천 동작 카드', `${sw('showPoses', settings.showPoses !== false)}<span class="thint">끄면 카메라 화면이 그 자리까지 커져요</span><span class="tsep"></span><span class="tsub">한 컷만 다시 찍기</span>${sw('retakeOne', !!settings.retakeOne)}${info('h-retake')}`,
             help('h-retake', `<b>한 컷만 다시 찍기</b>: 켜면 고르기 화면의 사진 카드마다 [다시 찍기]가 붙어요. 눈 감은 그 컷 하나만 다시 찍고 고르던 순서 그대로 돌아오니, 4장을 다 다시 찍지 않아 줄이 밀리지 않아요 (한 팀 ${RETAKE_MAX}번까지 · 기본 꺼짐). 4장 전부 다시 찍는 [다시 찍을래요]는 그대로 있어요.`))}

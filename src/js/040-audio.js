@@ -148,8 +148,9 @@
   function recordFinish(prints, board) {
     const st = loadStats(), k = todayKey(), d = st.days[k] || (st.days[k] = { done: 0, prints: 0, board: 0, sets: {}, cuts: {}, promises: {} });
     d.done++; d.prints += prints; if (board) d.board++;
-    const set = S.frame ? S.frame.set : (settings.frameSet || 'promise'); d.sets[set] = (d.sets[set] || 0) + 1; d.cuts[S.cuts] = (d.cuts[S.cuts] || 0) + 1;
-    if (S.promiseText) d.promises[S.promiseText] = (d.promises[S.promiseText] || 0) + 1;
+    const set = S.frame ? S.frame.set : (settings.frameSet || 'promise'); d.sets[set] = (d.sets[set] || 0) + 1;
+    const ck = S.frame && S.frame.photoOnly ? 'p' + S.cuts : S.cuts; d.cuts[ck] = (d.cuts[ck] || 0) + 1;   // 사진만 액자는 'p3'처럼 따로 셈
+    if (S.promiseText && S.frame && S.frame.promise) d.promises[S.promiseText] = (d.promises[S.promiseText] || 0) + 1;
     try { localStorage.setItem(STATS_KEY, JSON.stringify(st)); } catch (e) {}
   }
   function statsText() {
@@ -158,7 +159,7 @@
     const top = o => Object.entries(o).sort((a, b) => b[1] - a[1]);
     const all = keys.reduce((acc, d) => { const x = st.days[d]; acc.done += x.done; acc.prints += x.prints; acc.board += x.board || 0; return acc; }, { done: 0, prints: 0, board: 0 });
     const lines = [`[약속네컷 기록] ${k}`, `오늘: 완성 ${t.done}장 · 인쇄 ${t.prints}장 · 칠판 보기 ${t.board}번`];
-    if (t.done) { lines.push('세트: ' + top(t.sets).map(([id, n]) => `${setName(id)} ${n}`).join(', ')); lines.push('컷 수: ' + top(t.cuts).map(([c, n]) => `${c}컷 ${n}`).join(', ')); }
+    if (t.done) { lines.push('세트: ' + top(t.sets).map(([id, n]) => `${setName(id)} ${n}`).join(', ')); lines.push('컷 수: ' + top(t.cuts).map(([c, n]) => `${c[0] === 'p' ? '사진만 ' + c.slice(1) + '칸' : c + '컷'} ${n}`).join(', ')); }
     const tp = top(t.promises).slice(0, 5); if (tp.length) lines.push('많이 고른 약속: ' + tp.map(([p, n]) => `"${p}" ${n}`).join(', '));
     lines.push(`누적(${keys.length}일): 완성 ${all.done}장 · 인쇄 ${all.prints}장 · 칠판 보기 ${all.board}번`);
     return lines.join('\n');
